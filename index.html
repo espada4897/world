@@ -1,0 +1,1066 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼만 자라는 나만의 세계, 그리고 한 권의 연대기. 독서모임 책미사가 지키는 천문대.">
+<meta property="og:title" content="책미사 너머">
+<meta property="og:description" content="당신이 읽은 책이 우주의 별이 됩니다. 세계는 읽은 만큼만 자랍니다.">
+<meta property="og:url" content="https://world.chaekmisa.com/">
+<meta property="og:type" content="website">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>책미사 너머</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500&display=swap">
+<style>
+/* 견본 3(책의 우주) 위에 '내 별 띄우기'를 얹는다. 한가운데 = 지금, 바깥 = 오래된 책. 어두운 우주 한 가지 모습만 쓴다. */
+:root{
+  color-scheme: dark;
+  --void:#03050b; --ink:#efe8d6; --ink-dim:#a7adb8; --ink-faint:#626b7c;
+  --gold:#f0c674; --law:#a9d2f2; --old:#ff9a6a; --mine:#f4f6ff; --link:#c7a0ff;
+  --panel:rgba(8,11,22,.86); --line:rgba(239,232,214,.14);
+  --f-display:"Gowun Batang","Nanum Myeongjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);overflow:hidden}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-140%);white-space:nowrap;font-size:12px;color:var(--ink);text-shadow:0 0 6px #000,0 0 2px #000}
+.lb.book{font-family:var(--f-display);font-weight:700;font-size:13px}
+.lb.ring{color:var(--ink-faint);font-size:11px;letter-spacing:.08em;transform:translate(-50%,-50%)}
+.lb.far{color:var(--old);font-family:var(--f-display);font-size:13px}
+.lb.far small{display:block;text-align:center;color:var(--ink-faint);font-family:var(--f-body);font-size:10px}
+.lb.home{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--gold);transform:translate(-50%,60%)}
+.lb.mine{font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--mine);transform:translate(-50%,-160%)}
+.lb.mine small{display:block;text-align:center;font-family:var(--f-body);font-weight:400;font-size:10px;color:var(--link)}
+.lb.cname{font-family:var(--f-display);font-size:16px;color:var(--mine);letter-spacing:.06em;transform:translate(-50%,-50%);opacity:.85}
+.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 18px);left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;gap:12px;pointer-events:none}
+.top .name{font-family:var(--f-display);font-size:15px;letter-spacing:.2em;color:var(--ink-dim)}
+.top .clock{font-size:12px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums}
+.top .clock b{display:block;font-family:var(--f-display);font-size:22px;color:var(--ink);font-weight:400}
+#cap{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 86px);width:min(620px,calc(100vw - 32px));text-align:center;pointer-events:none;transition:opacity .6s}
+#cap h1{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,3.4vw,36px);line-height:1.35;margin:0;text-wrap:balance;text-shadow:0 0 18px #000}
+#cap p{margin:.6rem auto 0;max-width:34rem;color:var(--ink-dim);font-size:14px;line-height:1.7;text-shadow:0 0 10px #000}
+#cap .big{font-variant-numeric:tabular-nums;color:var(--gold)}
+#cap .me{color:var(--mine)}
+.stops{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 20px);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;width:calc(100vw - 32px)}
+button{font:inherit;font-size:12px;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+button:hover{color:var(--ink);border-color:rgba(240,198,116,.5)}
+button[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#play{color:var(--gold)}
+/* 내 별 띄우기 */
+#me{position:fixed;top:calc(env(safe-area-inset-top,0px) + 56px);left:max(16px,env(safe-area-inset-left,0px));width:min(330px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;backdrop-filter:blur(6px);transition:border-color .6s, box-shadow .6s}
+#me.call{border-color:rgba(244,246,255,.7);box-shadow:0 0 0 1px rgba(244,246,255,.25),0 0 40px rgba(199,160,255,.25)}
+#me h2{font-family:var(--f-display);font-weight:700;font-size:18px;margin:0 0 8px;line-height:1.35}
+#me form{display:flex;gap:6px}
+#me input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+#me input::placeholder{color:var(--ink-faint)}
+#me form button{border-radius:8px;color:var(--mine);border-color:rgba(244,246,255,.4)}
+#msg{margin-top:10px;font-size:13px;line-height:1.65;color:var(--ink-dim)}
+#msg b{color:var(--mine);font-weight:500} #msg em{font-style:normal;color:var(--link)}
+#mine{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+#mine button{font-size:12px;padding:3px 9px;color:var(--mine)}
+#mine button span{color:var(--ink-faint);margin-left:4px}
+.sub{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sub button{font-size:11px;padding:4px 9px}
+#card{position:fixed;top:calc(env(safe-area-inset-top,0px) + 76px);right:max(16px,env(safe-area-inset-right,0px));width:min(320px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 16px 14px;backdrop-filter:blur(6px)}
+#card .eb{font-size:11px;letter-spacing:.14em;color:var(--ink-faint)}
+#card h2{font-family:var(--f-display);font-size:22px;margin:.25rem 0 .1rem;line-height:1.3}
+#card .au{font-size:13px;color:var(--ink-dim)}
+#card .light{margin-top:12px;font-family:var(--f-display);font-size:16px;line-height:1.6}
+#card .light b{color:var(--gold);font-weight:700}
+#card .line{margin-top:10px;font-size:13px;line-height:1.65;color:var(--ink-dim)}
+#card .x{position:absolute;top:8px;right:8px;padding:2px 9px;border-radius:6px}
+#tip{position:fixed;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:12px;white-space:nowrap}
+@media (max-width:760px){
+  .top .clock{display:none}
+  #card{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
+  #cap{bottom:calc(env(safe-area-inset-bottom,0px) + 104px)} #cap p{display:none}
+}
+/* 깨어난 세계: 우주 위에 내려앉는 한 장의 세계 지도책 */
+#wake{color:var(--mine);border-color:rgba(244,246,255,.55)}
+#wake.glow{box-shadow:0 0 0 1px rgba(244,246,255,.3),0 0 24px rgba(199,160,255,.45)}
+#world{position:fixed;inset:0;z-index:20;overflow:auto;background:rgba(3,5,11,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#world .wrap{max-width:940px;margin:0 auto;padding-block:calc(env(safe-area-inset-top,0px) + 28px) calc(env(safe-area-inset-bottom,0px) + 48px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+#world .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#world .eb{font-size:11px;letter-spacing:.16em;color:var(--ink-faint)}
+#world h2.wn{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,5vw,52px);line-height:1.2;margin:.3rem 0 0;text-wrap:balance}
+#world .from{color:var(--ink-dim);font-size:14px;margin-top:.5rem;line-height:1.6}
+#world .note{font-size:12px;color:var(--old);margin-top:.4rem}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.col h3{font-size:12px;letter-spacing:.14em;font-weight:500;margin:0 0 8px}
+.col.land h3{color:var(--gold)} .col.folk h3{color:var(--mine)} .col.law h3{color:var(--law)}
+.it{border-top:1px solid var(--line);padding:10px 0 12px;min-width:0}
+.it b{display:block;font-family:var(--f-display);font-size:18px;font-weight:700;line-height:1.35}
+.it span{display:block;font-size:13px;line-height:1.65;color:var(--ink-dim);margin-top:3px}
+.it small{display:block;font-size:11px;color:var(--ink-faint);margin-top:4px}
+.col.law .it b{font-size:16px;font-weight:400;line-height:1.6}
+.empty{font-size:13px;color:var(--ink-faint);padding-top:10px;border-top:1px solid var(--line)}
+.mirror{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.mirror{grid-template-columns:1fr}}
+.mirror div{border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.mirror small{font-size:11px;letter-spacing:.14em;color:var(--ink-faint)}
+.mirror b{display:block;font-family:var(--f-display);font-size:22px;margin:.25rem 0;color:var(--link)}
+.mirror span{font-size:13px;line-height:1.65;color:var(--ink-dim)}
+.chron h3{font-size:12px;letter-spacing:.14em;color:var(--ink-faint);font-weight:500;margin:0 0 6px}
+.chap{padding:6px 0 18px}
+.chap .ct{font-size:12px;color:var(--gold);letter-spacing:.12em;margin-bottom:8px}
+.chap .tx{font-family:var(--f-display);font-size:18px;line-height:1.95;max-width:40em}
+.chap .tx p{margin:0 0 .9em}
+.stone{font-size:13px;color:var(--ink-dim);border-left:2px solid var(--link);padding:2px 0 2px 10px;margin:4px 0 14px}
+.ask{border:1px solid rgba(199,160,255,.45);border-radius:12px;padding:16px;display:grid;gap:10px;background:rgba(199,160,255,.05)}
+.ask .who{font-size:12px;color:var(--link);letter-spacing:.1em}
+.ask .q{font-family:var(--f-display);font-size:20px;line-height:1.55}
+.ask textarea{font:inherit;font-size:14px;color:var(--ink);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:64px;resize:vertical;width:100%;box-sizing:border-box}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{border-radius:8px;font-size:13px;padding:8px 14px}
+.acts .go{color:var(--mine);border-color:rgba(244,246,255,.5)}
+.next{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.next b{font-family:var(--f-display);font-size:18px} .next span{display:block;font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.6}
+.wait{min-height:60vh;display:grid;place-content:center;text-align:center;gap:14px}
+.wait .orb{width:72px;height:72px;margin:0 auto;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--mine),rgba(199,160,255,.4) 45%,transparent 70%);animation:breath 2.4s ease-in-out infinite}
+.wait p{font-family:var(--f-display);font-size:20px;margin:0} .wait small{color:var(--ink-faint);font-size:12px}
+@keyframes breath{50%{transform:scale(1.25);opacity:.7}}
+.rise{animation:rise .7s ease both}
+@keyframes rise{from{transform:translateY(10px);opacity:.25}}
+@media (prefers-reduced-motion: reduce){.rise,.wait .orb{animation:none}}
+.err{font-size:13px;color:var(--old)}
+/* 읽은 만큼만 자란다: 읽은 별은 환하게, 읽고 싶은 별은 희미하게 */
+#me form #bWish{color:var(--ink-dim);border-color:var(--line)}
+#mine button.wish{color:var(--ink-faint);border-style:dashed}
+#me .law1{margin-top:8px;font-size:11px;color:var(--ink-faint);letter-spacing:.04em}
+#msg .lit{margin-top:8px;border-radius:8px;color:var(--mine);border-color:rgba(244,246,255,.5)}
+.dim-stars{font-size:13px;color:var(--ink-faint);margin-top:.5rem;line-height:1.6}
+.dim-stars b{color:var(--ink-dim);font-weight:500}
+
+
+/* 공개판: 첫 안내, 책미사로 가는 문 */
+.root-link{pointer-events:auto;display:inline-block;margin-top:8px;font-size:12px;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(240,198,116,.4)}
+.root-link:hover{color:var(--ink)}
+#hello{position:fixed;z-index:40;inset:0;display:grid;place-items:center;background:rgba(3,5,11,.55);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#hello .box{width:min(460px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;backdrop-filter:blur(8px)}
+#hello h2{font-family:var(--f-display);font-size:26px;margin:0 0 6px;line-height:1.3}
+#hello p{margin:0 0 14px;color:var(--ink-dim);font-size:14px;line-height:1.7}
+#hello ol{margin:0 0 16px;padding-left:1.2em;display:grid;gap:8px;font-size:14px;line-height:1.6}
+#hello ol small{color:var(--ink-faint)}
+#hello .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#hello .go{border-radius:8px;color:var(--mine);border-color:rgba(244,246,255,.5);padding:8px 16px;font-size:14px}
+#hello a{color:var(--gold);font-size:12px}
+</style>
+
+<canvas id="gl" aria-label="책의 우주: 한가운데 책미사, 바깥으로 갈수록 오래된 책"></canvas>
+<div id="labels"></div>
+<div class="top">
+  <div class="name">책미사 너머</div>
+  <div class="clock">지금 보이는 시간<b id="clock">지난 60년</b><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a></div>
+</div>
+<section id="me" aria-label="내 별 띄우기">
+  <h2 id="meH">당신이 읽은 책 한 권은?</h2>
+  <form id="f" autocomplete="off">
+    <input id="q" list="dl" placeholder="예: 데미안, 어린 왕자, 채식주의자" aria-label="읽은 책 제목">
+    <button type="submit" id="bRead">읽었어요</button><button type="button" id="bWish">읽고 싶어요</button>
+  </form>
+  <datalist id="dl"></datalist>
+  <div id="msg">읽은 책은 환한 별로, 읽고 싶은 책은 희미한 별로 뜹니다. 별은 그 책이 처음 나온 해의 자리에서 켜집니다.</div>
+  <div id="mine"></div>
+  <div class="sub">
+    <button id="ourC" aria-pressed="false">책미사의 별자리 보기</button>
+    <button id="clr" hidden>내 별 모두 지우기</button>
+  </div>
+</section>
+<div id="cap"><h1 id="capH"></h1><p id="capP"></p></div>
+<div class="stops" id="stops"></div>
+<aside id="card" hidden></aside>
+<div id="tip" hidden></div>
+
+
+
+
+<section id="hello" hidden aria-label="처음 오신 분께"><div class="box">
+  <h2>책미사 너머</h2>
+  <p>당신이 읽은 책이 이 우주의 별이 됩니다. 세계는 읽은 만큼만 자랍니다.</p>
+  <ol>
+    <li>우주가 천천히 멀어집니다. 인류가 펴낸 책 1억 3천만 권의 하늘입니다.</li>
+    <li>왼쪽 위에 읽은 책을 적고 <b>읽었어요</b>를 누르면 그 책이 나온 해의 자리에 당신의 별이 뜹니다. <small>읽고 싶은 책은 희미한 별로.</small></li>
+    <li>읽은 별이 셋이 되면 당신의 세계가 깨어납니다. <small>(이야기꾼 준비 중 · 지금은 예시 세계)</small></li>
+    <li>쌓인 이야기는 <b>연대기 한 권</b>으로 묶어 PDF로 받고, <b>천문대</b>에 별로 올립니다.</li>
+  </ol>
+  <div class="row"><a href="https://chaekmisa.com" target="_blank" rel="noopener">한가운데의 170개 별은 독서모임 책미사가 함께 읽은 책입니다 ↗</a>
+    <button class="go" id="helloGo">우주로 들어가기</button></div>
+</div></section>
+
+<section id="world" hidden aria-label="깨어난 세계"><div class="wrap" id="wwrap"></div></section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const DATA={"Q": ["어떻게 살아야 하는가", "나는 누구인가", "인간과 기술의 미래", "돈과 욕망", "사회와 정의", "사랑과 관계", "생각하는 법", "세계와 과학"], "B": [{"t": "백년의 고독", "a": "가브리엘 가르시아 마르케스", "g": "3", "n": 1, "q": [5, 4], "k": "land", "s": "부엔디아 가문 — 마콘도에는 4년 11개월 2일 동안 비가 내린다"}, {"t": "마침내 특이점이 시작된다", "a": "레이 커즈와일", "g": "3", "n": 1, "q": [2], "k": "law", "s": "언젠가 기계의 생각이 사람의 생각을 따라잡는 날이 온다."}, {"t": "어떻게 살아낼 것인가", "a": "짐 콜린스", "g": "3", "n": 1, "q": [0, 6], "k": "law", "s": "주민마다 꺼지지 않는 불꽃이 하나씩 있고, 그 불꽃이 갈 길을 정한다."}, {"t": "너무 시끄러운 고독", "a": "보후밀 흐라발", "g": "3", "n": 1, "q": [0], "k": "land", "s": "한탸 — 35년째 지하에서 폐지를 압축하며 책을 구해 낸다"}, {"t": "우아한 사고를 위한 철학", "a": "호세 카를로스 루이스", "g": "3", "n": 1, "q": [6, 0], "k": "law", "s": "질문을 다듬으면 길이 보인다."}, {"t": "읽기의 위기", "a": "크리스토프 엥게만", "g": "3", "n": 1, "q": [6, 2], "k": "law", "s": "깊이 읽지 않으면 땅이 얕아진다."}, {"t": "워런 버핏 전설의 투자자", "a": "토드 A. 핑클", "g": "3", "n": 1, "q": [3], "k": "law", "s": "기다릴 줄 아는 자에게 땅값이 돌아온다."}, {"t": "윗집 부부", "a": "황보름", "g": "3", "n": 1, "q": [5, 0], "k": "land", "s": "윗집과 아랫집, 벽 하나 사이의 두 부부"}, {"t": "변신", "a": "프란츠 카프카", "g": "2", "n": 1, "q": [1, 5], "k": "land", "s": "그레고르 잠자 — 어느 아침 벌레가 되어 깨어난다"}, {"t": "인간 실격", "a": "다자이 오사무", "g": "2", "n": 1, "q": [1], "k": "land", "s": "요조 — 광대 가면 뒤에 숨은 사람"}, {"t": "여름", "a": "이디스 워튼", "g": "2", "n": 1, "q": [5], "k": "land", "s": "채리티 로열 — 작은 산골 마을의 뜨거운 한 계절"}, {"t": "인피니트 게임", "a": "사이먼 시넥", "g": "2", "n": 1, "q": [3, 0], "k": "law", "s": "이 세계에는 끝나는 게임과 끝나지 않는 게임이 있다."}, {"t": "리스크 프레임", "a": "미셸 부커", "g": "2", "n": 1, "q": [6, 3], "k": "law", "s": "위험을 어떻게 보느냐가 위험보다 크다."}, {"t": "철학은 어떻게 삶의 무기가 되는가", "a": "야마구치 슈", "g": "2", "n": 1, "q": [6, 0], "k": "law", "s": "오래된 생각은 새 문제를 푸는 연장이 된다."}, {"t": "뇌 과학의 모든 역사", "a": "매튜 코브", "g": "2", "n": 1, "q": [7, 1], "k": "law", "s": "생각이 어디서 오는지 이 세계도 아직 모른다."}, {"t": "숫자에 속지 않고 숫자 읽는 법", "a": "톰 치버스·데이비드 치버스", "g": "2", "n": 1, "q": [6], "k": "law", "s": "숫자로 된 소문은 두 번 확인해야 믿는다."}, {"t": "보이지 않는 중국", "a": "스콧 로젤·내털리 헬", "g": "2", "n": 1, "q": [4, 3], "k": "law", "s": "가장 큰 나라의 가장 작은 마을이 미래를 정한다."}, {"t": "부분과 전체", "a": "베르너 하이젠베르크", "g": "2", "n": 1, "q": [7, 6], "k": "law", "s": "누군가 바라보기 전까지 길은 정해지지 않는다."}, {"t": "자기 앞의 生", "a": "로맹 가리", "g": "2", "n": 1, "q": [5, 0], "k": "land", "s": "모모와 로자 아줌마 — 벨빌의 6층 계단"}, {"t": "중동을 보면 미래경제가 보인다", "a": "임성수·손원호", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "사막 아래 흐르는 것이 세계의 값을 정한다."}, {"t": "당신의 삶에 명상이 필요할 때", "a": "앤디 퍼디컴", "g": "2", "n": 1, "q": [1], "k": "law", "s": "멈추어 숨을 고르는 사람에게만 바람 소리가 들린다."}, {"t": "위대한 과학 고전 30권을 1권으로 읽는 책", "a": "김성근", "g": "2", "n": 1, "q": [7], "k": "law", "s": "서른 개의 오래된 법칙이 한 권에 접혀 있다."}, {"t": "19호실로 가다", "a": "도리스 레싱", "g": "2", "n": 1, "q": [1, 5], "k": "land", "s": "수전 — 아무도 모르는 호텔 방 하나가 필요했다"}, {"t": "멋진 신세계", "a": "올더스 헉슬리", "g": "2", "n": 1, "q": [2, 4], "k": "land", "s": "버나드 마르크스와 야만인 존 — 늘 맑고, 모두 행복해야 하는 곳"}, {"t": "자이언트 임팩트", "a": "박종훈", "g": "2", "n": 1, "q": [3, 2], "k": "law", "s": "거대한 충돌 뒤에는 새 대륙이 생긴다."}, {"t": "팀장의 본질", "a": "장윤혁", "g": "2", "n": 1, "q": [5, 3], "k": "law", "s": "무리를 이끄는 자는 길을 먼저 걸어 본 자다."}, {"t": "이기적 유전자", "a": "리처드 도킨스", "g": "2", "n": 1, "q": [7], "k": "law", "s": "이 세계의 모든 생물은 유전자가 타고 다니는 탈것이다."}, {"t": "인간이 만든 물질, 물질이 만든 인간", "a": "마크 미오도닉", "g": "2", "n": 1, "q": [7, 2], "k": "law", "s": "사람이 만든 물질이 다시 사람을 만든다."}, {"t": "브람스를 좋아하세요", "a": "프랑수아즈 사강", "g": "2", "n": 1, "q": [5], "k": "land", "s": "폴 — 서른아홉, 기다림과 젊은 시몽 사이"}, {"t": "영화를 빨리 감기로 보는 사람들", "a": "이나다 도요시", "g": "2", "n": 1, "q": [2, 4], "k": "law", "s": "이 세계의 시간은 사람마다 다른 배속으로 흐른다."}, {"t": "장하준의 경제학 강의", "a": "장하준", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "경제의 법칙은 하나가 아니라 여럿이다."}, {"t": "물고기는 존재하지 않는다", "a": "룰루 밀러", "g": "2", "n": 1, "q": [0, 7], "k": "law", "s": "이름을 붙인 분류는 언제든 무너질 수 있다."}, {"t": "자기돌봄의 시", "a": "나태주", "g": "2", "n": 1, "q": [1], "k": "land", "s": "나태주의 시 — 자세히 보아야 예쁘다"}, {"t": "괴델, 에셔, 바흐", "a": "더글러스 호프스태터", "g": "2", "n": 1, "q": [6, 7], "k": "law", "s": "세계 어딘가에 자기 자신을 가리키는 계단이 있다."}, {"t": "책 읽어주는 남자", "a": "베른하르트 슐링크", "g": "2", "n": 1, "q": [4, 5], "k": "land", "s": "미하엘과 한나 — 소리 내어 읽던 책들"}, {"t": "스케일의 법칙", "a": "존 리스트", "g": "2", "n": 1, "q": [7, 4], "k": "law", "s": "작은 마을에서 통한 일이 큰 도시에서 통하리란 보장은 없다."}, {"t": "위어드", "a": "조지프 헨릭", "g": "2", "n": 1, "q": [4, 1], "k": "law", "s": "어떤 마을의 상식은 다른 마을에서 이상한 풍습이다."}, {"t": "과부하 시대", "a": "로라 판 더누트 립스키", "g": "2", "n": 1, "q": [2, 1], "k": "law", "s": "할 일이 넘치면 주민들은 길을 잃는다."}, {"t": "인비저블", "a": "데이비드 즈와이그", "g": "2", "n": 1, "q": [0, 1], "k": "law", "s": "보이지 않는 곳의 사람들이 세계를 돌린다."}, {"t": "파우스트", "a": "요한 볼프강 폰 괴테", "g": "2", "n": 1, "q": [0, 3], "k": "land", "s": "파우스트와 메피스토펠레스 — 멈추어라, 너는 정말 아름답구나"}, {"t": "마케팅 설계자", "a": "러셀 브런슨", "g": "2", "n": 1, "q": [3], "k": "law", "s": "모든 길목에는 손님을 부르는 깃발이 선다."}, {"t": "디컨슈머", "a": "J. B. 매키넌", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "사지 않는 날이 오면 세계가 조용해진다."}, {"t": "그리스인 조르바", "a": "니코스 카잔차키스", "g": "2", "n": 1, "q": [0], "k": "land", "s": "조르바 — 춤추고, 먹고, 사랑하고, 다시 춤춘다"}, {"t": "AI 2041", "a": "리카이푸·천치우판", "g": "2", "n": 1, "q": [2], "k": "law", "s": "이 세계의 2041년에는 기계가 이웃이 된다."}, {"t": "그들의 생각을 바꾸는 방법", "a": "데이비드 맥레이니", "g": "2", "n": 1, "q": [5, 6], "k": "law", "s": "마음은 논리보다 이야기로 바뀐다."}, {"t": "현대미술", "a": "K. 해리스", "g": "2", "n": 1, "q": [6], "k": "law", "s": "무엇이 예술인지는 보는 사람이 정한다."}, {"t": "브라질에 비가 내리면 스타벅스 주식을 사라", "a": "피터 나바로", "g": "2", "n": 1, "q": [3], "k": "law", "s": "먼 땅의 비가 가까운 땅의 값을 바꾼다."}, {"t": "이방인", "a": "알베르 카뮈", "g": "2", "n": 1, "q": [0, 4], "k": "land", "s": "뫼르소 — 오늘 엄마가 죽었다, 아니 어쩌면 어제"}, {"t": "메트로폴리스", "a": "벤 윌슨", "g": "2", "n": 1, "q": [4], "k": "law", "s": "도시는 사람을 모으고, 모인 사람이 도시를 다시 짓는다."}, {"t": "세이노의 가르침", "a": "세이노", "g": "2", "n": 1, "q": [3, 0], "k": "law", "s": "스스로 버는 자가 자기 땅을 지킨다."}, {"t": "욕망이라는 이름의 전차", "a": "테네시 윌리엄스", "g": "2", "n": 1, "q": [5, 1], "k": "land", "s": "블랑시 뒤부아 — 낯선 사람들의 친절에 기대 왔다"}, {"t": "세컨드 브레인", "a": "티아고 포르테", "g": "2", "n": 1, "q": [6, 2], "k": "law", "s": "기록해 둔 생각이 두 번째 머리가 된다."}, {"t": "나의 돈 많은 고등학교친구", "a": "송희구", "g": "2", "n": 1, "q": [3], "k": "land", "s": "돈 많은 친구와 그 친구를 보는 사람들"}, {"t": "불확실성의 시대", "a": "존 케네스 갤브레이스", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "이 세계에서 확실한 것은 불확실하다는 것뿐이다."}, {"t": "금각사", "a": "미시마 유키오", "g": "2", "n": 1, "q": [1, 0], "k": "land", "s": "미조구치 — 너무 아름다워서 불태워야 했던 절"}, {"t": "도둑맞은 집중력", "a": "요한 하리", "g": "2", "n": 1, "q": [1, 2], "k": "law", "s": "주의를 빼앗는 안개가 세계 곳곳에 낀다."}, {"t": "탁월함에 이르는 피터 드러커의 습관", "a": "문정엽", "g": "2", "n": 1, "q": [0], "k": "law", "s": "매일 같은 시간에 하는 일이 사람을 만든다."}, {"t": "미술관에 간 클래식", "a": "박소현", "g": "2", "n": 1, "q": [6], "k": "law", "s": "그림과 음악은 같은 땅의 두 언어다."}, {"t": "이토록 굉장한 세계", "a": "에드 용", "g": "2", "n": 1, "q": [7], "k": "law", "s": "모든 동물은 저마다 다른 세계를 보고 듣는다."}, {"t": "비열한 시장과 도마뱀의 뇌", "a": "테리 번햄", "g": "2", "n": 1, "q": [3, 1], "k": "law", "s": "시장은 가장 오래된 뇌가 움직인다."}, {"t": "이반 일리치의 죽음", "a": "레프 톨스토이", "g": "2", "n": 1, "q": [0], "k": "land", "s": "이반 일리치 — 가장 평범했기에 가장 끔찍했던 삶"}, {"t": "시몽의 아빠", "a": "기 드 모파상", "g": "2", "n": 1, "q": [5], "k": "land", "s": "시몽 — 아빠가 없다고 놀림받던 아이"}, {"t": "살아 있는 것은 모두 게임을 한다", "a": "모시 호프먼·에레즈 요엘리", "g": "2", "n": 1, "q": [1, 6], "k": "law", "s": "모든 생명은 보이지 않는 셈을 하며 움직인다."}, {"t": "유현준의 인문건축기행", "a": "유현준", "g": "2", "n": 1, "q": [4, 6], "k": "law", "s": "건물은 그 시대 사람들이 믿은 것을 닮는다."}, {"t": "브랜드 설계자", "a": "러셀 브런슨", "g": "2", "n": 1, "q": [3], "k": "law", "s": "이름을 가진 땅에 사람이 모인다."}, {"t": "노화의 재설계", "a": "모건 레빈", "g": "2", "n": 1, "q": [7, 0], "k": "law", "s": "시간은 흐르지만 늙는 속도는 바꿀 수 있다."}, {"t": "파이 이야기", "a": "얀 마텔", "g": "2", "n": 1, "q": [0, 6], "k": "land", "s": "파이와 호랑이 리처드 파커 — 227일의 구명보트"}, {"t": "슈퍼사이트", "a": "데이비드 로즈", "g": "2", "n": 1, "q": [2], "k": "law", "s": "언젠가 모든 주민이 보이지 않는 것을 겹쳐 보게 된다."}, {"t": "우리는 모든 것의 주인이기를 원한다", "a": "브루스 후드", "g": "2", "n": 1, "q": [3, 1], "k": "law", "s": "모두가 무언가를 '내 것'이라 부르고 싶어 한다."}, {"t": "프랑켄슈타인", "a": "메리 셸리", "g": "2", "n": 1, "q": [2, 5], "k": "land", "s": "괴물 — 이름 없이 만들어진 존재"}, {"t": "기계 속의 악마", "a": "폴 데이비스", "g": "2", "n": 1, "q": [7, 2], "k": "law", "s": "생명은 정보가 물질을 움직이는 곳에서 시작된다."}, {"t": "인간을 진화 시키는 AI", "a": "리드 호프먼", "g": "2", "n": 1, "q": [2], "k": "law", "s": "기계와 함께 걷는 주민은 더 멀리 간다."}, {"t": "아침 그리고 저녁", "a": "욘 포세", "g": "2", "n": 1, "q": [0], "k": "land", "s": "요한네스 — 태어나는 아침과 떠나는 저녁"}, {"t": "시대예보:핵개인의 시대", "a": "송길영", "g": "2", "n": 1, "q": [4, 5], "k": "law", "s": "이 세계 주민은 저마다 혼자서도 하나의 섬이다."}, {"t": "스태그플레이션 2024년 경제전망", "a": "김광석", "g": "2", "n": 1, "q": [3], "k": "law", "s": "값은 오르는데 일은 줄어드는 겨울이 가끔 온다."}, {"t": "신은 주사위놀이를 하지 않는다", "a": "데이비드 핸드", "g": "2", "n": 1, "q": [6, 7], "k": "law", "s": "아주 드문 일도 충분히 오래 기다리면 반드시 일어난다."}, {"t": "일론 머스크", "a": "월터 아이작슨", "g": "2", "n": 1, "q": [2, 0], "k": "law", "s": "하늘 너머로 가려는 사람이 있다."}, {"t": "지킬 앤 하이드", "a": "로버트 루이스 스티븐슨", "g": "2", "n": 1, "q": [1], "k": "land", "s": "지킬과 하이드 — 한 몸에 사는 두 사람"}, {"t": "히트 리프레시", "a": "사티아 나델라", "g": "2", "n": 1, "q": [2, 3], "k": "law", "s": "오래된 성도 다시 고쳐 지을 수 있다."}, {"t": "칠드런 액트", "a": "이언 매큐언", "g": "2", "n": 1, "q": [4, 5], "k": "land", "s": "피오나 판사 — 신앙과 생명 사이의 판결"}, {"t": "코스모스", "a": "칼 세이건", "g": "2", "n": 1, "q": [7], "k": "law", "s": "밤하늘의 별 하나하나가 다른 땅의 등불이다."}, {"t": "보보스", "a": "데이비드 브룩스", "g": "2", "n": 1, "q": [4, 3], "k": "law", "s": "부와 자유를 함께 갖고 싶은 새 종족이 산다."}, {"t": "레버리지", "a": "롭 무어", "g": "2", "n": 1, "q": [3], "k": "law", "s": "남의 시간을 빌리면 길이 짧아진다."}, {"t": "모순", "a": "양귀자", "g": "2", "n": 1, "q": [0, 5], "k": "land", "s": "안진진 — 스물다섯, 두 남자와 두 엄마"}, {"t": "도리언 그레이의 초상", "a": "오스카 와일드", "g": "2", "n": 1, "q": [1, 3], "k": "land", "s": "도리언 그레이 — 대신 늙어 가는 초상화"}, {"t": "군중의 망상", "a": "윌리엄 번스타인", "g": "2", "n": 1, "q": [6, 3], "k": "law", "s": "사람이 많이 모이면 거품이 생기고, 거품은 반드시 터진다."}, {"t": "열린사회와 그 적들", "a": "칼 포퍼", "g": "2", "n": 1, "q": [4, 6], "k": "law", "s": "모든 법칙은 틀렸다고 밝혀질 수 있어야 법칙이다."}, {"t": "초월기업의 법칙", "a": "스탠 버나드", "g": "2", "n": 1, "q": [3, 2], "k": "law", "s": "오래 사는 성은 국경을 넘어 선다."}, {"t": "아무튼, 술, 클래식, 식물", "a": "김혼비·김호경·임이랑", "g": "2", "n": 1, "q": [0], "k": "law", "s": "좋아하는 것 하나가 사람을 하루 더 살게 한다."}, {"t": "빅 픽처", "a": "더글라스 케네디", "g": "2", "n": 1, "q": [0, 1], "k": "land", "s": "벤 브래드포드 — 다른 사람의 삶을 입은 사진가"}, {"t": "두 도시 이야기", "a": "찰스 디킨스", "g": "2", "n": 1, "q": [4, 5], "k": "land", "s": "시드니 카턴 — 최고의 시절이자 최악의 시절"}, {"t": "링크", "a": "앨버트 라슬로 바라바시", "g": "2", "n": 1, "q": [7, 4], "k": "law", "s": "몇 사람만 건너면 모든 주민이 이어져 있다."}, {"t": "불변의 법칙", "a": "모건 하우절", "g": "2", "n": 1, "q": [6, 3], "k": "law", "s": "사람의 욕망과 두려움은 시대가 바뀌어도 그대로다."}, {"t": "메리골드 마음사진관", "a": "윤정은", "g": "2", "n": 1, "q": [1], "k": "land", "s": "마음을 찍어 주는 사진관"}, {"t": "히든 포텐셜", "a": "애덤 그랜트", "g": "2", "n": 1, "q": [0, 1], "k": "law", "s": "가장 멀리 가는 주민은 가장 늦게 출발한 주민일 수도 있다."}, {"t": "우리는 여전히 삶을 사랑하는가", "a": "에리히 프롬", "g": "2", "n": 1, "q": [0], "k": "law", "s": "사랑은 갖는 것이 아니라 하는 것이다."}, {"t": "케이크와 맥주", "a": "서머싯 몸", "g": "2", "n": 1, "q": [5], "k": "land", "s": "로지 — 모두가 판단했지만 아무도 몰랐던 여자"}, {"t": "세포의 노래", "a": "싯다르타 무케르지", "g": "2", "n": 1, "q": [7], "k": "law", "s": "땅 하나하나도 세포처럼 나뉘고 이어진다."}, {"t": "미움받을 용기", "a": "기시미 이치로·고가 후미타케", "g": "2", "n": 1, "q": [1, 5], "k": "law", "s": "남의 기대를 짊어지지 않는 사람만 경계를 넘는다."}, {"t": "부자의 언어", "a": "존 소포릭", "g": "2", "n": 1, "q": [3], "k": "law", "s": "부는 말버릇에서 먼저 자란다."}, {"t": "위대한 개츠비", "a": "F. 스콧 피츠제럴드", "g": "2", "n": 1, "q": [3, 5], "k": "land", "s": "개츠비 — 만 건너편 초록 불빛"}, {"t": "어떻게 팔지 막막할 때 읽는 카피 책", "a": "톰 올브라이튼", "g": "2", "n": 1, "q": [3], "k": "law", "s": "한 문장이 사람의 발길을 돌린다."}, {"t": "진정성이라는 거짓말", "a": "앤드류 포터", "g": "2", "n": 1, "q": [4, 1], "k": "law", "s": "'진짜'를 파는 가게가 가장 많다."}, {"t": "나 같은 기계들", "a": "이언 매큐언", "g": "2", "n": 1, "q": [2, 5], "k": "land", "s": "아담 — 사람보다 정직한 기계"}, {"t": "내 영혼이 따뜻했던 날들", "a": "포리스트 카터", "g": "2", "n": 1, "q": [5, 0], "k": "land", "s": "작은 나무 — 할아버지 할머니와 산속의 날들"}, {"t": "꿈의 인문학", "a": "싯다르타 히베이루", "g": "2", "n": 1, "q": [1], "k": "law", "s": "잠든 주민들의 꿈이 다음 날의 날씨를 정한다."}, {"t": "뉴맵", "a": "대니얼 예긴", "g": "2", "n": 1, "q": [4, 3], "k": "law", "s": "에너지가 흐르는 길이 새 지도를 그린다."}, {"t": "컨셉 수업", "a": "호소다 다카히로", "g": "2", "n": 1, "q": [6, 3], "k": "law", "s": "한 줄로 말할 수 있어야 땅이 된다."}, {"t": "시간의 지배자", "a": "토머스 서든도프 외", "g": "2", "n": 1, "q": [7, 6], "k": "law", "s": "이 세계 사람들은 내일을 미리 그려 보는 힘을 가졌다."}, {"t": "연인", "a": "마르그리트 뒤라스", "g": "2", "n": 1, "q": [5], "k": "land", "s": "열다섯 살 반의 소녀 — 메콩강의 나룻배"}, {"t": "수학자의 생각법", "a": "마커스 드 사토이", "g": "2", "n": 1, "q": [6], "k": "law", "s": "보이지 않는 무늬를 찾는 사람이 길을 먼저 찾는다."}, {"t": "나는 왜 이런 사람이 됐을까?", "a": "네시베 카흐라만", "g": "2", "n": 1, "q": [1], "k": "law", "s": "오래된 상처가 지금의 모양을 만든다."}, {"t": "온전히 평등하고 지극히 차별적인", "a": "김원영", "g": "2", "n": 1, "q": [4], "k": "law", "s": "다른 몸은 다른 길을 연다."}, {"t": "소년이 온다", "a": "한강", "g": "2", "n": 1, "q": [4], "k": "land", "s": "동호 — 오월, 도청 앞의 소년"}, {"t": "AI 반도체 혁명", "a": "권순우 외", "g": "2", "n": 1, "q": [2, 3], "k": "law", "s": "생각하는 기계의 심장은 모래에서 나온다."}, {"t": "이토록 친밀한 배신자", "a": "마사 스타우트", "g": "2", "n": 2, "q": [5, 1], "k": "law", "s": "스무 명 중 한 명은 양심 없이 웃는다."}, {"t": "경험의 멸종", "a": "크리스틴 로젠", "g": "3", "n": 1, "q": [2, 0], "k": "law", "s": "화면으로만 본 땅은 점점 희미해진다."}, {"t": "편안함의 습격", "a": "마이클 이스터", "g": "3", "n": 1, "q": [0, 1], "k": "law", "s": "불편함을 견딘 사람만 강해진다."}, {"t": "스토너", "a": "존 윌리엄스", "g": "2", "n": 1, "q": [0], "k": "land", "s": "윌리엄 스토너 — 평생 한 대학, 한 사람의 생"}, {"t": "노인과 바다", "a": "어니스트 헤밍웨이", "g": "3", "n": 1, "q": [0], "k": "land", "s": "산티아고 — 84일 동안 한 마리도 못 잡은 노인"}, {"t": "순수의 시대", "a": "이디스 워튼", "g": "2", "n": 1, "q": [5, 4], "k": "land", "s": "뉴랜드 아처 — 닫힌 사교계와 엘렌 올렌스카"}, {"t": "넥서스", "a": "유발 하라리", "g": "2", "n": 1, "q": [2, 4], "k": "law", "s": "이야기를 퍼뜨리는 그물이 세계를 묶고, 때로 옭아맨다."}, {"t": "메소드", "a": "아이작 버틀러", "g": "2", "n": 1, "q": [1, 6], "k": "law", "s": "배우는 다른 사람의 삶 속으로 들어갔다 나올 수 있다."}, {"t": "지리의 힘 1", "a": "팀 마샬", "g": "2", "n": 1, "q": [7, 4], "k": "law", "s": "산맥과 강이 나라의 운명을 먼저 정한다."}, {"t": "맡겨진 소녀", "a": "클레어 키건", "g": "2", "n": 1, "q": [5], "k": "land", "s": "소녀 — 낯선 집에서 처음 받아 본 다정함"}, {"t": "그러나 꽃보다도 적게 산 나여", "a": "나희덕", "g": "3", "n": 1, "q": [0, 1], "k": "land", "s": "나희덕의 시 — 꽃보다 적게 산 마음"}, {"t": "배터리 전쟁", "a": "강희종", "g": "3", "n": 1, "q": [2, 3], "k": "law", "s": "힘을 담아 두는 그릇을 가진 나라가 강해진다."}, {"t": "신약의 전쟁", "a": "윤태진", "g": "3", "n": 1, "q": [7, 3], "k": "law", "s": "병을 고치는 물약 하나가 나라 사이의 싸움이 된다."}, {"t": "사이토 히토리의 어떻게 살 것인가", "a": "사이토 히토리", "g": "3", "n": 1, "q": [0, 3], "k": "law", "s": "좋은 말을 자주 하면 운이 따라온다."}, {"t": "질투라는 감옥", "a": "야마모토 케이", "g": "2", "n": 1, "q": [1, 4], "k": "law", "s": "질투는 보이지 않는 담장을 쌓는다."}, {"t": "공간혁명", "a": "세라 윌리엄스 골드헤이건", "g": "1", "n": 1, "q": [4, 2], "k": "law", "s": "공간의 모양이 그 안에 사는 마음을 바꾼다."}, {"t": "21세기를 위한 21가지 제언", "a": "유발 하라리", "g": "1", "n": 1, "q": [2, 4], "k": "law", "s": "가장 큰 질문은 '무엇이 진짜인가'이다."}, {"t": "불안한 사람들", "a": "프레드릭 배크만", "g": "1", "n": 1, "q": [5, 1], "k": "land", "s": "인질극에 갇힌 불안한 사람들"}, {"t": "공정하다는 착각", "a": "마이클 샌델", "g": "1", "n": 1, "q": [4, 0], "k": "law", "s": "높이 오른 자는 자기 힘으로만 올랐다고 믿기 쉽다."}, {"t": "소크라테스 익스프레스", "a": "에릭 와이너", "g": "1", "n": 1, "q": [0, 6], "k": "law", "s": "철학자들이 이 세계의 기차를 몰고 다닌다."}, {"t": "노르웨이의 숲", "a": "무라카미 하루키", "g": "1", "n": 1, "q": [6], "k": "land", "s": "와타나베와 나오코 — 깊은 숲속의 우물"}, {"t": "죄와 벌", "a": "표도르 도스토옙스키", "g": "3", "n": 1, "q": [4, 0], "k": "land", "s": "라스콜니코프 — 다락방에서 세운 이론, 도끼, 그리고 소냐"}, {"t": "파리대왕", "a": "윌리엄 골딩", "g": "2", "n": 1, "q": [4, 1], "k": "land", "s": "랠프와 잭 — 섬에 남은 아이들과 소라 껍데기"}, {"t": "타인에 대한 연민", "a": "마사 누스바움", "g": "2", "n": 1, "q": [4, 5], "k": "law", "s": "두려움이 커지면 연민이 작아진다."}, {"t": "호밀밭의 파수꾼", "a": "J.D. 샐린저", "g": "2", "n": 1, "q": [1, 0], "k": "land", "s": "홀든 콜필드 — 호밀밭 끝 절벽에서 아이들을 붙잡는 사람"}, {"t": "어서 오세요, 휴남동 서점입니다", "a": "황보름", "g": "2", "n": 1, "q": [0, 5], "k": "land", "s": "영주 — 동네 서점 하나를 연 사람"}, {"t": "오만과 편견", "a": "제인 오스틴", "g": "2", "n": 1, "q": [5], "k": "land", "s": "엘리자베스 베넷과 다아시 — 첫인상이라는 오만"}, {"t": "작별인사", "a": "김영하", "g": "2", "n": 1, "q": [2, 1], "k": "land", "s": "철이 — 자기가 기계인 줄 몰랐던 아이"}, {"t": "참을 수 없는 존재의 가벼움", "a": "밀란 쿤데라", "g": "2", "n": 1, "q": [5, 0], "k": "land", "s": "토마시와 테레자 — 한 번뿐이라서 가벼운 삶"}, {"t": "엔드 오브 타임", "a": "브라이언 그린", "g": "2", "n": 1, "q": [7, 0], "k": "law", "s": "이 세계도 언젠가 식는다. 그래서 지금 쓰는 이야기가 귀하다."}, {"t": "지구는 괜찮아, 우리가 문제지", "a": "곽재식", "g": "2", "n": 1, "q": [6], "k": "law", "s": "땅은 살아남는다. 위태로운 건 그 위의 주민이다."}, {"t": "나를 살리는 논어 한마디", "a": "판덩", "g": "2", "n": 2, "q": [0, 6], "k": "law", "s": "오래된 한마디가 오늘의 길을 비춘다."}, {"t": "예감은 틀리지 않는다", "a": "줄리언 반스", "g": "2", "n": 1, "q": [1, 5], "k": "land", "s": "토니 웹스터 — 고쳐 쓴 기억"}, {"t": "토지", "a": "박경리", "g": "2", "n": 5, "q": [4, 5], "k": "land", "s": "서희와 길상 — 평사리에서 간도까지, 다섯 부의 땅"}, {"t": "이처럼 사소한 것들", "a": "클레어 키건", "g": "2", "n": 1, "q": [4, 0], "k": "land", "s": "빌 펄롱 — 크리스마스 직전, 석탄 배달부의 선택"}, {"t": "프랭클린 익스프레스", "a": "에릭 와이너", "g": "2", "n": 1, "q": [0, 6], "k": "law", "s": "늦게 배우는 사람에게도 새 땅이 열린다."}, {"t": "동물농장", "a": "조지 오웰", "g": "2", "n": 1, "q": [4], "k": "land", "s": "나폴레옹과 복서 — 모든 동물은 평등하다, 어떤 동물은 더"}, {"t": "2022년 글로벌/우리나라 경제 트렌드는 어떻게 바뀔 것인가?", "a": "", "g": "2", "n": 5, "q": [3], "k": "law", "s": "해마다 바람의 방향이 바뀌고, 지난해의 지도는 낡는다."}, {"t": "시대예보:호명사회", "a": "송길영", "g": "2", "n": 1, "q": [4, 2], "k": "law", "s": "자기 이름으로 불리는 사람이 세계를 움직인다."}, {"t": "글쓰기의 힘", "a": "사이토 다카시", "g": "2", "n": 1, "q": [6], "k": "law", "s": "쓴 것만 이 세계에 남는다."}, {"t": "지금 당장 양자컴퓨터에 투자하라", "a": "권중현", "g": "2", "n": 1, "q": [3, 2], "k": "law", "s": "아직 오지 않은 기계에도 값이 매겨진다."}, {"t": "맥베스", "a": "윌리엄 셰익스피어", "g": "2", "n": 1, "q": [3, 1], "k": "land", "s": "맥베스 — 마녀 셋의 예언과 피 묻은 손"}, {"t": "초예측 트럼프 2.0 새로운 시대", "a": "유발 하라리, 폴 크루그먼, 짐 로저스, 폴 댄스, 이안 브레머 외 5명", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "강한 왕 하나가 바뀌면 모든 나라의 지도가 다시 그려진다."}, {"t": "공급망 붕괴의 시대", "a": "피터 S. 굿맨", "g": "2", "n": 1, "q": [3, 4], "k": "law", "s": "한 항구가 막히면 먼 마을의 식탁이 빈다."}, {"t": "미국주식 처음공부", "a": "수미숨(상의민), 애나정", "g": "2", "n": 1, "q": [3], "k": "law", "s": "가장 큰 바다 건너의 시장에도 처음 건너가는 날이 있다."}, {"t": "셰일 혁명과 미국 없는 세계", "a": "피터 자이한", "g": "2", "n": 1, "q": [4, 3], "k": "law", "s": "지키던 이가 떠나면 바닷길이 흔들린다."}, {"t": "카라마조프가의 형제들", "a": "표도르 도스토옙스키", "g": "2", "n": 1, "q": [0, 4], "k": "land", "s": "이반·드미트리·알료샤 — 신이 없다면 모든 것이 허용되는가"}, {"t": "굿 에너지", "a": "케이시 민스", "g": "2", "n": 1, "q": [7, 0], "k": "law", "s": "주민의 기운은 먹는 것에서 나온다."}, {"t": "환율의 대전환", "a": "오건영", "g": "2", "n": 1, "q": [3], "k": "law", "s": "대륙마다 돈이 따로 있고, 바다를 건너면 값이 바뀐다."}, {"t": "리더는 언제 차이를 만들어내는가", "a": "재레드 다이아몬드", "g": "3", "n": 1, "q": [4, 0], "k": "law", "s": "한 사람의 선택이 나라의 길을 바꾸는 때가 있다."}, {"t": "지리의 힘 2", "a": "팀 마샬", "g": "2", "n": 1, "q": [7, 4], "k": "law", "s": "해협 하나가 세계의 길목이 된다."}, {"t": "양자컴퓨터의 미래", "a": "미치오 카쿠", "g": "2", "n": 1, "q": [2, 7], "k": "law", "s": "동시에 여러 길을 가는 기계가 있다."}, {"t": "싯다르타", "a": "헤르만 헤세", "g": "2", "n": 1, "q": [0, 1], "k": "land", "s": "싯다르타 — 강물에게서 배운 사람"}, {"t": "가호", "a": "무라카미 하루키", "g": "3", "n": 1, "q": [1, 5], "k": "land", "s": "무라카미 하루키의 새 이야기"}, {"t": "다시, 책으로", "a": "매리언 울프", "g": "3", "n": 1, "q": [6, 2], "k": "law", "s": "깊이 읽는 뇌만 다른 땅으로 가는 다리를 놓는다."}]}, YEARS={"백년의 고독": 1967, "마침내 특이점이 시작된다": 2024, "어떻게 살아낼 것인가": 2025, "너무 시끄러운 고독": 1976, "변신": 1915, "인간 실격": 1948, "여름": 1917, "인피니트 게임": 2019, "철학은 어떻게 삶의 무기가 되는가": 2018, "뇌 과학의 모든 역사": 2020, "숫자에 속지 않고 숫자 읽는 법": 2020, "보이지 않는 중국": 2020, "부분과 전체": 1969, "자기 앞의 生": 1975, "당신의 삶에 명상이 필요할 때": 2011, "19호실로 가다": 1963, "멋진 신세계": 1932, "이기적 유전자": 1976, "인간이 만든 물질, 물질이 만든 인간": 2013, "브람스를 좋아하세요": 1959, "영화를 빨리 감기로 보는 사람들": 2022, "장하준의 경제학 강의": 2014, "물고기는 존재하지 않는다": 2020, "괴델, 에셔, 바흐": 1979, "책 읽어주는 남자": 1995, "스케일의 법칙": 2022, "위어드": 2020, "인비저블": 2014, "파우스트": 1808, "마케팅 설계자": 2015, "디컨슈머": 2021, "그리스인 조르바": 1946, "AI 2041": 2021, "그들의 생각을 바꾸는 방법": 2022, "브라질에 비가 내리면 스타벅스 주식을 사라": 2008, "이방인": 1942, "메트로폴리스": 2020, "세이노의 가르침": 2023, "욕망이라는 이름의 전차": 1947, "세컨드 브레인": 2022, "불확실성의 시대": 1977, "금각사": 1956, "도둑맞은 집중력": 2022, "이토록 굉장한 세계": 2022, "비열한 시장과 도마뱀의 뇌": 2005, "이반 일리치의 죽음": 1886, "시몽의 아빠": 1879, "살아 있는 것은 모두 게임을 한다": 2022, "노화의 재설계": 2022, "파이 이야기": 2001, "슈퍼사이트": 2021, "우리는 모든 것의 주인이기를 원한다": 2019, "프랑켄슈타인": 1818, "기계 속의 악마": 2019, "인간을 진화 시키는 AI": 2023, "아침 그리고 저녁": 2000, "시대예보:핵개인의 시대": 2023, "신은 주사위놀이를 하지 않는다": 2014, "일론 머스크": 2023, "지킬 앤 하이드": 1886, "히트 리프레시": 2017, "칠드런 액트": 2014, "코스모스": 1980, "보보스": 2000, "레버리지": 2014, "모순": 1998, "도리언 그레이의 초상": 1890, "군중의 망상": 2021, "열린사회와 그 적들": 1945, "빅 픽처": 1997, "두 도시 이야기": 1859, "링크": 2002, "불변의 법칙": 2023, "메리골드 마음사진관": 2023, "히든 포텐셜": 2023, "케이크와 맥주": 1930, "세포의 노래": 2022, "미움받을 용기": 2013, "위대한 개츠비": 1925, "진정성이라는 거짓말": 2010, "나 같은 기계들": 2019, "내 영혼이 따뜻했던 날들": 1976, "꿈의 인문학": 2019, "뉴맵": 2020, "시간의 지배자": 2022, "연인": 1984, "온전히 평등하고 지극히 차별적인": 2018, "소년이 온다": 2014, "이토록 친밀한 배신자": 2005, "경험의 멸종": 2025, "편안함의 습격": 2021, "스토너": 1965, "노인과 바다": 1952, "순수의 시대": 1920, "넥서스": 2024, "메소드": 2022, "지리의 힘 1": 2015, "맡겨진 소녀": 2010, "공간혁명": 2017, "21세기를 위한 21가지 제언": 2018, "불안한 사람들": 2019, "공정하다는 착각": 2020, "소크라테스 익스프레스": 2020, "노르웨이의 숲": 1987, "죄와 벌": 1866, "파리대왕": 1954, "타인에 대한 연민": 2018, "호밀밭의 파수꾼": 1951, "어서 오세요, 휴남동 서점입니다": 2022, "오만과 편견": 1813, "작별인사": 2022, "참을 수 없는 존재의 가벼움": 1984, "엔드 오브 타임": 2020, "나를 살리는 논어 한마디": -479, "예감은 틀리지 않는다": 2011, "토지": 1969, "이처럼 사소한 것들": 2021, "동물농장": 1945, "시대예보:호명사회": 2024, "맥베스": 1606, "초예측 트럼프 2.0 새로운 시대": 2024, "공급망 붕괴의 시대": 2022, "셰일 혁명과 미국 없는 세계": 2014, "카라마조프가의 형제들": 1880, "굿 에너지": 2024, "환율의 대전환": 2023, "지리의 힘 2": 2021, "양자컴퓨터의 미래": 2023, "싯다르타": 1922, "다시, 책으로": 2018, "윗집 부부": 2025, "가호": 2025, "우리는 여전히 삶을 사랑하는가": 1981}, CAT_TXT="# 내 별 띄우기 자동완성용 책 목록 (제목|저자|처음 나온 해). 세로가 아는 대로 넣은 첫 안.\n데미안|헤르만 헤세|1919\n수레바퀴 아래서|헤르만 헤세|1906\n유리알 유희|헤르만 헤세|1943\n황야의 이리|헤르만 헤세|1927\n지와 사랑|헤르만 헤세|1930\n해변의 카프카|무라카미 하루키|2002\n1Q84|무라카미 하루키|2009\n상실의 시대|무라카미 하루키|1987\n태엽 감는 새 연대기|무라카미 하루키|1994\n기사단장 죽이기|무라카미 하루키|2017\n도시와 그 불확실한 벽|무라카미 하루키|2023\n직업으로서의 소설가|무라카미 하루키|2015\n백치|표도르 도스토옙스키|1869\n지하로부터의 수기|표도르 도스토옙스키|1864\n악령|표도르 도스토옙스키|1872\n안나 카레니나|레프 톨스토이|1877\n전쟁과 평화|레프 톨스토이|1869\n사람은 무엇으로 사는가|레프 톨스토이|1885\n부활|레프 톨스토이|1899\n페스트|알베르 카뮈|1947\n시지프 신화|알베르 카뮈|1942\n1984|조지 오웰|1949\n나는 왜 쓰는가|조지 오웰|1946\n소송|프란츠 카프카|1925\n성|프란츠 카프카|1926\n채식주의자|한강|2007\n작별하지 않는다|한강|2021\n흰|한강|2016\n희랍어 시간|한강|2011\n사피엔스|유발 하라리|2011\n호모 데우스|유발 하라리|2015\n살인자의 기억법|김영하|2013\n빛의 제국|김영하|2006\n여행의 이유|김영하|2019\n농담|밀란 쿤데라|1967\n무기여 잘 있거라|어니스트 헤밍웨이|1929\n누구를 위하여 종은 울리나|어니스트 헤밍웨이|1940\n해는 또다시 떠오른다|어니스트 헤밍웨이|1926\n이선 프롬|이디스 워튼|1911\n푸른 들판을 걷다|클레어 키건|2007\n속죄|이언 매큐언|2001\n햄릿|윌리엄 셰익스피어|1601\n리어 왕|윌리엄 셰익스피어|1606\n오셀로|윌리엄 셰익스피어|1604\n로미오와 줄리엣|윌리엄 셰익스피어|1597\n한여름 밤의 꿈|윌리엄 셰익스피어|1596\n템페스트|윌리엄 셰익스피어|1611\n크리스마스 캐럴|찰스 디킨스|1843\n위대한 유산|찰스 디킨스|1861\n올리버 트위스트|찰스 디킨스|1838\n이성과 감성|제인 오스틴|1811\n에마|제인 오스틴|1815\n설득|제인 오스틴|1817\n새벽의 약속|로맹 가리|1960\n사양|다자이 오사무|1947\n달려라 메로스|다자이 오사무|1940\n가면의 고백|미시마 유키오|1949\n최후의 유혹|니코스 카잔차키스|1955\n콜레라 시대의 사랑|가브리엘 가르시아 마르케스|1985\n예고된 죽음의 연대기|가브리엘 가르시아 마르케스|1981\n눈먼 시계공|리처드 도킨스|1986\n만들어진 신|리처드 도킨스|2006\n창백한 푸른 점|칼 세이건|1994\n콘택트|칼 세이건|1985\n행복한 왕자|오스카 와일드|1888\n어떤 미소|프랑수아즈 사강|1956\n슬픔이여 안녕|프랑수아즈 사강|1954\n달과 6펜스|서머싯 몸|1919\n인간의 굴레에서|서머싯 몸|1915\n면도날|서머싯 몸|1944\n밤은 부드러워|F. 스콧 피츠제럴드|1934\n정의란 무엇인가|마이클 샌델|2009\n돈으로 살 수 없는 것들|마이클 샌델|2012\n사랑의 기술|에리히 프롬|1956\n자유로부터의 도피|에리히 프롬|1941\n소유냐 존재냐|에리히 프롬|1976\n기브 앤 테이크|애덤 그랜트|2013\n오리지널스|애덤 그랜트|2016\n싱크 어게인|애덤 그랜트|2021\n돈의 심리학|모건 하우절|2020\n김약국의 딸들|박경리|1962\n오베라는 남자|프레드릭 배크만|2012\n할머니가 미안하다고 전해 달라 했어요|프레드릭 배크만|2013\n보물섬|로버트 루이스 스티븐슨|1883\n목걸이|기 드 모파상|1884\n여자의 일생|기 드 모파상|1883\n셀프|얀 마텔|1996\n파리대왕|윌리엄 골딩|1954\n아홉 이야기|J.D. 샐린저|1953\n프래니와 주이|J.D. 샐린저|1961\n멋진 신세계 다시 찾아가기|올더스 헉슬리|1958\n지킬 박사와 하이드 씨|로버트 루이스 스티븐슨|1886\n걸리버 여행기|조너선 스위프트|1726\n로빈슨 크루소|대니얼 디포|1719\n돈키호테|미겔 데 세르반테스|1605\n신곡|단테 알리기에리|1320\n일리아스|호메로스|-750\n오디세이아|호메로스|-725\n길가메시 서사시|작자 미상|-2100\n국가|플라톤|-375\n소크라테스의 변명|플라톤|-399\n니코마코스 윤리학|아리스토텔레스|-340\n명상록|마르쿠스 아우렐리우스|180\n논어|공자|-479\n도덕경|노자|-400\n장자|장자|-300\n손자병법|손무|-500\n삼국지연의|나관중|1400\n홍길동전|허균|1612\n구운몽|김만중|1687\n열하일기|박지원|1780\n목민심서|정약용|1818\n군주론|니콜로 마키아벨리|1532\n유토피아|토머스 모어|1516\n에세|미셸 드 몽테뉴|1580\n팡세|블레즈 파스칼|1670\n방법서설|르네 데카르트|1637\n리바이어던|토머스 홉스|1651\n국부론|애덤 스미스|1776\n종의 기원|찰스 다윈|1859\n자본론|카를 마르크스|1867\n차라투스트라는 이렇게 말했다|프리드리히 니체|1883\n꿈의 해석|지그문트 프로이트|1899\n젊은 베르테르의 슬픔|요한 볼프강 폰 괴테|1774\n빌헬름 마이스터의 수업시대|요한 볼프강 폰 괴테|1796\n레 미제라블|빅토르 위고|1862\n노트르담 드 파리|빅토르 위고|1831\n적과 흑|스탕달|1830\n보바리 부인|귀스타브 플로베르|1857\n제인 에어|샬럿 브론테|1847\n폭풍의 언덕|에밀리 브론테|1847\n모비 딕|허먼 멜빌|1851\n주홍 글자|너새니얼 호손|1850\n월든|헨리 데이비드 소로|1854\n작은 아씨들|루이자 메이 올콧|1868\n이상한 나라의 앨리스|루이스 캐럴|1865\n톰 소여의 모험|마크 트웨인|1876\n허클베리 핀의 모험|마크 트웨인|1884\n인형의 집|헨리크 입센|1879\n벚꽃 동산|안톤 체호프|1904\n갈매기|안톤 체호프|1896\n어둠의 심연|조지프 콘래드|1899\n율리시스|제임스 조이스|1922\n더블린 사람들|제임스 조이스|1914\n잃어버린 시간을 찾아서|마르셀 프루스트|1913\n댈러웨이 부인|버지니아 울프|1925\n자기만의 방|버지니아 울프|1929\n등대로|버지니아 울프|1927\n마의 산|토마스 만|1924\n분노의 포도|존 스타인벡|1939\n에덴의 동쪽|존 스타인벡|1952\n생쥐와 인간|존 스타인벡|1937\n고도를 기다리며|사뮈엘 베케트|1953\n어린 왕자|앙투안 드 생텍쥐페리|1943\n야간 비행|앙투안 드 생텍쥐페리|1931\n앵무새 죽이기|하퍼 리|1960\n롤리타|블라디미르 나보코프|1955\n양철북|귄터 그라스|1959\n백 년 동안의 고독|가브리엘 가르시아 마르케스|1967\n장미의 이름|움베르토 에코|1980\n향수|파트리크 쥐스킨트|1985\n연금술사|파울로 코엘료|1988\n눈먼 자들의 도시|주제 사라마구|1995\n남아 있는 나날|가즈오 이시구로|1989\n나를 보내지 마|가즈오 이시구로|2005\n클라라와 태양|가즈오 이시구로|2021\n시녀 이야기|마거릿 애트우드|1985\n빌러비드|토니 모리슨|1987\n더 로드|코맥 매카시|2006\n인생|위화|1993\n허삼관 매혈기|위화|1996\n나미야 잡화점의 기적|히가시노 게이고|2012\n용의자 X의 헌신|히가시노 게이고|2005\n설국|가와바타 야스나리|1948\n마음|나쓰메 소세키|1914\n나는 고양이로소이다|나쓰메 소세키|1905\n라쇼몽|아쿠타가와 류노스케|1915\n키친|요시모토 바나나|1988\n반지의 제왕|J.R.R. 톨킨|1954\n호빗|J.R.R. 톨킨|1937\n나니아 연대기|C.S. 루이스|1950\n해리 포터와 마법사의 돌|J.K. 롤링|1997\n듄|프랭크 허버트|1965\n파운데이션|아이작 아시모프|1951\n화씨 451|레이 브래드버리|1953\n은하수를 여행하는 히치하이커를 위한 안내서|더글러스 애덤스|1979\n삼체|류츠신|2008\n당신 인생의 이야기|테드 창|2002\n프로젝트 헤일메리|앤디 위어|2021\n마션|앤디 위어|2011\n모모|미하엘 엔데|1973\n끝없는 이야기|미하엘 엔데|1979\n꽃들에게 희망을|트리나 폴러스|1972\n아낌없이 주는 나무|셸 실버스타인|1964\n갈매기의 꿈|리처드 바크|1970\n죽은 시인의 사회|N.H. 클라인바움|1989\n모리와 함께한 화요일|미치 앨봄|1997\n연을 쫓는 아이|할레드 호세이니|2003\n책도둑|마커스 주삭|2005\n미드나잇 라이브러리|매트 헤이그|2020\n가재가 노래하는 곳|델리아 오언스|2018\n우리가 빛의 속도로 갈 수 없다면|김초엽|2019\n지구 끝의 온실|김초엽|2021\n아몬드|손원평|2017\n82년생 김지영|조남주|2016\n달러구트 꿈 백화점|이미예|2020\n불편한 편의점|김호연|2021\n파친코|이민진|2017\n엄마를 부탁해|신경숙|2008\n칼의 노래|김훈|2001\n남한산성|김훈|2007\n태백산맥|조정래|1983\n아리랑|조정래|1994\n난장이가 쏘아올린 작은 공|조세희|1978\n무진기행|김승옥|1964\n광장|최인훈|1960\n소나기|황순원|1953\n운수 좋은 날|현진건|1924\n메밀꽃 필 무렵|이효석|1936\n날개|이상|1936\n진달래꽃|김소월|1925\n하늘과 바람과 별과 시|윤동주|1948\n님의 침묵|한용운|1926\n엄마의 말뚝|박완서|1980\n그 많던 싱아는 누가 다 먹었을까|박완서|1992\n나목|박완서|1970\n외딴방|신경숙|1995\n고래|천명관|2004\n7년의 밤|정유정|2011\n종의 기원(정유정)|정유정|2016\n총, 균, 쇠|재레드 다이아몬드|1997\n문명의 붕괴|재레드 다이아몬드|2005\n대변동|재레드 다이아몬드|2019\n침묵의 봄|레이첼 카슨|1962\n시간의 역사|스티븐 호킹|1988\n엘러건트 유니버스|브라이언 그린|1999\n생각에 관한 생각|대니얼 카너먼|2011\n넛지|리처드 탈러·캐스 선스타인|2008\n블랙 스완|나심 니콜라스 탈레브|2007\n안티프래질|나심 니콜라스 탈레브|2012\n팩트풀니스|한스 로슬링|2018\n아웃라이어|말콤 글래드웰|2008\n티핑 포인트|말콤 글래드웰|2000\n그릿|앤절라 더크워스|2016\n아주 작은 습관의 힘|제임스 클리어|2018\n몰입|미하이 칙센트미하이|1990\n죽음의 수용소에서|빅터 프랭클|1946\n인간의 조건|한나 아렌트|1958\n예루살렘의 아이히만|한나 아렌트|1963\n제2의 성|시몬 드 보부아르|1949\n감시와 처벌|미셸 푸코|1975\n정의론|존 롤스|1971\n21세기 자본|토마 피케티|2013\n부의 추월차선|엠제이 드마코|2011\n부자 아빠 가난한 아빠|로버트 기요사키|1997\n돈의 속성|김승호|2020\n역행자|자청|2022\n트렌드 코리아|김난도 외|2008\n지적 대화를 위한 넓고 얕은 지식|채사장|2014\n나의 문화유산답사기|유홍준|1993\n유혹하는 글쓰기|스티븐 킹|2000\n말의 품격|이기주|2017\n언어의 온도|이기주|2016\n나는 나로 살기로 했다|김수현|2016\n죽고 싶지만 떡볶이는 먹고 싶어|백세희|2018\n피프티 피플|정세랑|2016\n시선으로부터,|정세랑|2020\n보건교사 안은영|정세랑|2015\n소년이로|편혜영|2019\n홍학의 자리|정해연|2021\n", NOW=2026;
+const TOTAL=129864880, OURS=DATA.B.length, N_BG=220000;
+const R = age => 8*Math.sqrt(Math.max(.6,age));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const norm = s => String(s).replace(/\s|[,.·:'"!?()\-]/g,"").toLowerCase();
+const yrTxt = y => y<0?`기원전 ${-y}년`:`${y}년`;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function hash(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+
+// ---------- 장면 ----------
+const cv=document.getElementById('gl');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+renderer.setClearColor(0x03050b,1);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(50,1,.05,20000);
+let W,H,PIX;
+function fit(){W=innerWidth;H=innerHeight;PIX=Math.min(2,devicePixelRatio||1);renderer.setPixelRatio(PIX);renderer.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();}
+addEventListener('resize',fit); fit();
+
+const VS=`attribute float size; attribute vec3 color; attribute float tw; varying vec3 vC; varying float vA; uniform float uT; uniform float uPix;
+void main(){ vC=color; vec4 mv=modelViewMatrix*vec4(position,1.0);
+  float s=size*uPix*(260.0/-mv.z); vA=clamp(s,0.12,1.0)*(0.75+0.25*sin(uT*1.7+tw*6.283));
+  gl_PointSize=clamp(s,1.0,72.0); gl_Position=projectionMatrix*mv; }`;
+const VS_MINE=`attribute float size; attribute vec3 color; attribute float tw; varying vec3 vC; varying float vA; uniform float uT; uniform float uPix;
+void main(){ vC=color; vec4 mv=modelViewMatrix*vec4(position,1.0);
+  vA=0.8+0.2*sin(uT*2.4+tw*6.283);
+  gl_PointSize=clamp(size*uPix*(260.0/-mv.z),9.0*uPix,80.0)*(1.0+0.15*sin(uT*2.4+tw*6.283)); gl_Position=projectionMatrix*mv; }`;
+const FS=`varying vec3 vC; varying float vA;
+void main(){ float d=length(gl_PointCoord-0.5); float a=smoothstep(0.5,0.0,d); a=a*a; gl_FragColor=vec4(vC, a*vA); }`;
+function pointsMat(vs){return new THREE.ShaderMaterial({uniforms:{uT:{value:0},uPix:{value:PIX}},vertexShader:vs||VS,fragmentShader:FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});}
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+const ageColor=(age,out)=>{ const t=Math.min(1,Math.sqrt(age)/70); out[0]=0.72+0.28*t; out[1]=0.84-0.30*t; out[2]=1.0-0.62*t; return out; };
+function pointsGeo(list,fn){ const n=list.length,pos=new Float32Array(n*3),col=new Float32Array(n*3),siz=new Float32Array(n),tw=new Float32Array(n);
+  list.forEach((o,i)=>{const r=fn(o,i); pos.set(r.p,i*3); col.set(r.c,i*3); siz[i]=r.s; tw[i]=r.t;});
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.setAttribute('size',new THREE.BufferAttribute(siz,1)); g.setAttribute('tw',new THREE.BufferAttribute(tw,1)); return g; }
+
+// 인류가 펴낸 책
+const bgMat=pointsMat();
+{ const pos=new Float32Array(N_BG*3), col=new Float32Array(N_BG*3), siz=new Float32Array(N_BG), tw=new Float32Array(N_BG), c=[0,0,0];
+  for(let i=0;i<N_BG;i++){
+    const u=Math.random(); let age;
+    if(u<.70) age=-48*Math.log(Math.random()); else if(u<.95) age=Math.random()*Math.random()*900; else age=900+Math.random()*4300;
+    age=Math.min(age,5200);
+    const r=R(age)*(1+gauss()*.05), arm=Math.floor(Math.random()*4), halo=Math.random()<.22;
+    const th= halo? Math.random()*Math.PI*2 : arm*Math.PI/2 + r*0.0105 + gauss()*(.28+ r*.0004);
+    pos[i*3]=Math.cos(th)*r; pos[i*3+2]=Math.sin(th)*r; pos[i*3+1]=gauss()*(1.2+r*.035);
+    ageColor(age,c); const k=.55+Math.random()*.45; col[i*3]=c[0]*k; col[i*3+1]=c[1]*k; col[i*3+2]=c[2]*k;
+    siz[i]=.35+Math.random()*Math.random()*1.4; tw[i]=Math.random(); }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.setAttribute('size',new THREE.BufferAttribute(siz,1)); g.setAttribute('tw',new THREE.BufferAttribute(tw,1));
+  scene.add(new THREE.Points(g,bgMat)); }
+
+// 책미사 170권
+const OUR=DATA.B.map(b=>{ const y=YEARS[b.t]??2022, age=NOW-y, th=hash(b.t)*Math.PI*2, r=R(age)*(1+(hash(b.t+"r")-.5)*.08);
+  return {...b, y, age, p:new THREE.Vector3(Math.cos(th)*r,(hash(b.t+"y")-.5)*1.2,Math.sin(th)*r)}; });
+const ourMat=pointsMat();
+scene.add(new THREE.Points(pointsGeo(OUR,b=>({p:[b.p.x,b.p.y,b.p.z],c:b.k==="land"?[.98,.78,.45]:[.66,.84,.98],s:b.k==="land"?5.2+b.n*.8:3.6,t:hash(b.t)})),ourMat));
+const home=new THREE.Group(); scene.add(home);
+[].forEach(([r,c],i)=>{ const pts=[]; for(let k=0;k<=96;k++){const a=k/96*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*r,0,Math.sin(a)*r));}
+  home.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:c,transparent:true,opacity:i===2?.55:.28}))); });
+const RINGS=[[2000,"2000년"],[1900,"1900년"],[1800,"1800년"],[1450,"1450년 · 구텐베르크"],[1000,"1000년"],[1,"서기 1년"],[-1000,"기원전 1000년"],[-2100,"기원전 2100년"]];
+RINGS.forEach(([y])=>{ const r=R(NOW-y), pts=[]; for(let k=0;k<=256;k++){const a=k/256*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*r,0,Math.sin(a)*r));}
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xefe8d6,transparent:true,opacity:y===1450?.16:.07}))); });
+const FAR=[["길가메시 서사시",-2100],["일리아스",-750],["겐지 이야기",1008],["신곡",1320],["구텐베르크 성경",1455],["돈키호테",1605]]
+  .map(([t,y],i)=>{const r=R(NOW-y), th=.6+i*1.07; return {t,y,p:new THREE.Vector3(Math.cos(th)*r,0,Math.sin(th)*r)};});
+const farMat=pointsMat();
+scene.add(new THREE.Points(pointsGeo(FAR,(f,i)=>({p:[f.p.x,f.p.y,f.p.z],c:[1,.62,.42],s:9,t:i/6})),farMat));
+
+// 책미사의 별자리: 읽은 순서대로 잇는 선
+const ourOrder=[...OUR].reverse();
+const ourLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(ourOrder.map(b=>b.p)),new THREE.LineBasicMaterial({color:0xf0c674,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false}));
+ourLine.visible=false; scene.add(ourLine);
+
+// ---------- 책 목록(자동완성) ----------
+const CAT=CAT_TXT.split("\n").filter(l=>l&&!l.startsWith("#")).map(l=>{const [t,a,y]=l.split("|"); return {t,a,y:+y};});
+OUR.forEach(b=>{ if(!CAT.some(c=>norm(c.t)===norm(b.t))) CAT.push({t:b.t,a:b.a,y:b.y}); });
+FAR.forEach(f=>{ if(!CAT.some(c=>norm(c.t)===norm(f.t))) CAT.push({t:f.t,a:"",y:f.y}); });
+document.getElementById('dl').innerHTML=CAT.map(c=>`<option value="${esc(c.t)}">${esc(c.a)} · ${yrTxt(c.y)}</option>`).join("");
+const authorKey = a => norm(String(a).split(/[·,]/)[0]);
+
+// ---------- 내 별 ----------
+let MINE=[];
+try{ MINE=JSON.parse(localStorage.getItem('chaekmisa-mine-5')||"[]"); }catch(e){ MINE=[]; }
+const save=()=>{ try{ localStorage.setItem('chaekmisa-mine-5',JSON.stringify(MINE.map(({t,a,y,known,read})=>({t,a,y,known,read})))); }catch(e){} };
+const mineMat=pointsMat(VS_MINE); let minePts=null, mineLine=null, linkLines=null;
+const LB=document.getElementById('labels'), labels=[]; let mineLabels=[];
+function addLabel(text,p,cls,minD,maxD,arr){ const el=document.createElement('div'); el.className='lb '+cls; el.innerHTML=text; LB.appendChild(el); const L={el,p,minD,maxD}; (arr||labels).push(L); return L; }
+
+function place(m){
+  const ours=OUR.find(b=>norm(b.t)===norm(m.t));
+  if(ours){ m.p=ours.p.clone(); m.ours=ours; }
+  else { const age=NOW-m.y, th=hash(m.t)*Math.PI*2, r=R(age)*(1+(hash(m.t+"r")-.5)*.08); m.p=new THREE.Vector3(Math.cos(th)*r,(hash(m.t+"y")-.5)*1.2+1.5,Math.sin(th)*r); m.ours=null; }
+  // 책미사와 잇는 별: 같은 책 → 같은 작가 → 같은 시대
+  if(m.ours){ m.link=m.ours; m.why="same"; }
+  else { const ak=authorKey(m.a); const sa=ak&&OUR.filter(b=>authorKey(b.a)===ak);
+    if(sa&&sa.length){ m.link=sa.sort((x,y)=>Math.abs(x.y-m.y)-Math.abs(y.y-m.y))[0]; m.why="author"; }
+    else { m.link=[...OUR].sort((x,y)=>Math.abs(x.y-m.y)-Math.abs(y.y-m.y))[0]; m.why="era"; } }
+}
+function rebuildMine(){
+  [minePts,mineLine,linkLines].forEach(o=>{ if(o){scene.remove(o); o.geometry.dispose();} });
+  mineLabels.forEach(L=>L.el.remove()); mineLabels=[];
+  minePts=mineLine=linkLines=null;
+  if(MINE.length){
+    minePts=new THREE.Points(pointsGeo(MINE,(m,i)=>({p:[m.p.x,m.p.y,m.p.z],c:m.read===false?[.42,.44,.52]:(m.ours?[1,.92,.78]:[.96,.97,1]),s:m.read===false?5:11,t:hash(m.t)})),mineMat); scene.add(minePts);
+    const seg=[]; MINE.forEach(m=>{ seg.push(m.p, m.link.p); });
+    linkLines=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg),new THREE.LineDashedMaterial({color:0xc7a0ff,dashSize:1.2,gapSize:1.2,transparent:true,opacity:.75,depthWrite:false}));
+    linkLines.computeLineDistances(); scene.add(linkLines);
+    const RD=MINE.filter(m=>m.read!==false); if(RD.length>1){ mineLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(RD.map(m=>m.p)),new THREE.LineBasicMaterial({color:0xf4f6ff,transparent:true,opacity:.85,depthWrite:false})); scene.add(mineLine); }
+    MINE.forEach(m=>addLabel(`${esc(m.t)}<small>${m.read===false?'읽고 싶은 별 · ':''}${m.why==="same"?"책미사도 읽은 별":m.why==="author"?"같은 작가 · "+esc(m.link.t):"같은 시대 · "+esc(m.link.t)}</small>`,m.p,'mine',0,99999,mineLabels));
+    if(RD.length>=3){ const c=new THREE.Vector3(); RD.forEach(m=>c.add(m.p)); c.divideScalar(RD.length); c.y+=4;
+      addLabel(`『${esc(RD[0].t)}』자리`,c,'cname',0,99999,mineLabels); }
+  }
+  // 목록
+  const mine=document.getElementById('mine');
+  mine.innerHTML=MINE.map((m,i)=>`<button data-i="${i}" class="${m.read===false?'wish':''}" title="${m.read===false?'읽고 나서 누르면 별이 켜집니다':'이 별로 가기'}">${m.read===false?'☆ ':''}${esc(m.t)}<span>${m.read===false?'읽고 싶은 별':yrTxt(m.y)}</span></button>`).join("");
+  mine.querySelectorAll('button').forEach(b=>b.onclick=()=>chipClick(+b.dataset.i));
+  document.getElementById('clr').hidden=!MINE.length;
+  document.getElementById('meH').textContent = MINE.length ? (MINE.length>=3?`당신의 별자리 · 『${MINE[0].t}』자리`:"한 권 더 띄우면 선이 이어집니다") : "당신이 읽은 책 한 권은?";
+}
+function describe(m){
+  const ago=NOW-m.y;
+  let s=`<b>${esc(m.t)}</b>의 빛은 ${yrTxt(m.y)}에 출발해 <b>${ago.toLocaleString()}년</b>을 건너 당신에게 닿았습니다. `;
+  if(m.why==="same") s+=`<em>책미사도 이 별을 읽었습니다.</em> 같은 별을 본 사람들입니다.`;
+  else if(m.why==="author") s+=`책미사의 <em>『${esc(m.link.t)}』</em>와 같은 작가(${esc(m.a)})로 이어져 있습니다.`;
+  else s+=`같은 시대에 빛난 책미사의 별은 <em>『${esc(m.link.t)}』</em>(${yrTxt(m.link.y)})입니다.`;
+  if(!m.known) s+=` <span style="color:var(--ink-faint)">아직 지도에 없는 별이라 지금 이 시대 근처에 띄웠습니다.</span>`;
+  if(MINE.length>=3){ const ys=MINE.map(x=>x.y), span=Math.max(...ys)-Math.min(...ys); s+=`<br><br>당신의 별자리가 생겼습니다. 별 ${MINE.length}개, <b>${span.toLocaleString()}년</b>에 걸쳐 있습니다.`; }
+  return s;
+}
+let WISH=false; const READ=()=>MINE.filter(m=>m.read!==false);
+const msg=document.getElementById('msg');
+document.getElementById('f').addEventListener('submit',e=>{
+  e.preventDefault(); const inp=document.getElementById('q'); const v=inp.value.trim(); if(!v) return;
+  const ex=MINE.find(m=>norm(m.t)===norm(v)); if(ex){ if(ex.read===false && !WISH){ ex.read=true; save(); rebuildMine(); msg.innerHTML=`<b>${esc(ex.t)}</b>의 별이 환하게 켜졌습니다.<br>`+describe(ex); } else msg.innerHTML=`<b>${esc(v)}</b>는 이미 당신의 별입니다.`; WISH=false; inp.value=''; flyTo(ex); return; }
+  const c=CAT.find(c=>norm(c.t)===norm(v)) || CAT.find(c=>norm(c.t).includes(norm(v))&&norm(v).length>=2);
+  const m = c ? {t:c.t,a:c.a,y:c.y,known:true,read:!WISH} : {t:v,a:"",y:NOW-1-Math.floor(hash(v)*6),known:false,read:!WISH}; WISH=false;
+  place(m); MINE.push(m); save(); rebuildMine(); msg.innerHTML=describe(m); inp.value="";
+  document.getElementById('me').classList.remove('call'); flyTo(m);
+  capSet(m.read===false?`<span class="me">${esc(m.t)}</span>, 읽고 싶은 별`:READ().length>=3?`<span class="me">『${esc(READ()[0].t)}』자리</span>가 떴습니다`:`<span class="me">${esc(m.t)}</span>, 당신의 별`, "");
+});
+document.getElementById('clr').onclick=()=>{ MINE=[]; save(); rebuildMine(); msg.textContent="책 이름을 적으면 그 책이 처음 나온 해의 자리에서 당신의 별이 켜집니다."; };
+document.getElementById('ourC').onclick=e=>{ ourLine.visible=!ourLine.visible; e.currentTarget.setAttribute('aria-pressed',String(ourLine.visible));
+  if(ourLine.visible){ stopJourney(); tDist=1150; capSet(`책미사의 별자리`,`함께 읽은 ${OURS}권을 읽은 순서대로 이었습니다. 맥베스에서 가호까지, 논어에서 경험의 멸종까지. 4천 년 너비를 오가는 한 줄입니다.`);} };
+
+// ---------- 이름표 ----------
+addLabel('책미사 · 지금',new THREE.Vector3(0,0,0),'home',0,900);
+const FEAT=["맥베스","파우스트","오만과 편견","프랑켄슈타인","죄와 벌","카라마조프가의 형제들","위대한 개츠비","백년의 고독","토지","노인과 바다","이기적 유전자","코스모스","나를 살리는 논어 한마디","두 도시 이야기","변신","가호"];
+OUR.filter(b=>FEAT.includes(b.t)).forEach(b=>addLabel(b.t==="나를 살리는 논어 한마디"?"논어(원전)":b.t,b.p,'book',0,b.age>300?1400:260));
+RINGS.forEach(([y,l])=>{const r=R(NOW-y); addLabel(l,new THREE.Vector3(r*Math.cos(-.35),0,r*Math.sin(-.35)),'ring',r*1.2,r*9);});
+FAR.forEach(f=>addLabel(`${f.t}<small>${yrTxt(f.y)} · 아직 가 보지 않은 별</small>`,f.p,'far',180,5000));
+
+// ---------- 카메라·여정 ----------
+let dist=52, azim=.4, tilt=1.02, tDist=dist, focus=new THREE.Vector3(), tFocus=new THREE.Vector3();
+const STOPS=[
+ {k:"home",l:"책미사",d:52,h:"여기가 책미사입니다",p:"한가운데의 빛 170개가 함께 읽은 책입니다. 금빛은 소설(땅과 인물), 푸른빛은 비소설(세계의 법칙)."},
+ {k:"c20",l:"100년",d:190,h:"별빛은 과거에서 옵니다. 책도 그렇습니다",p:"오래된 책일수록 멀리 있습니다. 위대한 개츠비의 빛은 101년, 변신의 빛은 111년을 건너왔습니다."},
+ {k:"c19",l:"400년",d:390,h:"맥베스의 빛은 420년을 걸려 왔습니다",p:"오만과 편견 1813년, 프랑켄슈타인 1818년, 죄와 벌 1866년. 우리가 펼친 책 몇 권은 아주 먼 별입니다."},
+ {k:"gut",l:"구텐베르크",d:560,h:"1450년, 이 고리 바깥의 책은 모두 손으로 베꼈습니다",p:"구텐베르크 성경 이후로 별이 폭발하듯 늘어납니다. 고리 안쪽이 이렇게 밝은 이유입니다."},
+ {k:"anc",l:"4천 년",d:1150,h:"가장 먼 빛, 길가메시 서사시",p:"약 4천 년 전 사람이 처음 이야기를 점토판에 새겼습니다. 공자의 말씀은 2,500년을 건너와 우리 모임에 닿았습니다."},
+ {k:"all",l:"전부",d:1750,h:"",p:""},
+];
+function allCaption(){ const pct=(OURS/TOTAL*100).toFixed(5);
+  return {h:`인류가 펴낸 책 약 <span class="big">1억 3천만</span> 권`,
+    p:`2010년 구글이 헤아린 수입니다. 점 하나는 책 약 ${Math.round(TOTAL/N_BG).toLocaleString()}권. 우리가 함께 읽은 ${OURS}권은 그중 <span class="big">${pct}%</span>입니다. 그럼, 당신이 읽은 책은 이 우주 어디쯤 있을까요?`}; }
+const stopsEl=document.getElementById('stops');
+const playBtn=document.createElement('button'); playBtn.id='play'; playBtn.textContent='▶ 멀어지기'; playBtn.onclick=()=>journey(); stopsEl.appendChild(playBtn);
+STOPS.forEach((s,i)=>{const b=document.createElement('button'); b.textContent=s.l; b.dataset.i=i; b.onclick=()=>{stopJourney(); go(i);}; stopsEl.appendChild(b);});
+let cur=-1, jt=null;
+function capSet(h,p){ const cap=document.getElementById('cap'); cap.style.opacity=0;
+  setTimeout(()=>{document.getElementById('capH').innerHTML=h; document.getElementById('capP').innerHTML=p; cap.style.opacity=1;},reduce?0:350); }
+function caption(i){ const s=STOPS[i], c=s.k==="all"?allCaption():s; capSet(c.h,c.p);
+  stopsEl.querySelectorAll('button[data-i]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===i)));
+  if(s.k==="all" && !MINE.length) document.getElementById('me').classList.add('call'); }
+function go(i){ cur=i; tDist=STOPS[i].d; tFocus.set(0,0,0); caption(i); }
+function journey(){ stopJourney(); let i=0; go(0); playBtn.textContent='■ 멈추기'; playBtn.onclick=()=>stopJourney();
+  jt=setInterval(()=>{ i++; if(i>=STOPS.length){stopJourney();return;} go(i); }, reduce?2500:5200); }
+function stopJourney(){ if(jt){clearInterval(jt);jt=null;} playBtn.textContent='▶ 멀어지기'; playBtn.onclick=()=>journey(); }
+function flyTo(m){ stopJourney(); cur=-2; const r=m.p.length(); tFocus.copy(m.p).multiplyScalar(.5); tDist=Math.min(1750,Math.max(60,r*1.9)); }
+function nearestStop(){ let b=0; STOPS.forEach((s,i)=>{ if(Math.abs(Math.log(s.d/dist))<Math.abs(Math.log(STOPS[b].d/dist))) b=i; }); return b; }
+
+const ptrs=new Map(); let moved=0, pinch=null;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;cv.style.cursor='grabbing';
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);}});
+cv.addEventListener('pointermove',e=>{
+  if(!ptrs.has(e.pointerId)){ hoverAt(e.clientX,e.clientY); return; }
+  const p=ptrs.get(e.pointerId),dx=e.clientX-p.x,dy=e.clientY-p.y; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y); if(pinch){zoomBy(pinch/d);} pinch=d; moved+=10; return;}
+  moved+=Math.abs(dx)+Math.abs(dy); azim-=dx*.005; tilt=Math.min(1.45,Math.max(.25,tilt-dy*.004)); });
+cv.addEventListener('pointerup',e=>{ if(ptrs.size===1&&moved<6) clickAt(e.clientX,e.clientY); ptrs.delete(e.pointerId); if(ptrs.size<2)pinch=null; cv.style.cursor='grab'; });
+cv.addEventListener('pointercancel',e=>ptrs.delete(e.pointerId));
+cv.addEventListener('wheel',e=>{e.preventDefault(); zoomBy(e.deltaY>0?1.12:1/1.12);},{passive:false});
+function zoomBy(f){ stopJourney(); tDist=Math.min(2600,Math.max(14,tDist*f)); }
+
+// ---------- 고르기 ----------
+const tmp=new THREE.Vector3();
+function scr(p){ tmp.copy(p).project(cam); return {x:(tmp.x+1)/2*W, y:(1-tmp.y)/2*H, ok:tmp.z<1}; }
+function nearest(x,y){ let best=null,bd=16; [...MINE.map(m=>({...m,mine:true})),...OUR].forEach(b=>{const s=scr(b.p); if(!s.ok)return; const d=Math.hypot(s.x-x,s.y-y); if(d<bd){bd=d;best=b;}}); return best; }
+const tip=document.getElementById('tip'), card=document.getElementById('card');
+function hoverAt(x,y){ const b=nearest(x,y); if(b){tip.hidden=false; tip.textContent=`${b.mine?"내 별 · ":""}${b.t} · ${yrTxt(b.y)}`; tip.style.left=(x+12)+'px'; tip.style.top=(y+12)+'px';} else tip.hidden=true; }
+function clickAt(x,y){ const b=nearest(x,y); if(!b){card.hidden=true;return;}
+  if(b.mine){ msg.innerHTML=describe(MINE.find(m=>m.t===b.t)); card.hidden=true; return; }
+  const isNon=b.t==="나를 살리는 논어 한마디";
+  card.innerHTML=`<button class="x" aria-label="닫기">×</button><div class="eb">책미사 · ${b.k==="land"?"소설 · 땅":"비소설 · 법칙"}</div>
+   <h2>${esc(b.t)}</h2><div class="au">${esc(b.a||"")}</div>
+   <div class="light">이 빛은 ${isNon?"논어가 쓰인 ":""}<b>${yrTxt(b.y)}</b>에 출발해 <b>${b.age.toLocaleString()}년</b>을 건너 책미사에 닿았습니다.</div>
+   <div class="line">${esc(b.s||"")}</div>`;
+  card.hidden=false; card.querySelector('.x').onclick=()=>card.hidden=true; }
+
+// ---------- 그리기 ----------
+const clock=document.getElementById('clock');
+const yearsVisible=()=>Math.pow(dist*Math.tan(cam.fov*Math.PI/360)*.9/8,2);
+const fmtAge=a=> a<1000?`지난 ${Math.round(a/10)*10||10}년`:`지난 ${(a/1000).toFixed(1).replace('.0','')}천 년`;
+let t0=performance.now();
+function frame(now){
+  const t=(now-t0)/1000, k=reduce?1:.035;
+  dist += (tDist-dist)*k; focus.lerp(tFocus,k);
+  if(!ptrs.size && !reduce) azim += .00045;
+  cam.position.set(focus.x+Math.sin(tilt)*Math.cos(azim)*dist, focus.y+Math.cos(tilt)*dist, focus.z+Math.sin(tilt)*Math.sin(azim)*dist);
+  cam.lookAt(focus);
+  [bgMat,ourMat,farMat,mineMat].forEach(m=>{m.uniforms.uT.value=reduce?0:t; m.uniforms.uPix.value=PIX;});
+  if(linkLines) linkLines.material.dashSize=1.2+.6*Math.sin(t*2);
+  home.rotation.y = reduce?0:t*.05;
+  renderer.render(scene,cam);
+  [...labels,...mineLabels].forEach(L=>{ if(dist<L.minD||dist>L.maxD){L.el.style.display='none';return;} const s=scr(L.p);
+    if(!s.ok||s.x<-50||s.x>W+50||s.y<-20||s.y>H+20){L.el.style.display='none';return;}
+    L.el.style.display='block'; L.el.style.left=s.x+'px'; L.el.style.top=s.y+'px'; });
+  clock.textContent=fmtAge(Math.min(5200,yearsVisible()));
+  if(!jt && cur!==-2){ const n=nearestStop(); if(n!==cur && Math.abs(dist-tDist)<tDist*.05){ cur=n; caption(n);} }
+  requestAnimationFrame(frame);
+}
+MINE.forEach(place); rebuildMine();
+go(0); requestAnimationFrame(frame);
+if(!reduce && !MINE.length) setTimeout(()=>{ if(cur===0 && !jt) journey(); }, 2600);
+addEventListener('keydown',e=>{ if(e.key==="Escape") card.hidden=true; });
+
+// ---------- 견본 5: 세계가 깨어나는 순간 ----------
+const WKEY='chaekmisa-world';
+let WORLD=null; try{ WORLD=JSON.parse(localStorage.getItem(WKEY)||'null'); }catch(e){ WORLD=null; }
+const saveW=()=>{ try{ localStorage.setItem(WKEY,JSON.stringify(WORLD)); }catch(e){} };
+let SAMPLE=null, busy=false, ctl=null;
+const CAMPS=["어떻게 살아야 하는가","나는 누구인가","인간과 기술의 미래","돈과 욕망","사회와 정의","사랑과 관계","생각하는 법","세계와 과학"];
+const NEN="강화계(깊이 파고드는 독자), 방출계(말로 풀어내는 독자), 변화계(남과 다르게 읽는 독자), 조작계(질문을 만드는 독자), 구현계(글로 남기는 독자), 특질계(아무도 못 본 연결을 찾는 독자)";
+
+// 예시 세계: Claude를 쓸 수 없는 화면에서 보여 준다
+const EXAMPLE={example:true,books:["데미안","어린 왕자","사피엔스"],name:"알과 장미의 군도",
+ lands:[{book:"데미안",name:"알의 섬",desc:"섬 한가운데 금 간 거대한 알이 있다. 섬사람들은 저마다 깨고 나와야 할 알을 하나씩 품고 산다."},
+        {book:"어린 왕자",name:"B612",desc:"한 바퀴 걷는 데 마흔네 걸음. 화산 셋과 장미 한 송이가 있는 아주 작은 별."}],
+ folk:[{book:"데미안",name:"싱클레어",desc:"두 세계 사이에서 흔들리는 소년. 이마에 표식이 있는 친구를 찾고 있다."},
+       {book:"어린 왕자",name:"어린 왕자",desc:"장미를 두고 떠나온 아이. 어른들의 질문 대신 자기 질문을 들고 다닌다."}],
+ laws:[{book:"사피엔스",law:"이 세계 사람들은 함께 믿는 이야기로 뭉친다. 아무도 믿지 않게 된 이야기는 그날 밤 사라진다."}],
+ camp:"나는 누구인가",campWhy:"세 별 모두 '나는 어디서 왔고 무엇이 되려 하는가'를 묻습니다.",
+ nen:"특질계",nenWhy:"소설 두 권과 인류사 한 권을 한 하늘에 걸었습니다. 멀리 떨어진 것을 잇는 독자입니다.",
+ chapters:[{t:"제1장 · 깨어남",x:"알의 섬 바닷가에 작은 별 하나가 떨어졌다. 모래 위에 앉아 있던 아이가 고개를 들었다.\n\"넌 왜 장미 하나를 위해 별을 떠나왔어?\" 싱클레어가 물었다.\n어린 왕자는 대답 대신 되물었다. \"넌 왜 알을 깨고 나오려고 해?\"\n둘은 오래 말이 없었다. 그날 밤 하늘의 법칙이 처음으로 빛났다. 두 사람이 같은 이야기를 믿기 시작한 것이다. 이 세계에서는 그것만으로 새 길 하나가 생긴다."}],
+ stones:[],ask:{who:"어린 왕자",q:"네가 길들인 것, 그래서 책임져야 하는 것은 뭐야?"},
+ next:{title:"위대한 개츠비",author:"F. 스콧 피츠제럴드",why:"이 세계엔 아직 '돈과 욕망'의 땅이 없습니다. 만 건너편 초록 불빛이 기다립니다."}};
+
+
+const sub=document.querySelector('#me .sub');
+const wakeBtn=document.createElement('button'); wakeBtn.id='wake'; wakeBtn.hidden=true; sub.prepend(wakeBtn);
+const exBtn=document.createElement('button'); exBtn.textContent='예시 세계 보기'; sub.appendChild(exBtn);
+exBtn.onclick=()=>openWorld(EXAMPLE);
+const newBooks=()=>WORLD&&!WORLD.example ? READ().filter(m=>!WORLD.books.includes(m.t)) : [];
+function refreshWake(){
+  const n=READ().length; wakeBtn.hidden = n<3 && !(WORLD&&!WORLD.example);
+  const nb=newBooks().length;
+  wakeBtn.textContent = WORLD&&!WORLD.example ? (nb?`새 별 ${nb}개를 세계에 들이기`:`내 세계로 내려가기 · ${WORLD.name}`) : '✦ 내 세계 깨우기';
+  wakeBtn.classList.toggle('glow', n>=3 && (!WORLD||WORLD.example||nb>0));
+}
+const _rebuild=rebuildMine; rebuildMine=function(){ _rebuild(); try{refreshWake();}catch(e){} };
+wakeBtn.onclick=()=>{
+  if(WORLD&&!WORLD.example){ if(newBooks().length) grow(); else openWorld(WORLD); return; }
+  build();
+};
+
+const ww=document.getElementById('world'), wrap=document.getElementById('wwrap');
+function openWorld(w){ ww.hidden=false; stopJourney(); render(w); ww.scrollTop=0; }
+function closeWorld(){ if(ctl) ctl.abort(); ww.hidden=true; }
+function waiting(line,sub){ ww.hidden=false; wrap.innerHTML=`<div class="wait"><div class="orb"></div><p>${line}</p><small>${sub||""}</small>
+  <div class="acts" style="justify-content:center"><button id="wStop">멈추기</button></div></div>`;
+  document.getElementById('wStop').onclick=()=>{ if(ctl) ctl.abort(); closeWorld(); }; }
+function errCopy(e){ const c=e&&e.code;
+  if(c==="not_granted"||c==="sampling_disabled"||c==="not_declared"||c==="capability_disabled") return "이 화면에서는 Claude가 세계를 쓸 수 없어 예시 세계를 보여 드려요.";
+  if(c==="rate_limited") return "잠깐 너무 많이 불렀어요. 조금 뒤에 다시 눌러 주세요.";
+  if(c==="cancelled") return "";
+  if(c==="refused") return "이 책들로는 장면을 쓰지 못했어요. 별 하나를 바꿔 보세요.";
+  return "세계가 깨어나다 멈췄어요. 다시 눌러 주세요."; }
+const books=list=>list.map(m=>({title:m.t,author:m.a||"",year:m.y,"책미사도_읽음":!!m.ours}));
+
+const RULES=`너는 '책미사 너머'의 이야기꾼이다. 한 독자가 읽은 책들로 그 사람만의 세계를 깨운다.
+- 소설·시·희곡은 '땅'(그 책의 대표 장소를 세계의 땅으로)과 '주민'(그 책의 실제 등장인물)이 된다.
+- 비소설은 이 세계의 '법칙' 한 줄이 된다. 그 책의 핵심 생각을 세계의 물리 법칙처럼, 한 문장으로.
+- 책 내용을 잘 모르면 인물·줄거리를 지어내지 말고, 제목에서 받은 인상으로 땅이나 법칙 하나만 만든다.
+- 한국어, 따뜻하고 단정한 소설체. 과장된 수사와 감탄은 피한다.`;
+const ASKRULE=`'ask'는 주민 한 명이 독자에게 직접 묻는 질문 한 문장이다. 그 주민의 책에서 나온 물음이되, 독자 자신의 삶에 대해 묻는다.`;
+
+async function build(){
+  if(busy) return;
+  if(!SAMPLE){ openWorld(EXAMPLE); wrap.insertAdjacentHTML('afterbegin',`<p class="err">세계 깨우기는 곧 열립니다. 이야기꾼을 준비하고 있어요. 그동안 예시 세계를 둘러보세요. 당신이 띄운 별은 이 브라우저에 그대로 남아 있습니다.</p>`); return; }
+  busy=true; ctl=new AbortController();
+  waiting("별이 땅으로 내려앉고 있습니다", `${READ().map(m=>m.t).join(" · ")}`);
+  const prompt=`${RULES}
+
+여덟 진영(질문): ${CAMPS.join(", ")}
+넨 계열(읽는 힘): ${NEN}
+
+독자의 별(읽은 책):
+${JSON.stringify(books(READ()),null,0)}
+
+할 일:
+1. 세계 이름 하나(짧게, 이 책들이 함께 만든 풍경).
+2. lands, folk, laws를 만든다. 책 하나가 여러 개를 낳아도 되고, 하나도 안 낳아도 된다. desc는 한두 문장.
+3. camp: 이 별자리가 가장 기운 진영 하나(위 여덟 중 정확히 하나), campWhy 한 문장.
+4. nen: 위 여섯 계열 중 하나(이름만, 예: "변화계"), nenWhy 한 문장.
+5. scene: 제1장. 주민들이 이 세계의 땅에서 만나고 법칙이 작동하는 장면. 500~700자, 과거형, 대사 포함, 문단은 줄바꿈으로.
+6. ${ASKRULE}
+7. next: 이 세계에 아직 없는 진영 쪽의 실제로 있는 책 한 권(title, author, why 한 문장).
+
+JSON 하나만 답한다:
+{"name":"","lands":[{"book":"","name":"","desc":""}],"folk":[{"book":"","name":"","desc":""}],"laws":[{"book":"","law":""}],"camp":"","campWhy":"","nen":"","nenWhy":"","scene":"","ask":{"who":"","q":""},"next":{"title":"","author":"","why":""}}`;
+  try{
+    const r=await SAMPLE.json(prompt,{signal:ctl.signal});
+    WORLD={created:new Date().toISOString().slice(0,10),books:READ().map(m=>m.t),name:String(r.name||"이름 없는 세계"),lands:arr(r.lands),folk:arr(r.folk),laws:arr(r.laws),
+      camp:String(r.camp||""),campWhy:String(r.campWhy||""),nen:String(r.nen||""),nenWhy:String(r.nenWhy||""),
+      chapters:[{t:"제1장 · 깨어남",x:String(r.scene||"")}],stones:[],ask:r.ask||null,next:r.next||null};
+    saveW(); refreshWake(); render(WORLD);
+  }catch(e){ const m=errCopy(e); if(m){ openWorld(EXAMPLE); wrap.insertAdjacentHTML('afterbegin',`<p class="err">${m}</p>`);} else closeWorld(); }
+  finally{ busy=false; }
+}
+const arr=a=>Array.isArray(a)?a.filter(x=>x&&typeof x==="object"):[];
+
+function worldBrief(w){ return JSON.stringify({name:w.name,lands:w.lands,folk:w.folk,laws:w.laws}); }
+function lastChapters(w){ return w.chapters.slice(-2).map(c=>`[${c.t}]\n${c.x}`).join("\n\n"); }
+
+async function nextChapter(answer){
+  if(busy||!WORLD||WORLD.example) return;
+  if(!SAMPLE){ return; }
+  busy=true; ctl=new AbortController();
+  if(WORLD.ask){ WORLD.stones.push({who:WORLD.ask.who,q:WORLD.ask.q,a:answer||""}); }
+  const no=WORLD.chapters.length+1;
+  WORLD.chapters.push({t:`제${no}장`,x:""}); render(WORLD,true);
+  const box=document.getElementById('live');
+  const prompt=`${RULES}
+
+이 독자의 세계: ${worldBrief(WORLD)}
+
+지난 장:
+${lastChapters({chapters:WORLD.chapters.slice(0,-1)})}
+
+방금 ${WORLD.ask?WORLD.ask.who:"주민"}이(가) 독자에게 물었다: "${WORLD.ask?WORLD.ask.q:""}"
+독자의 답: "${answer||"(답하지 않고 고개만 끄덕였다)"}"
+
+할 일: 제${no}장을 쓴다. 400~600자, 과거형, 대사 포함, 문단은 줄바꿈으로. 독자의 답이 이 세계 안에서 비석·소문·사건 같은 무언가로 남아 이야기를 움직이게 하라(답을 그대로 인용해도 된다). 주민과 법칙은 위 세계 것만 쓴다.
+첫 줄에 장 제목만 쓴다(예: "제${no}장 · 비석이 선 날"). 그다음 줄부터 본문.
+맨 마지막 줄은 정확히 이 형식: 질문|주민 이름|독자에게 묻는 질문 한 문장
+${ASKRULE}`;
+  try{
+    const {text}=await SAMPLE(prompt,{signal:ctl.signal,cache:false,onText:({text})=>{ if(box) box.innerHTML=paras(stripAsk(text).body); }});
+    const {title,body,ask}=parseChapter(text,no);
+    WORLD.chapters[WORLD.chapters.length-1]={t:title,x:body}; WORLD.ask=ask; saveW(); render(WORLD);
+    document.getElementById('ch'+(WORLD.chapters.length-1))?.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  }catch(e){
+    WORLD.chapters.pop(); if(WORLD.ask) WORLD.stones.pop(); render(WORLD);
+    const m=errCopy(e); if(m) document.getElementById('askErr').textContent=m;
+  } finally{ busy=false; }
+}
+function stripAsk(text){ const lines=text.split("\n"); const i=lines.findIndex(l=>l.startsWith("질문|")); return {body:(i>=0?lines.slice(0,i):lines).join("\n"), askLine:i>=0?lines[i]:""}; }
+function parseChapter(text,no){ const {body,askLine}=stripAsk(text.trim()); const ls=body.split("\n"); let title=`제${no}장`;
+  if(ls.length && /^제\s*\d+\s*장/.test(ls[0].trim())){ title=ls.shift().trim(); }
+  const p=askLine.split("|"); const ask=p.length>=3?{who:p[1].trim(),q:p.slice(2).join("|").trim()}:null;
+  return {title, body:ls.join("\n").trim(), ask}; }
+
+async function grow(){
+  if(busy||!WORLD) return; const nb=newBooks(); if(!nb.length) return;
+  if(!SAMPLE){ openWorld(WORLD); return; }
+  busy=true; ctl=new AbortController();
+  waiting("새 별이 세계로 떨어지고 있습니다", nb.map(m=>m.t).join(" · "));
+  const no=WORLD.chapters.length+1;
+  const prompt=`${RULES}
+
+이 독자의 세계: ${worldBrief(WORLD)}
+지난 장:
+${lastChapters(WORLD)}
+
+새로 도착한 별(방금 더 읽은 책): ${JSON.stringify(books(nb))}
+
+할 일: 새 별이 세계에 더하는 땅·주민·법칙을 만들고, 그것들이 도착하는 제${no}장(400~600자, 과거형, 대사 포함, 문단은 줄바꿈)을 쓴다. 이미 있는 주민 한 명 이상이 새 손님을 맞이한다.
+${ASKRULE}
+JSON 하나만: {"lands":[{"book":"","name":"","desc":""}],"folk":[{"book":"","name":"","desc":""}],"laws":[{"book":"","law":""}],"title":"제${no}장 · ...","scene":"","ask":{"who":"","q":""}}`;
+  try{
+    const r=await SAMPLE.json(prompt,{signal:ctl.signal,cache:false});
+    WORLD.lands.push(...arr(r.lands)); WORLD.folk.push(...arr(r.folk)); WORLD.laws.push(...arr(r.laws));
+    WORLD.chapters.push({t:String(r.title||`제${no}장 · 새 별`),x:String(r.scene||"")}); if(r.ask) WORLD.ask=r.ask;
+    WORLD.books.push(...nb.map(m=>m.t)); saveW(); refreshWake(); render(WORLD);
+    document.getElementById('ch'+(WORLD.chapters.length-1))?.scrollIntoView({block:'start'});
+  }catch(e){ render(WORLD); const m=errCopy(e); if(m) wrap.insertAdjacentHTML('afterbegin',`<p class="err">${m}</p>`); }
+  finally{ busy=false; }
+}
+
+const paras=t=>String(t).split(/\n+/).filter(s=>s.trim()).map(s=>`<p>${esc(s)}</p>`).join("");
+function items(list,kind){ if(!list.length) return `<div class="empty">${kind==="land"?"아직 땅이 된 소설이 없습니다.":kind==="folk"?"아직 주민이 없습니다. 소설 한 권을 띄우면 누군가 이사 옵니다.":"아직 하늘이 비어 있습니다. 비소설 한 권이 첫 법칙을 새깁니다."}</div>`;
+  return list.map((o,i)=>`<div class="it rise" style="animation-delay:${i*90}ms">${kind==="law"?`<b>✦ ${esc(o.law||"")}</b>`:`<b>${esc(o.name||"")}</b><span>${esc(o.desc||"")}</span>`}<small>${esc(o.book||"")}</small></div>`).join(""); }
+function render(w,streaming){
+  const stoneAt=i=>w.stones[i-1];
+  wrap.innerHTML=`
+  <div class="bar"><div class="eb">${w.example?"예시 세계":"당신의 세계"} · 별 ${w.books.length}개에서 깨어남</div>
+    <div class="acts"><button id="wBack">우주로 돌아가기</button>${w.example?"":`<button id="wReset" title="이 세계를 지우고 다시 깨웁니다">처음부터 다시</button>`}</div></div>
+  <div><h2 class="wn">${esc(w.name)}</h2><div class="from">${w.books.map(esc).join(" · ")}</div>
+    ${w.example?`<div class="note">예시입니다. 별 세 개를 띄우고 '내 세계 깨우기'를 누르면 당신의 책으로 새로 깨어납니다.</div>`:""}</div>
+  <div class="cols">
+    <div class="col land"><h3>땅 · 소설에서</h3>${items(w.lands,"land")}</div>
+    <div class="col folk"><h3>주민 · 땅에서 태어난 인물</h3>${items(w.folk,"folk")}</div>
+    <div class="col law"><h3>하늘의 법칙 · 비소설에서</h3>${items(w.laws,"law")}</div>
+  </div>
+  <div class="mirror">
+    <div><small>거울 · 당신의 별자리가 기운 진영</small><b>${esc(w.camp||"-")}</b><span>${esc(w.campWhy||"")}</span></div>
+    <div><small>거울 · 당신의 넨(읽는 힘)</small><b>${esc(w.nen||"-")}</b><span>${esc(w.nenWhy||"")}</span></div>
+  </div>
+  <div class="chron"><h3>연대기</h3>
+    ${w.chapters.map((c,i)=>`${i>0&&stoneAt(i)?`<div class="stone">${esc(stoneAt(i).who)}의 물음 "${esc(stoneAt(i).q)}"에 당신이 남긴 비석: ${stoneAt(i).a?`"${esc(stoneAt(i).a)}"`:"(말없이)"}</div>`:""}
+      <div class="chap" id="ch${i}"><div class="ct">${esc(c.t)}</div><div class="tx" ${streaming&&i===w.chapters.length-1?'id="live"':''}>${c.x?paras(c.x):'<p style="color:var(--ink-faint)">쓰는 중…</p>'}</div></div>`).join("")}
+  </div>
+  ${w.ask&&!streaming?`<div class="ask"><div class="who">${esc(w.ask.who||"")}이(가) 당신에게 묻습니다</div><div class="q">${esc(w.ask.q||"")}</div>
+    ${w.example?`<div class="from">당신의 세계에서는 여기에 답을 남기면 그 답이 비석이 되어 다음 장을 움직입니다.</div>`:
+    `<textarea id="ans" placeholder="한 줄이면 충분합니다. 이 답은 세계에 비석으로 남습니다."></textarea>
+    <div class="acts"><button class="go" id="goNext">비석을 세우고 다음 장 보기</button><button id="skip">답 없이 다음 장</button></div><div class="err" id="askErr"></div>`}</div>`:""}
+  ${w.next?`<div class="next"><div><div class="eb">다음 별 · 이 세계의 빈 곳</div><b>${esc(w.next.title||"")}</b> <span>${esc(w.next.author||"")} — ${esc(w.next.why||"")}</span></div>
+    <button id="goStar">이 별 띄우러 가기</button></div>`:""}`;
+  document.getElementById('wBack').onclick=closeWorld;
+  const rs=document.getElementById('wReset'); if(rs) rs.onclick=()=>{ WORLD=null; saveW(); refreshWake(); closeWorld(); };
+  const gn=document.getElementById('goNext'); if(gn) gn.onclick=()=>nextChapter(document.getElementById('ans').value.trim());
+  const sk=document.getElementById('skip'); if(sk) sk.onclick=()=>nextChapter("");
+  const gs=document.getElementById('goStar'); if(gs) gs.onclick=()=>{ closeWorld(); const q=document.getElementById('q'); q.value=w.next.title||""; q.focus(); };
+}
+addEventListener('keydown',e=>{ if(e.key==="Escape" && !ww.hidden) closeWorld(); });
+refreshWake();
+(async()=>{ try{ SAMPLE = window.claude && window.claude.use ? await window.claude.use('sample') : null; }catch(e){ SAMPLE=null; } refreshWake(); })();
+
+// ---------- 읽은 만큼만 자란다 (우주 헌장 첫째 법칙) ----------
+function chipClick(i){ const m=MINE[i]; if(!m) return; flyTo(m); msg.innerHTML=describe(m); bindLit(); }
+function bindLit(){ const b=document.getElementById('litBtn'); if(!b) return;
+  b.onclick=()=>{ const m=MINE.find(x=>x.t===b.dataset.t); if(!m) return; m.read=true; save(); rebuildMine(); flyTo(m);
+    msg.innerHTML=`<b>${esc(m.t)}</b>의 별이 환하게 켜졌습니다. 이제 이 별에서 땅과 주민이 생길 수 있습니다.<br>`+describe(m); }; }
+describe=function(m){
+  const ago=NOW-m.y, R3=READ();
+  let link="";
+  if(m.why==="same") link=`<em>책미사도 이 별을 읽었습니다.</em>`;
+  else if(m.why==="author") link=`책미사의 <em>『${esc(m.link.t)}』</em>와 같은 작가(${esc(m.a)})로 이어져 있습니다.`;
+  else link=`같은 시대에 빛난 책미사의 별은 <em>『${esc(m.link.t)}』</em>(${yrTxt(m.link.y)})입니다.`;
+  if(m.read===false){
+    return `<b>${esc(m.t)}</b>는 아직 <b>읽고 싶은 별</b>이라 희미하게만 떠 있습니다. ${link}<br>다 읽으면 별이 환하게 켜지고, 그때 세계에 땅과 주민이 생깁니다.
+      <br><button class="lit" id="litBtn" data-t="${esc(m.t)}">다 읽었어요 · 별 켜기</button>`;
+  }
+  let s=`<b>${esc(m.t)}</b>의 빛은 ${yrTxt(m.y)}에 출발해 <b>${ago.toLocaleString()}년</b>을 건너 당신에게 닿았습니다. ${link}`;
+  if(!m.known) s+=` <span style="color:var(--ink-faint)">아직 지도에 없는 별이라 지금 이 시대 근처에 띄웠습니다.</span>`;
+  if(R3.length>=3 && m.read!==false){ const ys=R3.map(x=>x.y), span=Math.max(...ys)-Math.min(...ys); s+=`<br><br>읽은 별 ${R3.length}개, <b>${span.toLocaleString()}년</b>에 걸친 별자리입니다.`; }
+  else if(m.read!==false) s+=`<br><br>세계는 읽은 만큼만 자랍니다. 읽은 별 ${R3.length}개 · <b>${3-R3.length}개</b> 더 켜지면 세계가 깨어날 수 있습니다.`;
+  return s;
+};
+const _rb2=rebuildMine; rebuildMine=function(){ _rb2();
+  const R3=READ(), w=MINE.length-R3.length;
+  document.getElementById('meH').textContent = R3.length>=3 ? `당신의 별자리 · 『${R3[0].t}』자리` : R3.length ? `읽은 별 ${R3.length}개 · 세 개가 켜지면 세계가 깨어납니다` : (w? "읽은 책 한 권은?" : "당신이 읽은 책 한 권은?"); };
+document.getElementById('bWish').onclick=()=>{ if(!document.getElementById('q').value.trim()) return; WISH=true; document.getElementById('f').requestSubmit(); };
+document.getElementById('f').addEventListener('submit',()=>setTimeout(bindLit,0));
+document.getElementById('me').insertAdjacentHTML('beforeend','<div class="law1">우주 헌장 1조 · 세계는 읽은 만큼만 자랍니다</div>');
+// 세계 화면에 희미한 별을 보여 준다
+const _render=render; render=function(w,streaming){ _render(w,streaming);
+  if(w.example) return; const wish=MINE.filter(m=>m.read===false); const from=wrap.querySelector('.from'); if(!from) return;
+  from.insertAdjacentHTML('afterend', wish.length?`<div class="dim-stars">희미한 별 ${wish.length}개 · <b>${wish.map(m=>esc(m.t)).join(" · ")}</b><br>다 읽으면 이 세계에 도착합니다. 세계는 읽은 만큼만 자랍니다.</div>`:`<div class="dim-stars">세계는 읽은 만큼만 자랍니다.</div>`); };
+rebuildMine();
+
+// ---------- 연대기 한 권 (PDF) — 우주 헌장 5조: 한 세계의 연대기는 그 세계 주인의 것이다 ----------
+let DL=null;
+(async()=>{ try{ DL = window.claude && window.claude.use ? await window.claude.use('downloads') : null; }catch(e){ DL=null; } })();
+const PW=1240, PH=1748, MX=150, TOP=190, BOT=PH-170;           // A5, 약 213dpi
+const PAPER="#f4f2ec", INK="#1d1f27", SOFT="#5a5d68", FAINT="#9a9ca5", VIO="#6b56a8", GOLD="#a8812f", NIGHT="#070b14";
+const SERIF='"Gowun Batang","Nanum Myeongjo",serif', SANS='"IBM Plex Sans KR","Malgun Gothic",sans-serif';
+const today=()=>new Date().toISOString().slice(0,10);
+const ymd=s=>{ const [y,m,d]=String(s||today()).split("-"); return `${y}년 ${+m}월 ${+d}일`; };
+let AUTHOR=""; try{ AUTHOR=localStorage.getItem('chaekmisa-author')||""; }catch(e){}
+
+function wrapLines(ctx,text,maxW){
+  const out=[];
+  String(text).split(/\n+/).forEach((para,pi)=>{
+    if(!para.trim()) return; let line="";
+    const push=()=>{ out.push(line); line=""; };
+    para.trim().split(/\s+/).forEach(w=>{
+      const t=line?line+" "+w:w;
+      if(ctx.measureText(t).width<=maxW){ line=t; return; }
+      if(line) push();
+      if(ctx.measureText(w).width<=maxW){ line=w; return; }
+      for(const ch of w){ if(ctx.measureText(line+ch).width>maxW) push(); line+=ch; }
+    });
+    if(line) push(); out.push(null);                                  // null = 문단 끝
+  });
+  if(out[out.length-1]===null) out.pop();
+  return out;
+}
+
+class Book{
+  constructor(title){ this.title=title; this.pages=[]; this.no=0; }
+  page(kind){ const c=document.createElement('canvas'); c.width=PW; c.height=PH; const x=c.getContext('2d');
+    x.fillStyle=kind==="night"?NIGHT:PAPER; x.fillRect(0,0,PW,PH); x.textBaseline="alphabetic";
+    this.c=c; this.x=x; this.y=TOP; this.kind=kind; this.pages.push(c); this.no++;
+    if(kind==="body"){ x.font=`22px ${SANS}`; x.fillStyle=FAINT; x.textAlign="center"; x.fillText(this.title,PW/2,110);
+      x.fillText(String(this.no),PW/2,PH-90); x.textAlign="left"; }
+    return x; }
+  need(h){ if(!this.c||this.y+h>BOT) this.page("body"); }
+  text(t,{font=`34px ${SERIF}`,color=INK,lh=64,gap=26,indent=0,align="left"}={}){
+    this.need(lh); const x=this.x; x.font=font; x.fillStyle=color; x.textAlign=align;
+    wrapLines(x,t,PW-2*MX-indent).forEach(l=>{ if(l===null){ this.y+=gap; return; } this.need(lh); this.x.font=font; this.x.fillStyle=color; this.x.textAlign=align;
+      this.x.fillText(l, align==="center"?PW/2:MX+indent, this.y+lh*.72); this.y+=lh; });
+    this.x.textAlign="left"; }
+  head(t,{size=56,color=INK,before=0,after=40}={}){ this.y+=before; this.need(size*2.2); this.text(t,{font:`700 ${size}px ${SERIF}`,color,lh:size*1.4,gap:0}); this.y+=after; }
+  label(t,color=FAINT){ this.need(80); this.text(t,{font:`500 24px ${SANS}`,color,lh:40,gap:0}); this.y+=8; }
+  rule(color=GOLD,w=90){ this.need(40); this.x.fillStyle=color; this.x.fillRect(MX,this.y+10,w,3); this.y+=46; }
+  space(h){ this.y+=h; }
+}
+
+function seeded(s){ let h=hash(s)*2147483646+1; return ()=>(h=(h*16807)%2147483647)/2147483647; }
+function cover(b,w,author){
+  const x=b.page("night"), rn=seeded(w.name);
+  for(let i=0;i<520;i++){ x.globalAlpha=.15+rn()*.6; x.fillStyle=rn()<.15?"#ffb38a":"#e9ecff"; const r=rn()*1.8+.4; x.beginPath(); x.arc(rn()*PW,rn()*PH,r,0,7); x.fill(); }
+  x.globalAlpha=1;
+  // 표지의 별자리: 이 세계를 깨운 별들
+  const st=w.books.map(t=>{ const m=MINE.find(q=>q.t===t); return m&&m.p?{t,x:m.p.x,y:m.p.z}:{t,x:hash(t)*2-1,y:hash(t+"y")*2-1}; });
+  const xs=st.map(s=>s.x), ys=st.map(s=>s.y), x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const bx=MX+40, by=330, bw=PW-2*MX-80, bh=620;
+  const P=st.map(s=>({t:s.t, X:bx+(x1>x0?(s.x-x0)/(x1-x0):.5)*bw, Y:by+(y1>y0?(s.y-y0)/(y1-y0):.5)*bh}));
+  x.strokeStyle="rgba(239,232,214,.55)"; x.lineWidth=2; x.beginPath(); P.forEach((p,i)=>i?x.lineTo(p.X,p.Y):x.moveTo(p.X,p.Y)); x.stroke();
+  P.forEach(p=>{ const g=x.createRadialGradient(p.X,p.Y,0,p.X,p.Y,34); g.addColorStop(0,"rgba(255,255,255,1)"); g.addColorStop(.25,"rgba(240,230,255,.7)"); g.addColorStop(1,"rgba(199,160,255,0)");
+    x.fillStyle=g; x.beginPath(); x.arc(p.X,p.Y,34,0,7); x.fill(); x.font=`22px ${SERIF}`; x.fillStyle="rgba(239,232,214,.8)"; x.textAlign="center"; x.fillText(p.t,p.X,p.Y+60); });
+  x.textAlign="center"; x.fillStyle="#efe8d6";
+  x.font=`500 26px ${SANS}`; x.fillStyle="#c7a0ff"; x.fillText("연 대 기",PW/2,1130);
+  x.fillStyle="#efe8d6"; let fs=96; x.font=`700 ${fs}px ${SERIF}`; while(x.measureText(w.name).width>PW-2*MX && fs>48){ fs-=4; x.font=`700 ${fs}px ${SERIF}`; }
+  wrapLines(x,w.name,PW-2*MX).filter(l=>l).forEach((l,i)=>x.fillText(l,PW/2,1250+i*fs*1.25));
+  x.font=`30px ${SERIF}`; x.fillStyle="#a7adb8"; x.fillText(`별 ${w.books.length}개에서 깨어난 세계`,PW/2,1420);
+  x.font=`34px ${SERIF}`; x.fillStyle="#efe8d6"; x.fillText(author,PW/2,1510);
+  x.fillStyle="#f0c674"; x.fillRect(PW/2-45,1580,90,3);
+  x.font=`22px ${SANS}`; x.fillStyle="#7d8596"; x.fillText("책미사 너머 · 천문대 기록",PW/2,1640);
+  x.textAlign="left";
+}
+
+function makeBook(w){
+  const author=(AUTHOR||"").trim()||"이름 없는 독자";
+  const b=new Book(w.name); cover(b,w,author);
+  // 이 세계의 별
+  b.page("body"); b.space(120); b.label("이 세계의 별",VIO); b.head("읽은 책이 별이 되었다",{size:52}); b.rule();
+  w.books.forEach(t=>{ const m=MINE.find(q=>q.t===t)||{}; const meta=[m.a,m.y!=null?yrTxt(m.y):"",m.ours?"책미사도 읽은 별":""].filter(Boolean).join(" · ");
+    b.text(`✦ ${t}`,{font:`700 34px ${SERIF}`,lh:56,gap:0}); if(meta) b.text(meta,{font:`26px ${SANS}`,color:SOFT,lh:44,gap:0,indent:44}); b.space(14); });
+  const wish=w.example?[]:MINE.filter(m=>m.read===false);
+  if(wish.length){ b.space(30); b.label("아직 희미한 별 · 읽고 싶은 책"); wish.forEach(m=>b.text(`☆ ${m.t}`,{font:`30px ${SERIF}`,color:SOFT,lh:52,gap:0})); }
+  b.space(60); b.text("세계는 읽은 만큼만 자란다.",{font:`30px ${SERIF}`,color:FAINT,lh:52,align:"center"}); b.text("— 우주 헌장 1조",{font:`22px ${SANS}`,color:FAINT,lh:40,align:"center"});
+  // 세계의 지도
+  b.page("body"); b.space(120); b.label("세계의 지도",VIO); b.head(w.name,{size:52}); b.rule();
+  const sec=(lab,list,f)=>{ if(!list.length) return; b.space(10); b.label(lab,GOLD); list.forEach(o=>{ f(o); b.space(18); }); b.space(16); };
+  sec("땅 · 소설에서",w.lands,o=>{ b.text(o.name||"",{font:`700 34px ${SERIF}`,lh:54,gap:0}); b.text(o.desc||"",{font:`29px ${SERIF}`,color:SOFT,lh:50,gap:0}); b.text(o.book||"",{font:`22px ${SANS}`,color:FAINT,lh:38,gap:0}); });
+  sec("주민 · 땅에서 태어난 인물",w.folk,o=>{ b.text(o.name||"",{font:`700 34px ${SERIF}`,lh:54,gap:0}); b.text(o.desc||"",{font:`29px ${SERIF}`,color:SOFT,lh:50,gap:0}); b.text(o.book||"",{font:`22px ${SANS}`,color:FAINT,lh:38,gap:0}); });
+  sec("하늘의 법칙 · 비소설에서",w.laws,o=>{ b.text(`✦ ${o.law||""}`,{font:`31px ${SERIF}`,lh:54,gap:0}); b.text(o.book||"",{font:`22px ${SANS}`,color:FAINT,lh:38,gap:0,indent:44}); });
+  if(w.camp||w.nen){ b.space(10); b.label("거울",VIO);
+    if(w.camp){ b.text(`기운 진영 · ${w.camp}`,{font:`700 31px ${SERIF}`,lh:52,gap:0}); b.text(w.campWhy||"",{font:`27px ${SERIF}`,color:SOFT,lh:48,gap:0}); b.space(14); }
+    if(w.nen){ b.text(`읽는 힘(넨) · ${w.nen}`,{font:`700 31px ${SERIF}`,lh:52,gap:0}); b.text(w.nenWhy||"",{font:`27px ${SERIF}`,color:SOFT,lh:48,gap:0}); } }
+  // 장
+  w.chapters.forEach((c,i)=>{ if(!c.x) return;
+    b.page("body"); b.space(160);
+    const [num,...rest]=String(c.t).split("·"); b.label(num.trim(),VIO); if(rest.length) b.head(rest.join("·").trim(),{size:50}); else b.space(30); b.rule();
+    const s=w.stones&&w.stones[i-1];
+    if(i>0&&s){ b.text(`${s.who}이(가) 물었다. "${s.q}"`,{font:`26px ${SANS}`,color:SOFT,lh:44,gap:0,indent:28});
+      b.text(s.a?`당신이 세운 비석 — "${s.a}"`:"당신은 말없이 고개를 끄덕였다.",{font:`26px ${SANS}`,color:VIO,lh:44,gap:0,indent:28}); b.space(40); }
+    b.text(c.x,{font:`34px ${SERIF}`,lh:66,gap:30});
+  });
+  // 판권
+  b.page("body"); b.y=PH-760;
+  const L=(t,o)=>b.text(t,Object.assign({align:"center",gap:0},o));
+  L(w.name,{font:`700 38px ${SERIF}`,lh:60}); L("연대기",{font:`26px ${SANS}`,color:SOFT,lh:44}); b.space(30);
+  L(`지은이 · ${author}`,{font:`26px ${SANS}`,color:INK,lh:44});
+  L(`처음 깨어난 날 · ${ymd(w.created)}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
+  L(`이 판을 묶은 날 · ${ymd(today())}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
+  L(`별 ${w.books.length}개 · ${w.chapters.filter(c=>c.x).length}장`,{font:`24px ${SANS}`,color:SOFT,lh:42});
+  L(`천문대 기록 번호 · ${recordNo(w)}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
+  b.space(40); L("한 세계의 연대기는 그 세계 주인의 것이다.",{font:`28px ${SERIF}`,color:INK,lh:48}); L("— 우주 헌장 5조",{font:`22px ${SANS}`,color:FAINT,lh:40});
+  b.space(40); L("책미사 너머 천문대 · 견본",{font:`22px ${SANS}`,color:FAINT,lh:40});
+  return b;
+}
+
+// 미리 보기와 내려받기
+document.body.insertAdjacentHTML('beforeend',`<section id="book" hidden aria-label="연대기 한 권" style="position:fixed;inset:0;z-index:30;overflow:auto;background:rgba(3,5,11,.95)">
+  <div style="max-width:1100px;margin:0 auto;padding-block:calc(env(safe-area-inset-top,0px) + 24px) 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div><div class="eb" style="font-size:11px;letter-spacing:.16em;color:var(--ink-faint)">연대기 한 권 · A5</div>
+        <h2 id="bkT" style="font-family:var(--f-display);font-size:30px;margin:.3rem 0 0"></h2></div>
+      <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <label for="bkA" style="font-size:12px;color:var(--ink-dim)">지은이</label>
+        <input id="bkA" placeholder="이름 없는 독자" style="font:inherit;font-size:14px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:150px">
+        <button id="bkRe" style="border-radius:8px">표지에 반영</button>
+        <button id="bkDl" style="border-radius:8px;color:var(--mine);border-color:rgba(244,246,255,.5)">PDF로 내려받기</button>
+        <button id="bkX" style="border-radius:8px">닫기</button></div></div>
+    <div id="bkMsg" style="font-size:13px;color:var(--ink-dim);min-height:1.2em"></div>
+    <div id="bkP" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"></div>
+  </div></section>`);
+const bk=document.getElementById('book'), bkP=document.getElementById('bkP'), bkMsg=document.getElementById('bkMsg');
+let BOOK=null, BOOKW=null;
+async function openBook(w){
+  BOOKW=w; bk.hidden=false; bkP.innerHTML=""; document.getElementById('bkT').textContent=w.name; document.getElementById('bkA').value=AUTHOR;
+  bkMsg.textContent="쪽을 짜는 중…";
+  try{ await Promise.all([document.fonts.load(`700 40px "Gowun Batang"`),document.fonts.load(`40px "Gowun Batang"`),document.fonts.load(`24px "IBM Plex Sans KR"`)]); }catch(e){}
+  BOOK=makeBook(w);
+  bkP.innerHTML=BOOK.pages.map((c,i)=>`<figure style="margin:0"><img src="${c.toDataURL('image/jpeg',.82)}" alt="${i+1}쪽" style="width:100%;display:block;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.5)"><figcaption style="font-size:11px;color:var(--ink-faint);text-align:center;margin-top:6px">${i===0?"표지":i+"쪽"}</figcaption></figure>`).join("");
+  const dl=document.getElementById('bkDl'); dl.hidden=false;
+  bkMsg.textContent = `${BOOK.pages.length}쪽짜리 한 권입니다.` + "" + (w.example?" (예시 세계로 묶은 견본입니다.)":"");
+}
+document.getElementById('bkX').onclick=()=>{ bk.hidden=true; };
+document.getElementById('bkRe').onclick=()=>{ AUTHOR=document.getElementById('bkA').value.trim(); try{localStorage.setItem('chaekmisa-author',AUTHOR);}catch(e){} openBook(BOOKW); };
+document.getElementById('bkDl').onclick=async()=>{
+  if(!BOOK) return; const btn=document.getElementById('bkDl'); btn.disabled=true; bkMsg.textContent="PDF로 묶는 중…";
+  try{
+    const pdf=new window.jspdf.jsPDF({unit:"mm",format:"a5",orientation:"portrait",compress:true});
+    BOOK.pages.forEach((c,i)=>{ if(i) pdf.addPage("a5","portrait"); pdf.addImage(c.toDataURL('image/jpeg',.9),"JPEG",0,0,148,210); });
+    const blob=pdf.output("blob"), fn=`${BOOKW.name.replace(/[\\/:*?"<>|]/g,"")}_연대기.pdf`;
+    if(DL) await DL.save({filename:fn,data:blob}); else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },3000); } bkMsg.textContent=`'${fn}'을 내려받았습니다.`;
+  }catch(e){ const c=e&&e.code; bkMsg.textContent = c==="declined"?"내려받기를 취소했습니다.": c==="rate_limited"?"이미 저장 창이 열려 있어요. 잠시 뒤 다시 눌러 주세요.": "내려받기를 할 수 없었어요. 다시 눌러 주세요."; }
+  finally{ btn.disabled=false; }
+};
+addEventListener('keydown',e=>{ if(e.key==="Escape"&&!bk.hidden){ bk.hidden=true; e.stopImmediatePropagation(); } },true);
+// 세계 화면에 '연대기 한 권 만들기'
+const _render3=render; render=function(w,streaming){ _render3(w,streaming);
+  if(streaming) return; const acts=wrap.querySelector('.bar .acts'); if(!acts) return;
+  const b=document.createElement('button'); b.textContent='📖 연대기 한 권 만들기'; b.style.color='var(--mine)'; b.style.borderColor='rgba(244,246,255,.5)';
+  b.onclick=()=>openBook(w); acts.prepend(b);
+  const chron=wrap.querySelector('.chron'); if(chron) chron.insertAdjacentHTML('beforeend',`<div class="acts"><button class="go" id="bkGo">이 연대기를 한 권으로 묶기 · PDF</button></div>`);
+  const g=document.getElementById('bkGo'); if(g) g.onclick=()=>openBook(w); };
+// 우주 화면 왼쪽 위 패널에서도 바로 찾을 수 있게
+{ const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='bkMe';
+  b.style.color='var(--mine)'; b.style.borderColor='rgba(244,246,255,.5)';
+  const label=()=>{ b.textContent = WORLD&&!WORLD.example ? `📖 연대기 한 권 · ${WORLD.name}` : '📖 연대기 한 권 (예시)'; };
+  b.onclick=()=>{ label(); openBook(WORLD&&!WORLD.example?WORLD:EXAMPLE); };
+  sub.prepend(b); label(); const _rw=refreshWake; refreshWake=function(){ _rw(); label(); }; }
+
+// ---------- 천문대: 지켜보고, 이름 붙이고, 기록하고, 펴낸 별을 하늘에 올린다 ----------
+const LKEY='chaekmisa-log', PKEY='chaekmisa-published';
+let LOG=[], PUB=[];
+try{ LOG=JSON.parse(localStorage.getItem(LKEY)||"[]"); }catch(e){ LOG=[]; }
+try{ PUB=JSON.parse(localStorage.getItem(PKEY)||"[]"); }catch(e){ PUB=[]; }
+const saveLog=()=>{ try{ localStorage.setItem(LKEY,JSON.stringify(LOG.slice(-300))); }catch(e){} };
+const savePub=()=>{ try{ localStorage.setItem(PKEY,JSON.stringify(PUB)); }catch(e){} };
+const stamp=()=>{ const d=new Date(), z=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}.${z(d.getMonth()+1)}.${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; };
+function note(kind,text){ LOG.push({at:stamp(),kind,text}); saveLog(); if(!obs.hidden) renderObs(); }
+
+// 지켜보기: 상태가 바뀔 때마다 비교해서 일지에 적는다
+let SNAP=null;
+function snap(){ return {stars:Object.fromEntries(MINE.map(m=>[m.t,m.read!==false])), world:WORLD&&!WORLD.example?WORLD.name:null,
+  ch:WORLD&&!WORLD.example?WORLD.chapters.filter(c=>c.x).length:0, st:WORLD&&!WORLD.example?WORLD.stones.length:0}; }
+function watch(){
+  const now=snap(); if(!SNAP){ SNAP=now; return; }
+  for(const [t,r] of Object.entries(now.stars)){
+    if(!(t in SNAP.stars)) note(r?"lit":"wish", r?`『${t}』 별이 떴다. 읽은 별.`:`『${t}』 별이 희미하게 떴다. 읽고 싶은 별.`);
+    else if(r && !SNAP.stars[t]) note("lit",`『${t}』 별이 환하게 켜졌다. 다 읽었다.`); }
+  for(const t of Object.keys(SNAP.stars)) if(!(t in now.stars)) note("gone",`『${t}』 별이 하늘에서 내려졌다.`);
+  if(now.world && now.world!==SNAP.world) note("world",`세계 『${now.world}』가 깨어났다.`);
+  if(!now.world && SNAP.world) note("gone",`세계 『${SNAP.world}』가 잠들었다.`);
+  if(now.world && now.world===SNAP.world){
+    if(now.st>SNAP.st){ const s=WORLD.stones[WORLD.stones.length-1]; note("stone",`${s.who}의 물음에 비석이 섰다. ${s.a?`"${s.a}"`:"(말없이)"}`); }
+    if(now.ch>SNAP.ch){ const c=WORLD.chapters.filter(c=>c.x).slice(-1)[0]; note("chapter",`『${now.world}』 연대기에 ${c.t}이 기록되었다.`); } }
+  SNAP=now;
+}
+const _rb3=rebuildMine; rebuildMine=function(){ _rb3(); try{watch();}catch(e){} };
+const _r4=render; render=function(w,streaming){ _r4(w,streaming); try{ if(!streaming) watch(); }catch(e){}
+  if(streaming) return; const acts=wrap.querySelector('.bar .acts'); if(acts){ const b=document.createElement('button'); b.textContent='🔭 천문대'; b.onclick=()=>openObs(); acts.appendChild(b); } };
+
+// 펴낸 별: 책의 우주에 새 별로 뜬다
+const pubMat=pointsMat(VS_MINE); let pubPts=null, pubLabels=[];
+function pubPos(p){ const th=hash(p.no)*Math.PI*2, r=6.5+hash(p.no+"r")*5; return new THREE.Vector3(Math.cos(th)*r, 2.5+hash(p.no+"y")*2, Math.sin(th)*r); }
+function rebuildPub(){
+  if(pubPts){ scene.remove(pubPts); pubPts.geometry.dispose(); pubPts=null; }
+  pubLabels.forEach(L=>L.el.remove()); pubLabels.length=0;
+  const last=new Map(); PUB.forEach(p=>last.set(p.no,p)); const L=[...last.values()];
+  if(!L.length) return;
+  L.forEach(p=>p.p=pubPos(p));
+  pubPts=new THREE.Points(pointsGeo(L,p=>({p:[p.p.x,p.p.y,p.p.z],c:[.86,.72,1],s:16,t:hash(p.no)})),pubMat); scene.add(pubPts);
+  L.forEach(p=>addLabel(`『${esc(p.name)}』<small>펴낸 별 · ${esc(p.no)}${p.ed>1?` · ${p.ed}판`:""}</small>`,p.p,'mine',0,99999,pubLabels));
+}
+// 펴낸 별 이름표도 매 장면 따라가게
+(function tick(){ pubLabels.forEach(L=>{ const s=scr(L.p); if(!s.ok||s.x<-50||s.x>W+50||s.y<-20||s.y>H+20){L.el.style.display='none';return;}
+  L.el.style.display='block'; L.el.style.left=s.x+'px'; L.el.style.top=s.y+'px'; }); requestAnimationFrame(tick); })();
+[pubMat].forEach(m=>{ (function u(n){ m.uniforms.uT.value=reduce?0:(n-t0)/1000; m.uniforms.uPix.value=PIX; requestAnimationFrame(u); })(performance.now()); });
+
+function recordNo(w){ return `CM-${String(w.created||today()).slice(0,4)}-${String(Math.floor(hash(w.name+w.books.join())*1e6)).padStart(6,"0")}`; }
+function publish(w){
+  if(!w||!BOOK) return null;
+  const no=recordNo(w), ed=PUB.filter(p=>p.no===no).length+1;
+  let thumb=""; try{ const c=document.createElement('canvas'); c.width=248; c.height=350; c.getContext('2d').drawImage(BOOK.pages[0],0,0,248,350); thumb=c.toDataURL('image/jpeg',.72); }catch(e){}
+  const p={no,ed,name:w.name,author:(AUTHOR||"").trim()||"이름 없는 독자",at:stamp(),books:w.books.slice(),chapters:w.chapters.filter(c=>c.x).length,pages:BOOK.pages.length,thumb,example:!!w.example};
+  PUB.push(p); savePub(); rebuildPub();
+  note("pub",`『${w.name}』 연대기가 펴낸 별로 하늘에 올랐다. 기록 번호 ${no}${ed>1?`, ${ed}판`:""}.`);
+  return p;
+}
+function showPubStar(p){
+  obs.hidden=true; bk.hidden=true; ww.hidden=true;
+  const q=pubPos(p); stopJourney(); cur=-2; tFocus.copy(q).multiplyScalar(.6); tDist=34;
+  capSet(`<span class="me">『${esc(p.name)}』</span>가 별이 되었습니다`,`${esc(p.author)}의 연대기 · ${esc(p.no)}${p.ed>1?` · ${p.ed}판`:""}. 1억 3천만 권의 하늘에 한 권이 더해졌습니다. 이제 누군가 이 별을 자기 세계에 띄울 수 있습니다.`);
+}
+
+// 연대기 화면에 '천문대에 등재하기'
+{ const dl=document.getElementById('bkDl'); const b=document.createElement('button'); b.id='bkPub'; b.textContent='🔭 천문대에 등재하기';
+  b.style.cssText='border-radius:8px;color:#c7a0ff;border-color:rgba(199,160,255,.6)'; dl.after(b);
+  b.onclick=()=>{ if(!BOOK||!BOOKW) return; const p=publish(BOOKW); if(p){ bkMsg.textContent=`천문대에 등재했습니다. 기록 번호 ${p.no}${p.ed>1?` · ${p.ed}판`:""}.`; setTimeout(()=>showPubStar(p),700); } }; }
+
+// 천문대 화면
+document.body.insertAdjacentHTML('beforeend',`<section id="obs" hidden aria-label="천문대" style="position:fixed;inset:0;z-index:25;overflow:auto;background:rgba(3,5,11,.93);backdrop-filter:blur(8px)"><div class="wrap" id="owrap"></div></section>`);
+const obs=document.getElementById('obs'), owrap=document.getElementById('owrap');
+const ICON={lit:"✦",wish:"☆",world:"◉",chapter:"❧",stone:"▮",pub:"✸",gone:"·"};
+const COLOR={lit:"var(--mine)",wish:"var(--ink-faint)",world:"var(--gold)",chapter:"var(--gold)",stone:"var(--link)",pub:"var(--link)",gone:"var(--ink-faint)"};
+function openObs(){ obs.hidden=false; stopJourney(); renderObs(); obs.scrollTop=0; }
+function renderObs(){
+  const read=READ(), wish=MINE.filter(m=>m.read===false), mine=PUB.filter(p=>!p.example);
+  const oldest=[...OUR].sort((a,b)=>a.y-b.y)[0], land=OUR.filter(b=>b.k==="land").length;
+  const stat=(n,l)=>`<div style="border-top:1px solid var(--line);padding-top:10px;min-width:0"><b style="display:block;font-family:var(--f-display);font-size:34px;font-weight:400;font-variant-numeric:tabular-nums">${n}</b><span style="font-size:12px;color:var(--ink-dim)">${l}</span></div>`;
+  const pubCard=p=>`<div style="display:grid;grid-template-columns:96px 1fr;gap:14px;border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0">
+      ${p.thumb?`<img src="${p.thumb}" alt="" style="width:96px;border-radius:3px;display:block;box-shadow:0 6px 18px rgba(0,0,0,.5)">`:`<div style="width:96px;height:136px;background:#0b1220;border-radius:3px"></div>`}
+      <div style="min-width:0"><div style="font-size:11px;letter-spacing:.12em;color:var(--link)">${esc(p.no)}${p.ed>1?` · ${p.ed}판`:""}${p.example?" · 예시":""}</div>
+        <div style="font-family:var(--f-display);font-size:20px;font-weight:700;margin:.2rem 0;line-height:1.35">${esc(p.name)}</div>
+        <div style="font-size:12px;color:var(--ink-dim);line-height:1.6">${esc(p.author)} · ${p.chapters}장 · ${p.pages}쪽<br>${esc(p.at)} 등재 · 별 ${p.books.length}개: ${p.books.map(esc).join(", ")}</div>
+        <div class="acts" style="margin-top:8px"><button data-see="${esc(p.no)}">우주에서 보기</button></div></div></div>`;
+  owrap.innerHTML=`
+  <div class="bar"><div class="eb">책미사 너머</div><div class="acts"><button id="oBack">우주로 돌아가기</button>${WORLD&&!WORLD.example?`<button id="oWorld">내 세계</button>`:""}</div></div>
+  <div><h2 class="wn">천문대</h2>
+    <div class="from" style="max-width:36rem">새로 뜬 별을 지켜보고, 이름을 붙이고, 기록합니다. 다 자란 연대기는 책으로 펴내 하늘에 정식 별로 올립니다. 별을 띄우는 사람은 당신이고, 천문대는 그 하늘을 지켜봅니다.</div></div>
+  <div id="obsNote" style="font-size:12px;color:var(--link)"></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px">
+    ${stat(read.length,"켜진 별 · 읽은 책")}${stat(wish.length,"희미한 별 · 읽고 싶은 책")}${stat(WORLD&&!WORLD.example?WORLD.chapters.filter(c=>c.x).length:0,"기록된 장")}${stat(mine.length,"펴낸 별 · 등재된 연대기")}</div>
+  <div id="pubSec"><div class="chron"><h3>내가 펴낸 별 · 이 브라우저의 등재 목록</h3></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+      ${PUB.length?[...PUB].reverse().map(pubCard).join(""):`<div class="empty" style="grid-column:1/-1">아직 펴낸 별이 없습니다. 세계를 깨우고 '📖 연대기 한 권'에서 '천문대에 등재하기'를 누르면, 연대기가 기록 번호를 받고 책의 우주에 새 별로 뜹니다.</div>`}</div></div>
+  <div class="cols" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)">
+    <div class="col"><h3 style="color:var(--ink-faint)">관측 일지</h3>
+      ${LOG.length?[...LOG].reverse().slice(0,60).map(e=>`<div class="it" style="display:grid;grid-template-columns:20px 1fr;gap:8px"><b style="font-size:15px;color:${COLOR[e.kind]||"var(--ink)"}">${ICON[e.kind]||"·"}</b><div style="min-width:0"><span style="margin:0;color:var(--ink)">${esc(e.text)}</span><small>${esc(e.at)}</small></div></div>`).join(""):`<div class="empty">아직 관측 기록이 없습니다. 별을 하나 띄우면 첫 줄이 적힙니다.</div>`}</div>
+    <div class="col"><h3 style="color:var(--ink-faint)">당신의 하늘</h3>
+      ${read.length?read.map(m=>`<div class="it"><b style="font-size:16px">✦ ${esc(m.t)}</b><small>${esc(m.a||"")} · ${yrTxt(m.y)} · ${(NOW-m.y).toLocaleString()}년 전의 빛${m.ours?" · 책미사도 읽은 별":""}</small></div>`).join(""):`<div class="empty">켜진 별이 없습니다.</div>`}
+      ${wish.length?wish.map(m=>`<div class="it"><b style="font-size:16px;color:var(--ink-dim)">☆ ${esc(m.t)}</b><small>읽고 싶은 별 · 다 읽으면 켜집니다</small></div>`).join(""):""}
+      <h3 style="color:var(--ink-faint);margin-top:22px">책미사가 함께 관측한 별</h3>
+      <div class="it"><b style="font-size:16px">${OUR.length}개의 별</b><span>소설 ${land} · 비소설 ${OUR.length-land}. 가장 멀리서 온 빛은 ${esc(oldest.t==="나를 살리는 논어 한마디"?"논어":oldest.t)}(${yrTxt(oldest.y)}). 이 하늘의 첫 별들입니다.</span></div></div>
+  </div>
+  <div class="mirror" style="grid-template-columns:1fr"><div><small>천문대가 지키는 법 · 우주 헌장</small>
+    <span style="display:block;margin-top:8px;line-height:1.9;color:var(--ink)">1. 세계는 읽은 만큼 자란다.<br>2. 남의 세계는 삼킬 수 없고, 찾아갈 수만 있다.<br>3. 두 세계는 같은 별에서만 맞닿고, 둘 다 원할 때만 다리가 놓인다.<br>4. 주민은 빌려줄 수 있지만 빼앗을 수 없다.<br>5. 한 세계의 연대기는 그 세계 주인의 것이다.<br>6. 책미사의 세계도 이 하늘 아래 별 하나일 뿐이다.</span></div></div>
+  `;
+  document.getElementById('oBack').onclick=()=>{ obs.hidden=true; };
+  const ow=document.getElementById('oWorld'); if(ow) ow.onclick=()=>{ obs.hidden=true; openWorld(WORLD); };
+  owrap.querySelectorAll('[data-see]').forEach(b=>b.onclick=()=>{ const p=[...PUB].reverse().find(x=>x.no===b.dataset.see); if(p) showPubStar(p); });
+}
+addEventListener('keydown',e=>{ if(e.key==="Escape"&&!obs.hidden){ obs.hidden=true; } });
+// 왼쪽 위 패널에 '천문대'
+{ const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.textContent='🔭 천문대'; b.onclick=()=>openObs(); sub.appendChild(b); }
+rebuildPub(); SNAP=snap();
+if(!LOG.length){ if(MINE.length) note("lit",`이 하늘에 별 ${MINE.length}개가 떠 있는 것을 관측하기 시작했다.`); }
+
+// ---------- 공용 천문대: 모두가 펴낸 별이 한 하늘에 모인다 ----------
+// 저장 자리: pubs/<보는 사람 id> 문서 하나에 그 사람이 펴낸 연대기 목록. 모두 읽고, 자기 문서만 쓴다(헌장 2·5조).
+let SDB=null, UID=null, SHARED=[], SHARE_STATE="wait", unsubPubs=null;
+const MAXPUB=6, CHMAX=4000;
+(async()=>{
+  try{
+    const [db,user]=await Promise.all([window.claude&&window.claude.use?window.claude.use('db'):null, window.claude&&window.claude.use?window.claude.use('user'):null]);
+    SDB=db; UID=user?await user.id():null;
+  }catch(e){ SDB=null; }
+  if(!SDB){ SHARE_STATE="off"; refreshShared(); return; }
+  const timer=setTimeout(()=>{ if(SHARE_STATE==="wait"){ SHARE_STATE="slow"; refreshShared(); } },10000);
+  unsubPubs=SDB.collection("pubs").onSnapshot(snap=>{
+    const list=[]; snap.docs.forEach(d=>{ const v=d.data()||{}; (Array.isArray(v.items)?v.items:[]).forEach(it=>list.push({...it,uid:d.id,mine:d.id===UID})); });
+    SHARED=list; if(!snap.metadata.fromCache){ clearTimeout(timer); SHARE_STATE="on"; } refreshShared();
+  }, e=>{ clearTimeout(timer); SHARE_STATE="off"; refreshShared(); });
+})();
+function refreshShared(){ try{ rebuildPub(); }catch(e){} if(!obs.hidden) renderObs(); }
+
+async function sharePub(w,p){
+  if(!SDB||!UID){ return "local"; }
+  const item={no:p.no,ed:p.ed,name:p.name,author:p.author,at:p.at,books:p.books,chapters:p.chapters,pages:p.pages,thumb:p.thumb,
+    lands:w.lands.slice(0,12),folk:w.folk.slice(0,12),laws:w.laws.slice(0,12),camp:w.camp||"",nen:w.nen||"",
+    chs:w.chapters.filter(c=>c.x).map(c=>({t:String(c.t).slice(0,80),x:String(c.x).slice(0,CHMAX)})).slice(0,20)};
+  try{
+    const ref=SDB.doc("pubs/"+UID); const cur=await ref.get();
+    const items=(cur.exists&&Array.isArray(cur.data().items)?cur.data().items:[]).filter(x=>!(x.no===item.no&&x.ed===item.ed));
+    items.push(item); while(items.length>MAXPUB) items.shift();
+    await ref.set({items,updatedAt:stamp()}); return "shared";
+  }catch(e){ return e&&e.code==="quota_exceeded"?"full":"fail"; }
+}
+async function unsharePub(no,ed){
+  if(!SDB||!UID) return; const ref=SDB.doc("pubs/"+UID);
+  try{ const cur=await ref.get(); if(!cur.exists) return; const items=(cur.data().items||[]).filter(x=>!(x.no===no&&x.ed===ed));
+    await ref.set({items,updatedAt:stamp()}); note("gone",`『${(SHARED.find(x=>x.no===no)||{}).name||no}』 연대기를 공용 천문대에서 내렸다.`); }catch(e){}
+}
+const _publish=publish; publish=function(w){ const p=_publish(w); if(p&&!p.example){ sharePub(w,p).then(r=>{
+    bkMsg.textContent = r==="shared"?`공용 천문대에 등재했습니다. 기록 번호 ${p.no}${p.ed>1?` · ${p.ed}판`:""}. 이 하늘을 보는 모두에게 별이 뜹니다.`
+      : r==="full"?"공용 천문대가 가득 찼습니다. 이 브라우저에만 등재했어요."
+      : r==="local"?"공용 천문대가 열리기 전이라 이 브라우저에만 등재했어요. 공용 천문대가 열리면 다시 올릴 수 있습니다."
+      : "공용 천문대에 올리지 못했어요. 이 브라우저에는 등재되었습니다.";
+    if(r==="shared") note("pub",`『${p.name}』 연대기를 공용 천문대에 올렸다.`); }); } return p; };
+
+// 우주에 뜨는 펴낸 별: 내 것 + 모두의 것
+rebuildPub=function(){
+  if(pubPts){ scene.remove(pubPts); pubPts.geometry.dispose(); pubPts=null; }
+  pubLabels.forEach(L=>L.el.remove()); pubLabels.length=0;
+  const byNo=new Map();
+  PUB.forEach(p=>byNo.set(p.no,{...p,mine:true}));
+  SHARED.forEach(p=>{ const o=byNo.get(p.no); if(!o||(p.ed||1)>=(o.ed||1)) byNo.set(p.no,{...p,mine:p.mine||(o&&o.mine)}); });
+  const L=[...byNo.values()]; if(!L.length) return;
+  L.forEach(p=>p.p=pubPos(p));
+  pubPts=new THREE.Points(pointsGeo(L,p=>({p:[p.p.x,p.p.y,p.p.z],c:p.mine?[.86,.72,1]:[.62,.56,.86],s:p.mine?16:12,t:hash(p.no)})),pubMat); scene.add(pubPts);
+  L.forEach(p=>addLabel(`『${esc(p.name)}』<small>${p.mine?"내가 펴낸 별":esc(p.author)+"이(가) 펴낸 별"} · ${esc(p.no)}</small>`,p.p,'mine',0,99999,pubLabels));
+};
+
+// 남의 세계 찾아가기 (읽기만, 고칠 수 없다)
+function visit(it){
+  obs.hidden=true; ww.hidden=false; stopJourney();
+  const items=(list,kind)=>!list||!list.length?"":list.map(o=>`<div class="it">${kind==="law"?`<b>✦ ${esc(o.law||"")}</b>`:`<b>${esc(o.name||"")}</b><span>${esc(o.desc||"")}</span>`}<small>${esc(o.book||"")}</small></div>`).join("");
+  const same=(it.books||[]).filter(t=>READ().some(m=>norm(m.t)===norm(t)));
+  const starT=`『${it.name}』 연대기`, have=MINE.some(m=>m.t===starT);
+  wrap.innerHTML=`
+  <div class="bar"><div class="eb">찾아간 세계 · ${esc(it.author)}의 하늘 · ${esc(it.no)}${it.ed>1?` · ${it.ed}판`:""}</div>
+    <div class="acts"><button id="vBack">천문대로 돌아가기</button></div></div>
+  <div><h2 class="wn">${esc(it.name)}</h2><div class="from">${(it.books||[]).map(esc).join(" · ")}</div>
+    <div class="note" style="color:var(--link)">${same.length?`당신과 같은 별 ${same.length}개: ${same.map(esc).join(", ")}. 이 별에서 두 하늘이 맞닿아 있습니다.`:"이 세계는 찾아갈 수만 있습니다. 고치거나 가져갈 수는 없습니다. (헌장 2조)"}</div></div>
+  <div class="cols"><div class="col land"><h3>땅</h3>${items(it.lands,"land")||'<div class="empty">-</div>'}</div>
+    <div class="col folk"><h3>주민</h3>${items(it.folk,"folk")||'<div class="empty">-</div>'}</div>
+    <div class="col law"><h3>하늘의 법칙</h3>${items(it.laws,"law")||'<div class="empty">-</div>'}</div></div>
+  <div class="chron"><h3>연대기</h3>${(it.chs||[]).map(c=>`<div class="chap"><div class="ct">${esc(c.t)}</div><div class="tx">${paras(c.x)}</div></div>`).join("")}</div>
+  ${it.mine?"":`<div class="next"><div><div class="eb">이 연대기를 다 읽었다면</div><b>내 하늘에 이 별 띄우기</b><span>읽은 연대기는 당신의 하늘에 환한 별로 뜹니다. 세계는 읽은 만큼 자랍니다. (헌장 1조)</span></div>
+    <button id="vStar" ${have?"disabled":""}>${have?"이미 내 하늘에 있는 별":"다 읽었어요 · 띄우기"}</button></div>`}`;
+  document.getElementById('vBack').onclick=()=>{ ww.hidden=true; openObs(); };
+  const vs=document.getElementById('vStar'); if(vs) vs.onclick=()=>{ const m={t:starT,a:it.author,y:NOW,known:true,read:true}; place(m); MINE.push(m); save(); rebuildMine();
+    ww.hidden=true; flyTo(m); msg.innerHTML=`<b>${esc(starT)}</b>가 당신의 하늘에 떴습니다. ${esc(it.author)}의 이야기가 당신의 별이 되었습니다.`; };
+  ww.scrollTop=0;
+}
+
+// 천문대 화면에 '공용 천문대' 칸
+const _ro=renderObs; renderObs=function(){ _ro();
+  const sec=document.getElementById('pubSec'), nt=document.getElementById('obsNote');
+  const people=new Set(SHARED.map(x=>x.uid)).size;
+  if(nt) nt.textContent = SHARE_STATE==="on" ? `공용 천문대에 연결되어 있습니다 · ${people}명이 펴낸 별 ${SHARED.length}개. 각자 자기 기록만 올리고 내릴 수 있고, 모두가 읽을 수 있습니다.`
+    : SHARE_STATE==="slow" ? "공용 천문대에 아직 닿지 않았습니다. 아래 기록은 이 브라우저의 것이고, 늦게 들어온 별은 곧 나타납니다."
+    : SHARE_STATE==="off" ? "공용 천문대는 곧 열립니다. 지금은 이 브라우저에 남은 기록만 보여 줍니다." : "공용 천문대에 연결하는 중…";
+  if(!sec) return;
+  const myRead=READ().map(m=>norm(m.t));
+  const card=it=>{ const same=(it.books||[]).filter(t=>myRead.includes(norm(t))).length;
+    return `<div style="display:grid;grid-template-columns:84px 1fr;gap:12px;border:1px solid ${same?"rgba(199,160,255,.55)":"var(--line)"};border-radius:12px;padding:12px;min-width:0">
+      ${it.thumb?`<img src="${it.thumb}" alt="" style="width:84px;border-radius:3px;display:block">`:`<div style="width:84px;height:118px;background:#0b1220;border-radius:3px"></div>`}
+      <div style="min-width:0"><div style="font-size:11px;letter-spacing:.12em;color:var(--link)">${esc(it.no)}${it.ed>1?` · ${it.ed}판`:""}${it.mine?" · 내 별":""}${same?` · 같은 별 ${same}개`:""}</div>
+      <div style="font-family:var(--f-display);font-size:19px;font-weight:700;margin:.2rem 0;line-height:1.35">${esc(it.name)}</div>
+      <div style="font-size:12px;color:var(--ink-dim);line-height:1.6">${esc(it.author)} · ${it.chapters}장 · ${esc(it.at)}<br>${(it.books||[]).map(esc).join(", ")}</div>
+      <div class="acts" style="margin-top:8px"><button data-visit="${esc(it.uid)}|${esc(it.no)}|${it.ed}">찾아가기</button><button data-sky="${esc(it.uid)}|${esc(it.no)}|${it.ed}">우주에서 보기</button>${it.mine?`<button data-down="${esc(it.no)}|${it.ed}">공용에서 내리기</button>`:""}</div></div></div>`; };
+  const list=[...SHARED].sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  sec.insertAdjacentHTML('afterend',`<div id="sharedSec"><div class="chron"><h3>공용 천문대 · 모두가 펴낸 별</h3></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">${list.length?list.map(card).join(""):`<div class="empty" style="grid-column:1/-1">${SHARE_STATE==="on"?"아직 아무도 공용 천문대에 별을 올리지 않았습니다. 첫 별이 되어 보세요. 연대기를 묶고 '천문대에 등재하기'를 누르면 됩니다.":"공용 천문대가 열리면 모두가 펴낸 별이 여기에 모입니다."}</div>`}</div></div>`);
+  const find=k=>{ const [u,no,ed]=k.split("|"); return SHARED.find(x=>x.uid===u&&x.no===no&&String(x.ed)===ed); };
+  owrap.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>{ const it=find(b.dataset.visit); if(it) visit(it); });
+  owrap.querySelectorAll('[data-sky]').forEach(b=>b.onclick=()=>{ const it=find(b.dataset.sky); if(it) showPubStar(it); });
+  owrap.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ const [no,ed]=b.dataset.down.split("|"); b.disabled=true; b.textContent="내리는 중…"; unsharePub(no,+ed); });
+};
+
+
+// 공개판: 처음 온 사람에게 한 번만 안내
+(function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
+  const close=()=>{ h.hidden=true; try{ localStorage.setItem('chaekmisa-hello','1'); }catch(e){} if(!reduce && !MINE.length) journey(); };
+  if(!seen){ h.hidden=false; stopJourney(); }
+  document.getElementById('helloGo').onclick=close; h.addEventListener('click',e=>{ if(e.target===h) close(); });
+  addEventListener('keydown',e=>{ if(e.key==="Escape"&&!h.hidden) close(); }); })();
+</script>
+
+</body></html>
