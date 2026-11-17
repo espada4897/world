@@ -135,9 +135,50 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .dim-stars{font-size:13px;color:var(--ink-faint);margin-top:.5rem;line-height:1.6}
 .dim-stars b{color:var(--ink-dim);font-weight:500}
 
+/* 휴대폰(760px 이하): 우주를 가리지 않게, 손가락으로 누르기 좋게 */
+#meFold{display:none}
+@media (max-width:760px){
+  .top{top:calc(env(safe-area-inset-top,0px) + 12px)}
+  .top .name{font-size:13px;letter-spacing:.14em}
+  #me{top:calc(env(safe-area-inset-top,0px) + 42px);padding:12px 12px 10px;max-height:min(48dvh,48vh);overflow-y:auto;overscroll-behavior:contain}
+  #me h2{font-size:16px;padding-right:64px;margin-bottom:6px}
+  #meFold{display:block;position:absolute;top:9px;right:9px;font-size:12px;padding:4px 10px;border-radius:8px}
+  #me.fold{padding-bottom:8px;max-height:none}
+  #me.fold > *:not(#meH):not(#meFold){display:none!important}
+  #me.fold h2{margin:0}
+  #me input{font-size:16px;padding:9px 10px}
+  #me form button{padding:8px 11px;font-size:13px}
+  #msg{font-size:12.5px;line-height:1.6;margin-top:8px}
+  #mine{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  #mine::-webkit-scrollbar,.sub::-webkit-scrollbar,.stops::-webkit-scrollbar{display:none}
+  #mine button{flex:none;white-space:nowrap}
+  .sub{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .sub button{flex:none;white-space:nowrap;font-size:12px;padding:6px 10px}
+  .stops{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);padding:0 2px}
+  .stops button{flex:none;white-space:nowrap;padding:7px 11px}
+  #cap{bottom:calc(env(safe-area-inset-bottom,0px) + 64px)}
+  #cap h1{font-size:19px}
+  #card{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);max-height:42vh;overflow-y:auto;padding:14px 14px 12px}
+  #card h2{font-size:19px;padding-right:36px}
+  #card .x{padding:6px 11px}
+  .lb{font-size:10px} .lb.mine{font-size:12px} .lb.cname{font-size:13px}
+  .root-link{font-size:11px;margin-top:0}
+  #world .wrap,#owrap{gap:22px}
+  #world h2.wn{font-size:28px}
+  .chap .tx{font-size:16.5px;line-height:1.9}
+  .ask .q{font-size:17px}
+  .ask textarea,#bkA{font-size:16px!important}
+  .acts button{padding:9px 13px}
+  #bkP{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  #bkT{font-size:24px!important}
+  #hello .box{padding:18px 16px 14px;max-height:calc(100dvh - 32px);overflow-y:auto}
+  #hello h2{font-size:22px}
+  #hello ol{font-size:13px;gap:6px}
+}
+
 
 /* 공개판: 첫 안내, 책미사로 가는 문 */
-.root-link{pointer-events:auto;display:inline-block;margin-top:8px;font-size:12px;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(240,198,116,.4)}
+.root-link{pointer-events:auto;display:inline-block;font-size:12px;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(240,198,116,.4)}
 .root-link:hover{color:var(--ink)}
 #hello{position:fixed;z-index:40;inset:0;display:grid;place-items:center;background:rgba(3,5,11,.55);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 #hello .box{width:min(460px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;backdrop-filter:blur(8px)}
@@ -154,7 +195,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 <div id="labels"></div>
 <div class="top">
   <div class="name">책미사 너머</div>
-  <div class="clock">지금 보이는 시간<b id="clock">지난 60년</b><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a></div>
+  <div class="tr" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="clock">지금 보이는 시간<b id="clock">지난 60년</b></div><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a></div>
 </div>
 <section id="me" aria-label="내 별 띄우기">
   <h2 id="meH">당신이 읽은 책 한 권은?</h2>
@@ -1047,12 +1088,24 @@ const _ro=renderObs; renderObs=function(){ _ro();
       <div class="acts" style="margin-top:8px"><button data-visit="${esc(it.uid)}|${esc(it.no)}|${it.ed}">찾아가기</button><button data-sky="${esc(it.uid)}|${esc(it.no)}|${it.ed}">우주에서 보기</button>${it.mine?`<button data-down="${esc(it.no)}|${it.ed}">공용에서 내리기</button>`:""}</div></div></div>`; };
   const list=[...SHARED].sort((a,b)=>String(b.at).localeCompare(String(a.at)));
   sec.insertAdjacentHTML('afterend',`<div id="sharedSec"><div class="chron"><h3>공용 천문대 · 모두가 펴낸 별</h3></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">${list.length?list.map(card).join(""):`<div class="empty" style="grid-column:1/-1">${SHARE_STATE==="on"?"아직 아무도 공용 천문대에 별을 올리지 않았습니다. 첫 별이 되어 보세요. 연대기를 묶고 '천문대에 등재하기'를 누르면 됩니다.":"공용 천문대가 열리면 모두가 펴낸 별이 여기에 모입니다."}</div>`}</div></div>`);
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px">${list.length?list.map(card).join(""):`<div class="empty" style="grid-column:1/-1">${SHARE_STATE==="on"?"아직 아무도 공용 천문대에 별을 올리지 않았습니다. 첫 별이 되어 보세요. 연대기를 묶고 '천문대에 등재하기'를 누르면 됩니다.":"공용 천문대가 열리면 모두가 펴낸 별이 여기에 모입니다."}</div>`}</div></div>`);
   const find=k=>{ const [u,no,ed]=k.split("|"); return SHARED.find(x=>x.uid===u&&x.no===no&&String(x.ed)===ed); };
   owrap.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>{ const it=find(b.dataset.visit); if(it) visit(it); });
   owrap.querySelectorAll('[data-sky]').forEach(b=>b.onclick=()=>{ const it=find(b.dataset.sky); if(it) showPubStar(it); });
   owrap.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ const [no,ed]=b.dataset.down.split("|"); b.disabled=true; b.textContent="내리는 중…"; unsharePub(no,+ed); });
 };
+
+// 휴대폰: 내 별 칸 접기/펴기, 별 카드가 뜨면 저절로 접기
+(function(){
+  const me=document.getElementById('me'); if(!me) return;
+  const b=document.createElement('button'); b.id='meFold'; b.type='button'; me.appendChild(b);
+  const small=()=>matchMedia('(max-width:760px)').matches;
+  const set=f=>{ me.classList.toggle('fold',f); b.textContent=f?'펴기 ▾':'접기 ▴'; b.setAttribute('aria-expanded',String(!f)); };
+  set(false); b.onclick=()=>set(!me.classList.contains('fold'));
+  const card=document.getElementById('card');
+  if(card) new MutationObserver(()=>{ if(small()&&!card.hidden) set(true); }).observe(card,{attributes:true,attributeFilter:['hidden']});
+  document.getElementById('gl').addEventListener('pointerdown',()=>{ if(small()&&!me.classList.contains('fold')&&document.activeElement!==document.getElementById('q')) set(true); });
+})();
 
 
 // 공개판: 처음 온 사람에게 한 번만 안내
