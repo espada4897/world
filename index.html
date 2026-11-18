@@ -5,6 +5,17 @@
 <meta property="og:description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.">
 <meta property="og:url" content="https://world.chaekmisa.com/">
 <meta property="og:type" content="website">
+<script>
+// 방문 집계(GoatCounter, 책미사 홈페이지와 같은 계정 espada). 쿠키·개인정보 없음. 홈페이지와 섞이지 않게 모든 기록 앞에 '너머'.
+window.goatcounter={path:function(p){return '너머'+p}};
+(function(){ var q=[],once={},t;
+  window.__ev=function(n,o){ if(o){ if(once[n]) return; once[n]=1; }
+    var go=function(){ window.goatcounter.count({path:'너머/이벤트/'+n,title:n,event:true}); };
+    if(window.goatcounter&&window.goatcounter.count) go(); else q.push(go); };
+  t=setInterval(function(){ if(window.goatcounter&&window.goatcounter.count){ clearInterval(t); q.splice(0).forEach(function(f){f();}); } },1000);
+  setTimeout(function(){ clearInterval(t); },30000); })();
+</script>
+<script data-goatcounter="https://espada.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
 <title>책미사 너머</title>
@@ -1107,6 +1118,61 @@ const _ro=renderObs; renderObs=function(){ _ro();
   document.getElementById('gl').addEventListener('pointerdown',()=>{ if(small()&&!me.classList.contains('fold')&&document.activeElement!==document.getElementById('q')) set(true); });
 })();
 
+// 내 별을 누르면, 그리고 읽었어요를 누르면: 별 카드 + '다음에 할 일'
+// (11/19 에스파다: "읽었어요 하고 나서 그 다음은 뭘 하죠? 별을 찍어 봐도 아무 변동이 없다")
+(function(){
+  const st=document.createElement('style');
+  st.textContent=`#card .nx{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:8px}
+#card .nx .nxh{font-size:11px;letter-spacing:.14em;color:var(--gold)}
+#card .nx .dots{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+#card .nx .dots i{width:10px;height:10px;border-radius:50%;border:1px solid var(--gold)}
+#card .nx .dots i.on{background:var(--gold);box-shadow:0 0 8px rgba(240,198,116,.8)}
+#card .nx .dots span{margin-left:4px;flex:1}
+#card .nx p{margin:0;font-size:13px;line-height:1.65;color:var(--ink)}
+#card .nx .go{justify-self:start;border-radius:8px;padding:8px 14px;font-size:13px;color:#1a1206;background:var(--gold);border-color:var(--gold);font-weight:500}
+#card .nx .go:hover{filter:brightness(1.08)}
+#card .line em{color:var(--gold);font-style:normal}
+@media (max-width:760px){ body:has(#card:not([hidden])) #gopill{display:none} #card .nx p{font-size:12.5px} }`;
+  document.head.appendChild(st);
+  const awake=()=>!!(typeof WORLD!=='undefined'&&WORLD&&!WORLD.example);
+  function nextHTML(m){
+    const n=READ().length;
+    let h=`<div class="nx"><div class="nxh">다음에 할 일</div>`;
+    const dots=`${[0,1,2].map(i=>`<i class="${i<n?'on':''}"></i>`).join('')}<span>읽은 별 ${Math.min(n,3)}/3${n>3?` · 모두 ${n}개`:''}</span>`;
+    let p='',btn='';
+    if(m.read===false){
+      p='읽고 싶은 별입니다. 다 읽은 뒤 누르면 희미한 별이 환하게 켜지고, 읽은 별로 셉니다.'; btn='<button type="button" class="go" data-nx="read">다 읽었어요</button>';
+    } else if(awake()){
+      p=`당신의 세계 「${esc(WORLD.name||'')}」가 이 별들 아래에서 자라고 있습니다. 주민이 당신의 답을 기다립니다.`; btn='<button type="button" class="go" data-nx="wake">내 세계로 내려가기</button>';
+    } else if(n<3){
+      p='세 별이 모이면 그 사이에 <b>당신의 세계</b>가 깨어납니다. 땅이 생기고, 그 책의 인물들이 주민이 되어 당신에게 묻기 시작합니다.'; btn='<button type="button" class="go" data-nx="add">다음 책 띄우기</button>';
+    } else {
+      p='읽은 별이 셋 모였습니다. 이제 <b>당신의 세계</b>를 깨울 수 있어요.'; btn='<button type="button" class="go" data-nx="wake">✦ 세계 깨우기</button>';
+    }
+    return h+`<div class="dots">${dots}${btn}</div><p>${p}</p></div>`;
+  }
+  function showMine(m){ if(!m) return;
+    card.innerHTML=`<button class="x" aria-label="닫기">×</button><div class="eb">당신의 별 · ${m.read===false?'읽고 싶은 별':'읽은 별'}</div>
+      <h2>${esc(m.t)}</h2><div class="au">${esc(m.a||'')}</div><div class="line">${describe(m)}</div>`+nextHTML(m);
+    card.hidden=false; card.querySelector('.x').onclick=()=>card.hidden=true;
+    card.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>act(b.dataset.nx,m)); }
+  function openPanel(){ const me=document.getElementById('me'); if(me&&me.classList.contains('fold')){ const f=document.getElementById('meFold'); if(f) f.click(); } }
+  function act(k,m){ const q=document.getElementById('q');
+    if(k==='add'){ card.hidden=true; openPanel(); q.value=''; q.focus(); msg.innerHTML='다음 책 이름을 적고 <b>읽었어요</b>를 눌러 주세요. 별이 셋이 되면 당신의 세계가 깨어납니다.'; }
+    else if(k==='wake'){ card.hidden=true; wakeBtn.click(); }
+    else if(k==='read'){ card.hidden=true; q.value=m.t; document.getElementById('bRead').click(); } }
+  window.showMine=showMine;
+  // 내 별을 누르면 카드
+  const _click=clickAt;
+  clickAt=function(x,y){ const b=nearest(x,y); if(b&&b.mine){ showMine(MINE.find(m=>m.t===b.t)); return; } _click(x,y); };
+  // 읽었어요·읽고 싶어요 뒤에는 그 별의 카드를 저절로
+  // (원래 처리가 입력칸을 비우기 전에 이름을 잡아 둔다: 같은 칸의 capture가 먼저 돈다)
+  document.getElementById('f').addEventListener('submit',()=>{ const v=document.getElementById('q').value.trim(); if(!v) return;
+    setTimeout(()=>{ const m=MINE.find(x=>norm(x.t)===norm(v))||MINE[MINE.length-1]; if(m) showMine(m); },1400); },true);
+  // 칩(내 별 목록)을 눌러도 카드
+  const _chip=chipClick; chipClick=function(i){ _chip(i); showMine(MINE[i]); };
+})();
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
@@ -1314,7 +1380,7 @@ const lbl=labels.find(L=>L.p===MAC.p);
 if(lbl){ lbl.el.classList.add('enter'); lbl.el.innerHTML='백년의 고독<small>눌러서 들어가기</small>'; lbl.el.onclick=()=>nav('orbit'); }
 $('gopill').onclick=()=>nav('orbit');
 const _click=clickAt, _hover=hoverAt, _go=go;
-clickAt=function(x,y){ if(DIVING) return; const b=nearest(x,y); if(b===MAC){nav('orbit');return;} _click(x,y); if(b&&!card.hidden) addDoor(false); };
+clickAt=function(x,y){ if(DIVING) return; const b=nearest(x,y); if(b===MAC||(b&&b.mine&&b.t===MAC.t)){nav('orbit');return;} _click(x,y); if(b&&!card.hidden) addDoor(false); };
 hoverAt=function(x,y){ if(DIVING) return; _hover(x,y); if(nearest(x,y)===MAC) tip.textContent='백년의 고독 · 눌러서 행성 안으로'; };
 go=function(i){ FOC_T.set(0,0,0); _go(i); };
 function addDoor(fromRoad){ const d=document.createElement('div'); d.className='door';
@@ -1489,7 +1555,7 @@ pc.addEventListener('pointercancel',e=>pp.delete(e.pointerId));
 pc.addEventListener('wheel',e=>{ e.preventDefault(); camDT=Math.max(1.7,Math.min(7,camDT*(e.deltaY>0?1.1:1/1.1))); },{passive:false});
 
 function toOrbit(fromDive){
-  bake();
+  bake(); window.__ev&&__ev('행성/백년의 고독 궤도',1);
   mode='orbit'; setCrumb(); $('spot').hidden=true;
   camD=fromDive?14:1.25; camDT=3.4; landQ=null; orbitT0=performance.now();
   if(fromDive){ rotX=.05; rotY=-.6; }
@@ -1504,7 +1570,7 @@ function land(){
   tween(2300,p=>{ const e=ease(p); grp.quaternion.slerpQuaternions(q0,q1,Math.min(1,e*1.6)); camD=camDT=d0*Math.pow(1.04/d0,e); warp.style.opacity=Math.max(0,(p-.7)/.3); },
     ()=>{ startGround(); tween(1400,p=>{warp.style.opacity=1-p;},()=>{warp.style.background='';}); });
 }
-function startGround(){ mode='ground'; setCrumb(); $('oinfo').classList.remove('on'); setVis(VIS); camX=camXT=Math.max(0,Math.min(maxCam(),975-GW/GS/2));
+function startGround(){ window.__ev&&__ev('행성/마콘도 내려섬',1); mode='ground'; setCrumb(); $('oinfo').classList.remove('on'); setVis(VIS); camX=camXT=Math.max(0,Math.min(maxCam(),975-GW/GS/2));
   $('gRain').innerHTML=rainText(); $('gHint').style.opacity=1; setTimeout(()=>$('gHint').style.opacity=0,9000); buildHS(); }
 
 function renderOrbit(t,dt){
@@ -1818,15 +1884,15 @@ function markHTML(){ const mine=[0,1,2].filter(i=>SAVE.a[i]);
      :`<p class="note">아직 이 땅에 남긴 글이 없습니다. 부엔디아 집의 세 사람(우르술라, 멜키아데스, 대령)이 당신에게 하나씩 묻고 있어요.</p>`)+
    (mine.length>=3?'<p class="note">세 비석이 모두 서서, 마콘도에 당신의 집이 한 채 생겼습니다.</p>':''); }
 let curSpot=null;
-function openSpot(s){ curSpot=s; const sp=$('spot');
+function openSpot(s){ curSpot=s; window.__ev&&__ev('마콘도/'+s.name,1); const sp=$('spot');
   sp.innerHTML=`<button class="x" type="button" aria-label="닫기">×</button><div class="eb">${s.eb}</div><h2>${s.h}</h2>`+
     (s.mark?markHTML():'')+(s.p?s.p.map(x=>`<p>${x}</p>`).join(''):'')+(s.rain?`<div class="rain">${rainText()}<br><small>이 땅이 생긴 날부터 셉니다</small></div>`:'')+
     (s.note?`<p class="note">${s.note}</p>`:'')+(s.road?roadsHTML():'')+(s.q!=null?askHTML(s.q):'');
   sp.hidden=false; sp.scrollTop=0;
   sp.querySelector('.x').onclick=()=>sp.hidden=true;
-  sp.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>nav('universe',{to:OUR[+b.dataset.b]}));
-  const sv=sp.querySelector('[data-save]'); if(sv) sv.onclick=()=>{ const v=($('ans').value||'').trim(); if(!v){ $('ans').focus(); return; } const before=nAns(); SAVE.a[sv.dataset.save]=v; persist(); buildHS(); openSpot(s);
-    if(before<3&&nAns()===3){ toast('마콘도에 당신의 집이 한 채 생겼습니다'); setTimeout(()=>{ camXT=Math.max(0,Math.min(maxCam(),1296-GW/GS/2)); },1600); } else toast('비석이 섰습니다 · 이 땅의 이야기가 한 줄 자랐습니다'); };
+  sp.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{ window.__ev&&__ev('행성/질문의 길'); nav('universe',{to:OUR[+b.dataset.b]}); });
+  const sv=sp.querySelector('[data-save]'); if(sv) sv.onclick=()=>{ const v=($('ans').value||'').trim(); if(!v){ $('ans').focus(); return; } const before=nAns(); SAVE.a[sv.dataset.save]=v; persist(); window.__ev&&__ev('행성/비석 세움'); buildHS(); openSpot(s);
+    if(before<3&&nAns()===3){ window.__ev&&__ev('행성/당신의 집',1); toast('마콘도에 당신의 집이 한 채 생겼습니다'); setTimeout(()=>{ camXT=Math.max(0,Math.min(maxCam(),1296-GW/GS/2)); },1600); } else toast('비석이 섰습니다 · 이 땅의 이야기가 한 줄 자랐습니다'); };
   const ed=sp.querySelector('[data-edit]'); if(ed) ed.onclick=()=>{ const old=SAVE.a[ed.dataset.edit]; delete SAVE.a[ed.dataset.edit]; openSpot(s); $('ans').value=old; $('ans').focus(); };
   const X=WX(s.x,s.par||1), half=GW/2; if(X<90) camXT=Math.max(0,camXT-(160-X)/GS); else if(GW>640&&X>GW-400) camXT=Math.max(0,Math.min(maxCam(),camXT+(X-(GW-400)/2)/GS)); }
 let tt=null; function toast(m){ const el=$('toast'); el.textContent=m; el.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('on'),3600); }
@@ -1862,4 +1928,13 @@ if(h0!=='universe'){ const hl=document.getElementById('hello'); if(hl) hl.hidden
 })();
 </script>
 
+<script>
+// 방문 집계: 첫 화면에서 한 일
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b||!window.__ev) return;
+  if(b.id==='helloGo') __ev('첫 안내 통과',1);
+  else if(b.id==='bRead') __ev('내 별/읽었어요');
+  else if(b.id==='bWish') __ev('내 별/읽고 싶어요');
+  else if(b.id==='wake') __ev('세계 깨우기');
+  else if(b.id==='gopill') __ev('행성 버튼 누름',1); },true);
+</script>
 </body></html>
