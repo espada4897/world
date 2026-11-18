@@ -1,8 +1,8 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼만 자라는 나만의 세계, 그리고 한 권의 연대기. 독서모임 책미사가 지키는 천문대.">
+<meta name="description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고 쓴 만큼 자라는 나만의 세계, 그리고 한 권의 연대기. 독서모임 책미사가 지키는 천문대.">
 <meta property="og:title" content="책미사 너머">
-<meta property="og:description" content="당신이 읽은 책이 우주의 별이 됩니다. 세계는 읽은 만큼만 자랍니다.">
+<meta property="og:description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.">
 <meta property="og:url" content="https://world.chaekmisa.com/">
 <meta property="og:type" content="website">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -127,7 +127,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 @keyframes rise{from{transform:translateY(10px);opacity:.25}}
 @media (prefers-reduced-motion: reduce){.rise,.wait .orb{animation:none}}
 .err{font-size:13px;color:var(--old)}
-/* 읽은 만큼만 자란다: 읽은 별은 환하게, 읽고 싶은 별은 희미하게 */
+/* 첫째 법칙: 읽은 별은 환하게, 읽고 싶은 별은 희미하게 */
 #me form #bWish{color:var(--ink-dim);border-color:var(--line)}
 #mine button.wish{color:var(--ink-faint);border-style:dashed}
 #me .law1{margin-top:8px;font-size:11px;color:var(--ink-faint);letter-spacing:.04em}
@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 
 <section id="hello" hidden aria-label="처음 오신 분께"><div class="box">
   <h2>책미사 너머</h2>
-  <p>당신이 읽은 책이 이 우주의 별이 됩니다. 세계는 읽은 만큼만 자랍니다.</p>
+  <p>당신이 읽은 책이 이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.</p>
   <ol>
     <li>우주가 천천히 멀어집니다. 인류가 펴낸 책 1억 3천만 권의 하늘입니다.</li>
     <li>왼쪽 위에 읽은 책을 적고 <b>읽었어요</b>를 누르면 그 책이 나온 해의 자리에 당신의 별이 뜹니다. <small>읽고 싶은 책은 희미한 별로.</small></li>
@@ -675,7 +675,7 @@ addEventListener('keydown',e=>{ if(e.key==="Escape" && !ww.hidden) closeWorld();
 refreshWake();
 (async()=>{ try{ SAMPLE = window.claude && window.claude.use ? await window.claude.use('sample') : null; }catch(e){ SAMPLE=null; } refreshWake(); })();
 
-// ---------- 읽은 만큼만 자란다 (우주 헌장 첫째 법칙) ----------
+// ---------- 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자란다 (우주 헌장 첫째 법칙) ----------
 function chipClick(i){ const m=MINE[i]; if(!m) return; flyTo(m); msg.innerHTML=describe(m); bindLit(); }
 function bindLit(){ const b=document.getElementById('litBtn'); if(!b) return;
   b.onclick=()=>{ const m=MINE.find(x=>x.t===b.dataset.t); if(!m) return; m.read=true; save(); rebuildMine(); flyTo(m);
@@ -693,7 +693,7 @@ describe=function(m){
   let s=`<b>${esc(m.t)}</b>의 빛은 ${yrTxt(m.y)}에 출발해 <b>${ago.toLocaleString()}년</b>을 건너 당신에게 닿았습니다. ${link}`;
   if(!m.known) s+=` <span style="color:var(--ink-faint)">아직 지도에 없는 별이라 지금 이 시대 근처에 띄웠습니다.</span>`;
   if(R3.length>=3 && m.read!==false){ const ys=R3.map(x=>x.y), span=Math.max(...ys)-Math.min(...ys); s+=`<br><br>읽은 별 ${R3.length}개, <b>${span.toLocaleString()}년</b>에 걸친 별자리입니다.`; }
-  else if(m.read!==false) s+=`<br><br>세계는 읽은 만큼만 자랍니다. 읽은 별 ${R3.length}개 · <b>${3-R3.length}개</b> 더 켜지면 세계가 깨어날 수 있습니다.`;
+  else if(m.read!==false) s+=`<br><br>땅은 읽은 만큼 생깁니다. 읽은 별 ${R3.length}개 · <b>${3-R3.length}개</b> 더 켜지면 세계가 깨어날 수 있습니다.`;
   return s;
 };
 const _rb2=rebuildMine; rebuildMine=function(){ _rb2();
@@ -701,11 +701,11 @@ const _rb2=rebuildMine; rebuildMine=function(){ _rb2();
   document.getElementById('meH').textContent = R3.length>=3 ? `당신의 별자리 · 『${R3[0].t}』자리` : R3.length ? `읽은 별 ${R3.length}개 · 세 개가 켜지면 세계가 깨어납니다` : (w? "읽은 책 한 권은?" : "당신이 읽은 책 한 권은?"); };
 document.getElementById('bWish').onclick=()=>{ if(!document.getElementById('q').value.trim()) return; WISH=true; document.getElementById('f').requestSubmit(); };
 document.getElementById('f').addEventListener('submit',()=>setTimeout(bindLit,0));
-document.getElementById('me').insertAdjacentHTML('beforeend','<div class="law1">우주 헌장 1조 · 세계는 읽은 만큼만 자랍니다</div>');
+document.getElementById('me').insertAdjacentHTML('beforeend','<div class="law1">우주 헌장 1조 · 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다</div>');
 // 세계 화면에 희미한 별을 보여 준다
 const _render=render; render=function(w,streaming){ _render(w,streaming);
   if(w.example) return; const wish=MINE.filter(m=>m.read===false); const from=wrap.querySelector('.from'); if(!from) return;
-  from.insertAdjacentHTML('afterend', wish.length?`<div class="dim-stars">희미한 별 ${wish.length}개 · <b>${wish.map(m=>esc(m.t)).join(" · ")}</b><br>다 읽으면 이 세계에 도착합니다. 세계는 읽은 만큼만 자랍니다.</div>`:`<div class="dim-stars">세계는 읽은 만큼만 자랍니다.</div>`); };
+  from.insertAdjacentHTML('afterend', wish.length?`<div class="dim-stars">희미한 별 ${wish.length}개 · <b>${wish.map(m=>esc(m.t)).join(" · ")}</b><br>다 읽으면 이 세계에 도착합니다. 땅은 읽은 만큼 생깁니다.</div>`:`<div class="dim-stars">읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.</div>`); };
 rebuildMine();
 
 // ---------- 연대기 한 권 (PDF) — 우주 헌장 5조: 한 세계의 연대기는 그 세계 주인의 것이다 ----------
@@ -789,7 +789,7 @@ function makeBook(w){
     b.text(`✦ ${t}`,{font:`700 34px ${SERIF}`,lh:56,gap:0}); if(meta) b.text(meta,{font:`26px ${SANS}`,color:SOFT,lh:44,gap:0,indent:44}); b.space(14); });
   const wish=w.example?[]:MINE.filter(m=>m.read===false);
   if(wish.length){ b.space(30); b.label("아직 희미한 별 · 읽고 싶은 책"); wish.forEach(m=>b.text(`☆ ${m.t}`,{font:`30px ${SERIF}`,color:SOFT,lh:52,gap:0})); }
-  b.space(60); b.text("세계는 읽은 만큼만 자란다.",{font:`30px ${SERIF}`,color:FAINT,lh:52,align:"center"}); b.text("— 우주 헌장 1조",{font:`22px ${SANS}`,color:FAINT,lh:40,align:"center"});
+  b.space(60); b.text("읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자란다.",{font:`30px ${SERIF}`,color:FAINT,lh:52,align:"center"}); b.text("— 우주 헌장 1조",{font:`22px ${SANS}`,color:FAINT,lh:40,align:"center"});
   // 세계의 지도
   b.page("body"); b.space(120); b.label("세계의 지도",VIO); b.head(w.name,{size:52}); b.rule();
   const sec=(lab,list,f)=>{ if(!list.length) return; b.space(10); b.label(lab,GOLD); list.forEach(o=>{ f(o); b.space(18); }); b.space(16); };
@@ -980,7 +980,7 @@ function renderObs(){
       <div class="it"><b style="font-size:16px">${OUR.length}개의 별</b><span>소설 ${land} · 비소설 ${OUR.length-land}. 가장 멀리서 온 빛은 ${esc(oldest.t==="나를 살리는 논어 한마디"?"논어":oldest.t)}(${yrTxt(oldest.y)}). 이 하늘의 첫 별들입니다.</span></div></div>
   </div>
   <div class="mirror" style="grid-template-columns:1fr"><div><small>천문대가 지키는 법 · 우주 헌장</small>
-    <span style="display:block;margin-top:8px;line-height:1.9;color:var(--ink)">1. 세계는 읽은 만큼 자란다.<br>2. 남의 세계는 삼킬 수 없고, 찾아갈 수만 있다.<br>3. 두 세계는 같은 별에서만 맞닿고, 둘 다 원할 때만 다리가 놓인다.<br>4. 주민은 빌려줄 수 있지만 빼앗을 수 없다.<br>5. 한 세계의 연대기는 그 세계 주인의 것이다.<br>6. 책미사의 세계도 이 하늘 아래 별 하나일 뿐이다.</span></div></div>
+    <span style="display:block;margin-top:8px;line-height:1.9;color:var(--ink)">1. 세계는 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자란다.<br>2. 남의 세계는 삼킬 수 없고, 찾아갈 수만 있다.<br>3. 두 세계는 같은 별에서만 맞닿고, 둘 다 원할 때만 다리가 놓인다.<br>4. 주민은 빌려줄 수 있지만 빼앗을 수 없다.<br>5. 한 세계의 연대기는 그 세계 주인의 것이다.<br>6. 책미사의 세계도 이 하늘 아래 별 하나일 뿐이다.</span></div></div>
   `;
   document.getElementById('oBack').onclick=()=>{ obs.hidden=true; };
   const ow=document.getElementById('oWorld'); if(ow) ow.onclick=()=>{ obs.hidden=true; openWorld(WORLD); };
@@ -1062,7 +1062,7 @@ function visit(it){
     <div class="col folk"><h3>주민</h3>${items(it.folk,"folk")||'<div class="empty">-</div>'}</div>
     <div class="col law"><h3>하늘의 법칙</h3>${items(it.laws,"law")||'<div class="empty">-</div>'}</div></div>
   <div class="chron"><h3>연대기</h3>${(it.chs||[]).map(c=>`<div class="chap"><div class="ct">${esc(c.t)}</div><div class="tx">${paras(c.x)}</div></div>`).join("")}</div>
-  ${it.mine?"":`<div class="next"><div><div class="eb">이 연대기를 다 읽었다면</div><b>내 하늘에 이 별 띄우기</b><span>읽은 연대기는 당신의 하늘에 환한 별로 뜹니다. 세계는 읽은 만큼 자랍니다. (헌장 1조)</span></div>
+  ${it.mine?"":`<div class="next"><div><div class="eb">이 연대기를 다 읽었다면</div><b>내 하늘에 이 별 띄우기</b><span>읽은 연대기는 당신의 하늘에 환한 별로 뜹니다. 땅은 읽은 만큼 생깁니다. (헌장 1조)</span></div>
     <button id="vStar" ${have?"disabled":""}>${have?"이미 내 하늘에 있는 별":"다 읽었어요 · 띄우기"}</button></div>`}`;
   document.getElementById('vBack').onclick=()=>{ ww.hidden=true; openObs(); };
   const vs=document.getElementById('vStar'); if(vs) vs.onclick=()=>{ const m={t:starT,a:it.author,y:NOW,known:true,read:true}; place(m); MINE.push(m); save(); rebuildMine();
