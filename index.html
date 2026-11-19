@@ -5,6 +5,18 @@
 <meta property="og:description" content="당신이 읽은 책이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.">
 <meta property="og:url" content="https://world.chaekmisa.com/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="책미사 너머">
+<meta property="og:image" content="https://world.chaekmisa.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="밤하늘에 이어진 세 개의 책 별과 '읽은 책이 별이 됩니다'">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://world.chaekmisa.com/og.jpg">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#05070d">
 <script>
 // 방문 집계(GoatCounter, 책미사 홈페이지와 같은 계정 espada). 쿠키·개인정보 없음. 홈페이지와 섞이지 않게 모든 기록 앞에 '너머'.
 window.goatcounter={path:function(p){return '너머'+p}};
@@ -1161,7 +1173,7 @@ const _ro=renderObs; renderObs=function(){ _ro();
 @media (max-width:760px){ body:has(#card:not([hidden])) #gopill{display:none} #card .nx p{font-size:12.5px} }`;
   document.head.appendChild(st);
   // AI(Claude)가 없는 곳(공개판)에서는 세계 깨우기가 예시 세계로 간다 → 약속하지 않고, 인물이 실제로 묻는 행성으로 이끈다
-  const AI=()=>!!(window.claude&&window.claude.use&&typeof SAMPLE!=='undefined'&&SAMPLE);
+  const AI=()=>!!(typeof SAMPLE!=='undefined'&&SAMPLE);   // 견본은 claude.ai, 공개판은 초대 코드 이야기꾼(이야기꾼.js)
   const planet=()=>!!document.getElementById('gopill');
   const awake=()=>!!(typeof WORLD!=='undefined'&&WORLD&&!WORLD.example);
   function nextHTML(m){
