@@ -546,7 +546,7 @@ const ASKRULE=`'ask'는 주민 한 명이 독자에게 직접 묻는 질문 한 
 
 async function build(){
   if(busy) return;
-  if(!SAMPLE){ openWorld(EXAMPLE); wrap.insertAdjacentHTML('afterbegin',`<p class="err">세계 깨우기는 곧 열립니다. 이야기꾼을 준비하고 있어요. 그동안 예시 세계를 둘러보세요. 당신이 띄운 별은 이 브라우저에 그대로 남아 있습니다.</p>`); return; }
+  if(!SAMPLE){ openWorld(EXAMPLE); wrap.insertAdjacentHTML('afterbegin',`<p class="err">세계 깨우기는 곧 열립니다. 이야기꾼을 준비하고 있어요. 그동안 예시 세계를 둘러보세요. 당신이 띄운 별은 이 브라우저에 그대로 남아 있습니다. 책 속 인물이 당신에게 묻는 곳은 지금 <b>백년의 고독 행성</b>에 열려 있습니다.</p>`); return; }
   busy=true; ctl=new AbortController();
   waiting("별이 땅으로 내려앉고 있습니다", `${READ().map(m=>m.t).join(" · ")}`);
   const prompt=`${RULES}
@@ -1127,13 +1127,17 @@ const _ro=renderObs; renderObs=function(){ _ro();
 #card .nx .dots{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
 #card .nx .dots i{width:10px;height:10px;border-radius:50%;border:1px solid var(--gold)}
 #card .nx .dots i.on{background:var(--gold);box-shadow:0 0 8px rgba(240,198,116,.8)}
-#card .nx .dots span{margin-left:4px;flex:1}
+#card .nx .dots span{margin-left:4px;flex:1;white-space:nowrap}
 #card .nx p{margin:0;font-size:13px;line-height:1.65;color:var(--ink)}
 #card .nx .go{justify-self:start;border-radius:8px;padding:8px 14px;font-size:13px;color:#1a1206;background:var(--gold);border-color:var(--gold);font-weight:500}
 #card .nx .go:hover{filter:brightness(1.08)}
+#card .nx .go2{border-radius:8px;padding:8px 12px;font-size:13px;color:var(--gold);border:1px solid rgba(240,198,116,.55);background:transparent;margin-left:6px}
 #card .line em{color:var(--gold);font-style:normal}
 @media (max-width:760px){ body:has(#card:not([hidden])) #gopill{display:none} #card .nx p{font-size:12.5px} }`;
   document.head.appendChild(st);
+  // AI(Claude)가 없는 곳(공개판)에서는 세계 깨우기가 예시 세계로 간다 → 약속하지 않고, 인물이 실제로 묻는 행성으로 이끈다
+  const AI=()=>!!(window.claude&&window.claude.use&&typeof SAMPLE!=='undefined'&&SAMPLE);
+  const planet=()=>!!document.getElementById('gopill');
   const awake=()=>!!(typeof WORLD!=='undefined'&&WORLD&&!WORLD.example);
   function nextHTML(m){
     const n=READ().length;
@@ -1145,9 +1149,11 @@ const _ro=renderObs; renderObs=function(){ _ro();
     } else if(awake()){
       p=`당신의 세계 「${esc(WORLD.name||'')}」가 이 별들 아래에서 자라고 있습니다. 주민이 당신의 답을 기다립니다.`; btn='<button type="button" class="go" data-nx="wake">내 세계로 내려가기</button>';
     } else if(n<3){
-      p='세 별이 모이면 그 사이에 <b>당신의 세계</b>가 깨어납니다. 땅이 생기고, 그 책의 인물들이 주민이 되어 당신에게 묻기 시작합니다.'; btn='<button type="button" class="go" data-nx="add">다음 책 띄우기</button>';
+      if(AI()){ p='세 별이 모이면 그 사이에 <b>당신의 세계</b>가 깨어납니다. 땅이 생기고, 그 책의 인물들이 주민이 되어 당신에게 묻기 시작합니다.'; btn='<button type="button" class="go" data-nx="add">다음 책 띄우기</button>'; }
+      else { p='읽은 책을 띄울 때마다 별이 이어져, 세 개가 되면 <b>당신의 별자리</b>가 생깁니다.'+(planet()?' 책 속 인물을 만나고 싶다면 <b>백년의 고독 행성</b>으로 내려가 보세요. 우르술라와 대령, 멜키아데스가 당신에게 묻습니다.':''); btn='<button type="button" class="go" data-nx="add">다음 책 띄우기</button>'+(planet()?'<button type="button" class="go2" data-nx="planet">행성으로 ↓</button>':''); }
     } else {
-      p='읽은 별이 셋 모였습니다. 이제 <b>당신의 세계</b>를 깨울 수 있어요.'; btn='<button type="button" class="go" data-nx="wake">✦ 세계 깨우기</button>';
+      if(AI()){ p='읽은 별이 셋 모였습니다. 이제 <b>당신의 세계</b>를 깨울 수 있어요.'; btn='<button type="button" class="go" data-nx="wake">✦ 세계 깨우기</button>'; }
+      else { p='<b>당신의 별자리</b>가 생겼습니다. 당신의 책으로 세계를 깨우는 문은 아직 준비 중입니다.'+(planet()?' 지금은 <b>백년의 고독 행성</b>에서 인물들이 당신을 기다립니다.':''); btn=planet()?'<button type="button" class="go" data-nx="planet">백년의 고독 행성으로</button>':'<button type="button" class="go" data-nx="add">다음 책 띄우기</button>'; }
     }
     return h+`<div class="dots">${dots}${btn}</div><p>${p}</p></div>`;
   }
@@ -1159,6 +1165,7 @@ const _ro=renderObs; renderObs=function(){ _ro();
   function openPanel(){ const me=document.getElementById('me'); if(me&&me.classList.contains('fold')){ const f=document.getElementById('meFold'); if(f) f.click(); } }
   function act(k,m){ const q=document.getElementById('q');
     if(k==='add'){ card.hidden=true; openPanel(); q.value=''; q.focus(); msg.innerHTML='다음 책 이름을 적고 <b>읽었어요</b>를 눌러 주세요. 별이 셋이 되면 당신의 세계가 깨어납니다.'; }
+    else if(k==='planet'){ card.hidden=true; document.getElementById('gopill').click(); }
     else if(k==='wake'){ card.hidden=true; wakeBtn.click(); }
     else if(k==='read'){ card.hidden=true; q.value=m.t; document.getElementById('bRead').click(); } }
   window.showMine=showMine;
@@ -1766,10 +1773,63 @@ function drawA(t,dt){
   streetRefl(t); marker(t); signpost();
   river(t,dt); riverRefl(t); mist(t,1);
   glowPass(t); butterflies(t); foreground(t); rainLayers(dt); grade(); grain(); }
+
+// ===== 세 사람: 얼굴 없이 그림자와 불빛으로 (B판) =====
+// 고리를 누르면 그 사람이 창가·문간으로 다가온다. 좌표는 macondo-b.jpg 위 세계 좌표.
+const NEAR={mel:0,fish:0,house:0};
+function person(x,y,h,bend,col,o){ o=o||{}; // 발 위치(x,y), 키 h, 숙임 bend(0~1), o.hat 넓은 모자, o.arm 등불 든 팔(0~1), o.shawl 숄
+  const k=h/100, X=a=>WX(x+a*k), Y=b=>WY(y-b*k), lean=bend*10;
+  g.fillStyle=col; g.beginPath();
+  // 치마/외투 아래에서 어깨까지
+  const hem=o.shawl?20:14;
+  g.moveTo(X(-hem),Y(0)); g.quadraticCurveTo(X(-hem+3),Y(30),X(-12),Y(50));
+  g.quadraticCurveTo(X(-15+lean*.3),Y(66-bend*4),X(-13+lean*.6),Y(73-bend*6)); // 어깨 둥글게
+  g.quadraticCurveTo(X(-8+lean),Y(78-bend*7),X(-3.5+lean),Y(78-bend*7));       // 목 왼쪽
+  g.lineTo(X(3.5+lean),Y(78-bend*7));
+  g.quadraticCurveTo(X(8+lean),Y(78-bend*7),X(13+lean*.6),Y(72-bend*6));
+  g.quadraticCurveTo(X(15),Y(62),X(12),Y(50));
+  g.quadraticCurveTo(X(hem-3),Y(30),X(hem),Y(0)); g.closePath(); g.fill();
+  // 머리
+  const hx=lean*1.25, hy=86-bend*11;
+  g.beginPath(); g.ellipse(X(hx),Y(hy),7*k*GS,8.2*k*GS,bend*.35,0,7); g.fill();
+  if(o.bun){ g.beginPath(); g.arc(X(hx-5),Y(hy+5),3.6*k*GS,0,7); g.fill(); }
+  if(o.hat){ g.beginPath(); g.ellipse(X(hx),Y(hy+5),15*k*GS,2.6*k*GS,bend*.25,0,7); g.fill();
+    g.beginPath(); g.ellipse(X(hx),Y(hy+9),7*k*GS,5*k*GS,0,Math.PI,0); g.fill(); }
+  if(o.arm!=null){ const a=o.arm; // 오른팔: 내린 팔(0) → 들어 올린 팔(1)
+    g.strokeStyle=col; g.lineCap='round'; g.lineWidth=5.5*k*GS; g.beginPath(); g.moveTo(X(11),Y(68));
+    g.quadraticCurveTo(X(19),Y(56+a*14),X(17+a*4),Y(42+a*30)); g.stroke(); }
+}
+function figures(t,dt){
+  for(const id in NEAR){ const on=!$('spot').hidden&&curSpot&&curSpot.id===id; NEAR[id]+=((on?1:0)-NEAR[id])*Math.min(1,dt*3); }
+  // 멜키아데스: 파란 창 안, 촛불 앞 굽은 그림자. 가끔 양피지를 넘기는 손
+  { const n=NEAR.mel; g.save(); g.beginPath(); g.rect(WX(852),WY(483),WX(888)-WX(852),WY(525)-WY(483)); g.clip();
+    const sway=Math.sin(t*.7)*2*(1-n); person(868+sway+(1-n)*6,532+(1-n)*4,38+n*8,.55-.35*n,'rgba(8,14,26,.8)',{hat:1});
+    const flip=(Math.sin(t*.45)>.82)||n>.5; if(flip){ g.fillStyle='rgba(8,14,26,.7)'; g.beginPath(); g.ellipse(WX(878+Math.sin(t*3)*4),WY(511),5*GS,2.5*GS,Math.sin(t*3)*.6,0,7); g.fill(); }
+    g.restore();
+    g.save(); g.globalCompositeOperation='lighter'; const cf=.6+.25*Math.sin(t*11)+.15*Math.sin(t*23); const X=WX(857),Y=WY(517),R=(10+n*8)*GS;
+    const gg=g.createRadialGradient(X,Y,0,X,Y,R); gg.addColorStop(0,`rgba(255,215,150,${.55*cf})`); gg.addColorStop(1,'rgba(255,215,150,0)'); g.fillStyle=gg; g.fillRect(X-R,Y-R,R*2,R*2); g.restore(); }
+  // 대령: 금빛 작업실 창 안, 고개 숙여 금붕어를 다듬는 등. 다가오면 고개를 든다
+  { const n=NEAR.fish; g.save(); g.beginPath(); g.rect(WX(1083),WY(636),WX(1157)-WX(1083),WY(692)-WY(636)); g.clip();
+    const bob=(Math.sin(t*1.6)*.5+.5)*(1-n); person(1130-n*10,706,54+n*6,.85*(1-n)+bob*.15,'rgba(36,18,4,.74)');
+    if(!reduceM&&n<.5&&Math.sin(t*1.6)>.7){ g.globalCompositeOperation='lighter'; g.fillStyle=`rgba(255,235,160,${.6*(1-n*2)})`; g.beginPath(); g.arc(WX(1112),WY(668),2*GS,0,7); g.fill(); }
+    g.restore(); }
+  // 우르술라: 가운데 문간에 등불 든 작은 노파. 빗속을 내다보다 들어갔다 나온다. 다가오면 등불을 든다
+  { const n=NEAR.house; const cyc=(t%26)/26, out=Math.max(n,Math.min(1,Math.max(0,Math.sin(cyc*Math.PI*2)*1.6+.4)));
+    if(out>.02){ const fx=990, fy=719+n*6, hh=38+n*8;
+      g.save(); if(n<.5){ g.beginPath(); g.rect(WX(962),WY(662),WX(1018)-WX(962),WY(730)-WY(662)); g.clip(); }
+      g.globalAlpha=out; person(fx,fy,hh,.35*(1-n),'rgba(6,8,10,.94)',{bun:1,shawl:1,arm:n}); g.restore();
+      const lx=fx+(17+n*4)*hh/100, ly=fy-hh*(.40+.32*n)/1, lf=out*(.75+.15*Math.sin(t*9)+.1*Math.sin(t*17));
+      g.save(); g.globalCompositeOperation='lighter'; const X=WX(lx),Y=WY(ly);
+      let R=(34+n*30)*GS, gg=g.createRadialGradient(X,Y,0,X,Y,R); gg.addColorStop(0,`rgba(255,195,105,${.85*lf})`); gg.addColorStop(.25,`rgba(255,170,80,${.3*lf})`); gg.addColorStop(1,'rgba(255,190,100,0)'); g.fillStyle=gg; g.fillRect(X-R,Y-R,R*2,R*2);
+      g.fillStyle=`rgba(255,244,210,${lf})`; g.beginPath(); g.arc(X,Y,(2.4+n)*GS,0,7); g.fill();
+      // 젖은 바닥에 비친 등불
+      R=(18+n*10)*GS; const Y2=WY(fy+10+(fy-ly)*.6); gg=g.createRadialGradient(X,Y2,0,X,Y2,R); gg.addColorStop(0,`rgba(255,180,90,${.22*lf})`); gg.addColorStop(1,'rgba(255,180,90,0)'); g.fillStyle=gg; g.save(); g.translate(X,Y2); g.scale(.6,1.6); g.translate(-X,-Y2); g.fillRect(X-R,Y2-R,R*2,R*2); g.restore();
+      g.restore(); } } }
 function drawB(t,dt){
   if(!BIMG){ const s=g.createLinearGradient(0,0,0,GH); s.addColorStop(0,'#060b10'); s.addColorStop(1,'#15232a'); g.fillStyle=s; g.fillRect(0,0,GW,GH); flashSky(.3); rainLayers(dt); grade(); return; }
   { const ih=2400*BIMG.naturalHeight/BIMG.naturalWidth; g.drawImage(BIMG,WX(0),WY(500-ih/2),2400*GS,ih*GS); }
   // 그림 속 불빛이 숨 쉬게: 작업실(금빛), 멜키아데스의 방(푸른빛), 기차 전조등
+  figures(t,dt);
   g.save(); g.globalCompositeOperation='lighter';
   [[1117,645,70,0,'255,185,90'],[867,501,45,2,'150,195,240'],[1644,673,55,4,'255,235,180']].forEach(([x,y,r,ph,c])=>{ const f=.55+.25*Math.sin(t*2.3+ph)*Math.sin(t*.8+ph*1.7)+(flash*.2);
     const X=WX(x),Y=WY(y),R=r*GS*2, gg=g.createRadialGradient(X,Y,0,X,Y,R); gg.addColorStop(0,`rgba(${c},${.32*f})`); gg.addColorStop(1,`rgba(${c},0)`); g.fillStyle=gg; g.fillRect(X-R,Y-R,R*2,R*2); });
