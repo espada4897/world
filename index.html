@@ -1180,6 +1180,200 @@ const _ro=renderObs; renderObs=function(){ _ro();
   const _chip=chipClick; chipClick=function(i){ _chip(i); showMine(MINE[i]); };
 })();
 
+// 한 바퀴 보기(시연): 책 세 권 → 별 → 별자리 → 세계 → 주민의 질문과 비석 → 연대기 PDF
+// 11/19 에스파다: "세 개의 책을 임의로 정하고, 세계를 보여 주고, 이야기까지 만들어 PDF까지"
+// 그림: tour-world.jpg (그림\시연\받은그림\고름_시연1.png, 1536x1024). 아래 좌표는 그 그림의 픽셀 좌표.
+(function(){
+const DEMO={example:true,demo:true,books:["백년의 고독","데미안","사피엔스"],name:"알과 등불의 호수",created:"2026-11-19",
+ lands:[{book:"백년의 고독",name:"비 그친 마콘도",desc:"하얀 벽에 붉은 기와를 얹은 호숫가 마을. 넉 달 동안 내린 비가 막 그쳤지만 처마에서는 아직 물이 떨어진다. 이 마을 사람들은 잊지 않으려고 물건마다 이름표를 붙인다."},
+        {book:"데미안",name:"알의 섬",desc:"호수 한가운데 바위섬에 집채만 한 돌 알이 있다. 앞면에 금이 가 있고, 그 틈으로 금빛이 샌다. 무엇이 깨고 나오려는지 아무도 모른다."}],
+ folk:[{book:"백년의 고독",name:"우르술라",desc:"마을에서 가장 오래 산 사람. 남자들이 알을 보러 호수로 나갈 때도 부엌 창의 등불을 끄지 않는다."},
+       {book:"데미안",name:"싱클레어",desc:"밝은 세계와 어두운 세계 사이에서 흔들리던 소년. 알의 금이 자기 이마의 표식과 같은 모양이라는 걸 알아챘다."}],
+ laws:[{book:"사피엔스",law:"이 세계의 등불은 함께 믿는 이야기로 뜬다. 아무도 믿지 않게 된 이야기의 등불은 그날 밤 꺼진다."}],
+ camp:"나는 어디서 왔는가",campWhy:"세 별 모두 기원을 묻습니다. 한 집안의 백 년, 한 소년의 깨어남, 인류의 7만 년.",
+ nen:"특질계",nenWhy:"소설 두 권과 인류사 한 권을 한 하늘에 걸었습니다. 멀리 떨어진 것을 잇는 독자입니다.",
+ chapters:[{t:"제1장 · 깨어남",x:"비가 그친 첫날 밤, 마콘도 사람들은 호수 위에 떠 있는 것을 처음 보았다. 집채만 한 돌 알이었다. 아무도 그것이 언제부터 거기 있었는지 기억하지 못했다. 이 마을에서는 흔한 일이었다.\n우르술라는 부엌 창가에 등불을 하나 더 걸었다. \"믿는 사람이 없으면 불은 꺼지는 법이다.\" 그녀가 말하자, 마을 위에 떠 있던 등불 하나가 정말로 가물거렸다.\n그때 호숫가 흰 돌 위에 낯선 소년이 앉아 있었다. 이마에 희미한 표식이 있었다. 소년은 알의 금을 오래 바라보았다.\n\"저건 깨지는 게 아니에요.\" 싱클레어가 말했다. \"안에서 나오려는 거예요.\"\n\"무엇이?\" 우르술라가 물었다.\n소년은 대답 대신 하늘을 가리켰다. 구름이 갈라진 자리에 별 세 개가 나란히 떠 있었다. 이 세계를 깨운 별들이었다."},
+           {t:"제2장 · 첫 비석",x:"다음 날 아침, 호숫가에 비석 하나가 서 있었다. 누가 세웠는지 몰라도, 거기 새겨진 문장은 마을 사람 모두가 읽을 수 있었다.\n「다들 괜찮다고 하던 길. 그만두고 나서야 내 숨소리가 들렸다.」\n우르술라는 비석 앞에 한참 서 있다가, 꺼져 가던 등불 하나를 두 손으로 감쌌다. 불이 다시 살아났다. 한 사람이 믿은 이야기였지만, 그것으로 충분했다.\n그날 밤 알의 금이 손가락 한 마디만큼 길어졌다. 싱클레어는 비석 옆에 앉아 중얼거렸다. \"누군가 먼저 깨고 나왔구나.\"\n호수 건너편 하늘에서는 아무도 모르는 사이에, 네 번째 별이 뜰 자리가 조금씩 밝아지고 있었다."}],
+ stones:[{who:"싱클레어",q:"당신이 깨고 나와야 했던 알은 무엇이었나요?",a:"다들 괜찮다고 하던 길. 그만두고 나서야 내 숨소리가 들렸다."}],
+ ask:null,next:null};
+window.DEMO_WORLD=DEMO;
+
+// 그림 속 자리(픽셀)
+const IW=1536, IH=1024;
+const P={village:[250,470,170], blue:[218,330,40], egg:[1245,520,140], crack:[1238,505], stone:[548,652,40], sky:[918,80,110],
+  stars:[[918,45],[830,100],[1003,100]],
+  lanterns:[[430,325],[497,293],[354,372],[573,362],[647,350],[698,420],[819,437],[643,443],[774,471],[890,480],[967,477],[1013,498],[1069,517]],
+  dim:[4,12]};
+
+const css=`#tour{position:fixed;inset:0;z-index:28;display:flex;flex-direction:column;pointer-events:none;font-family:var(--f-body)}
+#tour[hidden]{display:none}
+#tour.scene{background:#05060d}
+#tour .tsc{flex:1;position:relative;min-height:0;opacity:0;transition:opacity 1.2s;pointer-events:none}
+#tour.scene .tsc{opacity:1;pointer-events:auto}
+#tour canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#05060d}
+#tour .tring{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid var(--gold);box-shadow:0 0 18px rgba(240,198,116,.7);animation:tpulse 1.6s ease-in-out infinite;pointer-events:none}
+#tour .tring::before{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,236,190,.9)}
+#tour .tring b{position:absolute;left:50%;top:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;font:500 13px var(--f-body);color:#fff;text-shadow:0 1px 6px #000,0 0 2px #000;background:rgba(5,7,14,.55);padding:2px 8px;border-radius:999px}
+@keyframes tpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.75}}
+#tour svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#tour .tbox{pointer-events:auto;margin:0 auto;width:min(760px,100%);box-sizing:border-box;background:rgba(8,10,20,.93);border-top:1px solid var(--line);border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:14px 14px 0 0;padding:16px 20px calc(env(safe-area-inset-bottom,0px) + 14px);max-height:46vh;overflow:auto;backdrop-filter:blur(8px)}
+#tour .ttop{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#tour .tstep{font-size:11px;letter-spacing:.14em;color:var(--gold)}
+#tour .tdots{display:flex;gap:5px;margin-left:auto}
+#tour .tdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18)}
+#tour .tdots i.on{background:var(--gold)}
+#tour .tx{background:none;border:0;color:var(--ink-dim);font-size:12px;cursor:pointer;padding:4px 6px}
+#tour h3{font-family:var(--f-display);font-size:22px;line-height:1.35;margin:2px 0 8px;color:var(--ink)}
+#tour p{margin:0 0 8px;font-size:14px;line-height:1.7;color:var(--ink)}
+#tour .tsub{color:var(--ink-dim);font-size:13px}
+#tour .ttype{font-family:var(--f-display);font-size:16px;padding:9px 12px;border-radius:8px;background:rgba(0,0,0,.35);border:1px solid var(--line);min-height:1.6em;margin:6px 0 8px}
+#tour .ttype::after{content:'';display:inline-block;width:2px;height:1em;background:var(--gold);margin-left:2px;vertical-align:-2px;animation:tblink 1s steps(1) infinite}
+#tour .ttype.done::after{display:none}
+@keyframes tblink{50%{opacity:0}}
+#tour .tlist{display:grid;gap:6px;margin:6px 0 8px}
+#tour .tlist button{all:unset;cursor:pointer;display:block;padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--ink)}
+#tour .tlist button.on{border-color:var(--gold);background:rgba(240,198,116,.08)}
+#tour .tlist small{display:block;font-size:11px;letter-spacing:.08em;color:var(--gold)}
+#tour .tch{font-family:var(--f-display);font-size:15px;line-height:1.85;white-space:pre-line;color:var(--ink);border-left:2px solid rgba(240,198,116,.4);padding-left:12px;margin:6px 0 8px}
+#tour .tq{font-family:var(--f-display);font-size:18px;line-height:1.5;margin:4px 0}
+#tour .tacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+#tour .tacts .sp{flex:1}
+#tour .tacts button{border-radius:8px;padding:9px 16px;font-size:14px}
+#tour .tacts .tgo{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:500}
+#tourBtn{color:#1a1206!important;background:var(--gold)!important;border-color:var(--gold)!important;font-weight:500}
+@media (max-width:760px){ #tour .tbox{max-height:52vh;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 12px)} #tour h3{font-size:19px} #tour .tch{font-size:14px} }
+@media (prefers-reduced-motion:reduce){ #tour .tring{animation:none} }`;
+const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+document.body.insertAdjacentHTML('beforeend',`<section id="tour" hidden aria-label="한 바퀴 보기"><div class="tsc"><canvas id="tcv"></canvas><div id="tmk"></div></div><svg id="tsv"></svg><div id="tstars"></div><div class="tbox" id="tbox" role="dialog" aria-live="polite"></div></section>`);
+const T=document.getElementById('tour'), box=document.getElementById('tbox'), cv=document.getElementById('tcv'), cx=cv.getContext('2d'), mk=document.getElementById('tmk'), sv=document.getElementById('tsv'), stEl=document.getElementById('tstars');
+const AI=()=>!!(typeof SAMPLE!=='undefined'&&SAMPLE);
+const planet=()=>!!document.getElementById('gopill');
+const N=5; let step=-1, run=0, IMG=null, lit=0, lines=0, hi=null, stoneOn=0, t0=performance.now(), saved=null, RAIN=[];
+{ const im=new Image(); im.onload=()=>IMG=im; im.src='tour-world.jpg'; }
+let _ST=null; // 시연용 별: 책미사 별이면 그 자리, 아니면 내 별처럼 처음 나온 해의 자리(place)
+const STARS=()=>_ST||(_ST=DEMO.books.map(t=>{ const o=OUR.find(b=>b.t===t); if(o) return o; const c=(typeof CAT!=='undefined'&&CAT.find(c=>c.t===t))||{t,y:2000}; const m={t:c.t,a:c.a,y:c.y}; place(m); return m; }));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ev=n=>{ if(window.__ev) window.__ev('시연/'+n,1); };
+
+// ---- 우주 위의 표시(1·2단계) ----
+function drawUni(){
+  const S=STARS(); let ring='', pts=[];
+  S.forEach((b,i)=>{ if(i>=lit) return; const s=scr(b.p); if(!s.ok) return; pts.push(s); ring+=`<div class="tring" style="left:${s.x}px;top:${s.y}px"><b>${esc(b.t)}</b></div>`; });
+  stEl.innerHTML=ring;
+  if(lines>0&&pts.length===3){ const L=[[0,1],[1,2],[2,0]].slice(0,Math.ceil(lines*3)); sv.innerHTML=L.map(([a,c])=>`<line x1="${pts[a].x}" y1="${pts[a].y}" x2="${pts[c].x}" y2="${pts[c].y}" stroke="rgba(240,198,116,.85)" stroke-width="2" stroke-dasharray="6 5"/>`).join(''); }
+  else sv.innerHTML='';
+}
+// ---- 그림 장면(3~5단계) ----
+let FX=820, FXT=820;
+function fit(){ const r=cv.getBoundingClientRect(), d=Math.min(devicePixelRatio||1,2); if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){ cv.width=Math.round(r.width*d); cv.height=Math.round(r.height*d); }
+  const s=Math.max(cv.width/IW,cv.height/IH); let ox=cv.width/2-FX*s; ox=Math.min(0,Math.max(cv.width-IW*s,ox)); const oy=(cv.height-IH*s)/2; return {s,ox,oy,d}; }
+function drawScene(t){
+  const {s,ox,oy,d}=fit(); const X=x=>ox+x*s, Y=y=>oy+y*s;
+  cx.fillStyle='#05060d'; cx.fillRect(0,0,cv.width,cv.height);
+  if(!IMG){ return; }
+  const zoom=1+.03*Math.sin(t*.05); cx.save(); cx.translate(cv.width/2,cv.height/2); cx.scale(zoom,zoom); cx.translate(-cv.width/2,-cv.height/2);
+  cx.drawImage(IMG,X(0),Y(0),IW*s,IH*s);
+  cx.globalCompositeOperation='lighter';
+  const glow=(x,y,r,c,a)=>{ const g=cx.createRadialGradient(X(x),Y(y),0,X(x),Y(y),r*s); g.addColorStop(0,`rgba(${c},${a})`); g.addColorStop(1,`rgba(${c},0)`); cx.fillStyle=g; cx.fillRect(X(x)-r*s,Y(y)-r*s,r*2*s,r*2*s); };
+  // 알 틈이 숨 쉰다
+  glow(P.crack[0],P.crack[1],120,'255,190,90',.18+.12*Math.sin(t*1.3)+(hi==='egg'?.15:0));
+  // 별 세 개
+  P.stars.forEach(([x,y],i)=>glow(x,y,26,'235,235,255',.35+.3*Math.sin(t*2+i*2)));
+  // 등불: 깜빡이고, 둘은 꺼져 간다
+  P.lanterns.forEach(([x,y],i)=>{ const dim=P.dim.includes(i), f=dim?(.04+.04*Math.sin(t*3+i)):(.22+.1*Math.sin(t*2.7+i*1.9)+(hi==='law'?.12:0)); glow(x,y+Math.sin(t*.6+i)*1.5,dim?18:30,'255,200,110',f); });
+  cx.globalCompositeOperation='source-over';
+  // 꺼져 가는 등불: 하늘빛으로 눌러 어둡게(검은 덩어리가 아니라 불 꺼진 종이처럼)
+  cx.globalCompositeOperation='multiply'; P.dim.forEach(i=>{ const [x,y]=P.lanterns[i]; const g=cx.createRadialGradient(X(x),Y(y),0,X(x),Y(y),24*s); const k=Math.round(150+12*Math.sin(t*3+i)); g.addColorStop(0,`rgb(${k},${k-12},${k+40})`); g.addColorStop(.55,`rgb(${k+20},${k+10},${k+55})`); g.addColorStop(1,'rgb(255,255,255)'); cx.fillStyle=g; cx.fillRect(X(x)-24*s,Y(y)-24*s,48*s,48*s); });
+  cx.globalCompositeOperation='lighter';
+  if(stoneOn>0){ glow(P.stone[0],P.stone[1]-12,80,'255,220,150',.4*stoneOn);
+    cx.globalCompositeOperation='source-over'; const sx=X(P.stone[0]),sy=Y(P.stone[1]),w=11*s,h=22*s*stoneOn; const sg=cx.createLinearGradient(sx-w,0,sx+w,0); sg.addColorStop(0,'#cfc9bb'); sg.addColorStop(1,'#8d887d');
+    cx.fillStyle=sg; cx.beginPath(); cx.moveTo(sx-w,sy); cx.lineTo(sx-w,sy-h+w); cx.quadraticCurveTo(sx-w,sy-h,sx,sy-h); cx.quadraticCurveTo(sx+w,sy-h,sx+w,sy-h+w); cx.lineTo(sx+w,sy); cx.closePath(); cx.fill(); cx.globalCompositeOperation='lighter'; }
+  if(hi==='folkU') glow(P.blue[0],P.blue[1],60,'160,200,255',.35+.15*Math.sin(t*3));
+  cx.globalCompositeOperation='source-over';
+  // 가랑비
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches){ while(RAIN.length<70) RAIN.push({x:Math.random()*IW*.55,y:Math.random()*IH*.75,v:300+Math.random()*200});
+    cx.strokeStyle='rgba(200,210,240,.22)'; cx.lineWidth=1*d; cx.beginPath(); RAIN.forEach(r=>{ r.y+=r.v/60; if(r.y>IH*.75){ r.y=-20; r.x=Math.random()*IW*.55; } cx.moveTo(X(r.x),Y(r.y)); cx.lineTo(X(r.x-2),Y(r.y+14)); }); cx.stroke(); }
+  cx.restore();
+  // 표시 고리
+  const R={village:P.village,egg:P.egg,folkU:P.blue,folkS:P.stone,law:P.lanterns[1],stone:P.stone}[hi];
+  const nm={village:'비 그친 마콘도',egg:'알의 섬',folkU:'우르술라의 창',folkS:'싱클레어가 앉은 호숫가',law:'등불 · 함께 믿는 이야기',stone:'당신의 비석'}[hi];
+  mk.innerHTML=R?`<div class="tring" style="left:${X(R[0])/d}px;top:${Y(R[1])/d}px"><b>${nm}</b></div>`:'';
+}
+function loop(){ if(T.hidden) return; const t=(performance.now()-t0)/1000;
+  FX+=(FXT-FX)*.05;
+  if(T.classList.contains('scene')) drawScene(t); else drawUni();
+  requestAnimationFrame(loop); }
+
+// ---- 단계 ----
+function head(i,title){ return `<div class="ttop"><span class="tstep">한 바퀴 보기 · ${i+1}/${N}</span><span class="tdots">${Array.from({length:N},(_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</span><button class="tx" data-t="x">닫기 ×</button></div><h3>${title}</h3>`; }
+function acts(i,nextLabel){ return `<div class="tacts">${i>0?'<button data-t="prev">이전</button>':''}<span class="sp"></span><button class="tgo" data-t="next">${nextLabel||'다음'}</button></div>`; }
+function bind(){ box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ const k=b.dataset.t; if(k==='x') close(); else if(k==='prev') go(step-1); else if(k==='next') go(step+1); }); }
+async function type(el,txt,speed){ const my=run; el.textContent=''; el.classList.remove('done'); for(const ch of txt){ if(my!==run) return false; el.textContent+=ch; await sleep(speed||55); } el.classList.add('done'); return true; }
+function sceneOn(on){ T.classList.toggle('scene',on); if(on){ sv.innerHTML=''; stEl.innerHTML=''; } }
+
+async function go(i){
+  if(i>=N){ return finish(); }
+  if(i<0) i=0; step=i; const my=++run; hi=null; ev((i+1)+'단계');
+  if(i===0){ sceneOn(false); lit=0; lines=0; box.innerHTML=head(0,'읽은 책을 적으면, 별이 켜집니다')+`<p class="tsub">예시로 세 권을 띄워 볼게요. 백년의 고독, 데미안, 사피엔스.</p><div class="ttype" id="tty"></div><p id="tmsg" class="tsub"></p>`+acts(0); bind();
+    const S=STARS();
+    for(let k=0;k<S.length;k++){ if(my!==run) return; const el=document.getElementById('tty'); if(!el) return;
+      await type(el,`${S[k].t}  →  읽었어요`,60); if(my!==run) return; flyTo(S[k]); lit=k+1;
+      document.getElementById('tmsg').innerHTML=`『${esc(S[k].t)}』의 별이 켜졌습니다. 그 책이 처음 나온 해의 자리에서 빛납니다.`; await sleep(1700); }
+  }
+  else if(i===1){ sceneOn(false); lit=3; lines=0; const S=STARS();
+    const c=new THREE.Vector3(); S.forEach(b=>c.add(b.p)); c.divideScalar(S.length||1); const spread=Math.max(...S.map(b=>b.p.distanceTo(c)));
+    stopJourney(); cur=-2; tFocus.copy(c).multiplyScalar(.6); tDist=Math.min(1750,Math.max(90,(spread+c.length()*.4)*3.4*(innerWidth<innerHeight?2:1)));
+    box.innerHTML=head(1,'세 별이 모이면, 당신의 별자리가 됩니다')+`<p>세 권은 서로 다른 시대에 나왔지만, 같은 사람이 읽었기에 하나로 이어집니다.</p><p class="tsub">별자리는 지금 바로, 누구나 만들 수 있어요.</p>`+acts(1); bind();
+    for(let k=1;k<=30;k++){ if(my!==run) return; lines=k/30; await sleep(50); }
+  }
+  else if(i===2){ sceneOn(true); FXT=820;
+    const items=[['village','땅 · 백년의 고독에서',DEMO.lands[0]],['egg','땅 · 데미안에서',DEMO.lands[1]],['folkU','주민 · 백년의 고독에서',DEMO.folk[0]],['folkS','주민 · 데미안에서',DEMO.folk[1]],['law','하늘의 법칙 · 사피엔스에서',{name:'함께 믿는 이야기의 등불',desc:DEMO.laws[0].law}]];
+    const FOC={village:300,egg:1240,folkU:260,folkS:560,law:700};
+    box.innerHTML=head(2,`별자리 아래에서 세계가 깨어납니다 · 「${DEMO.name}」`)+`<p class="tsub">소설은 땅과 주민이 되고, 비소설은 이 세계의 법칙이 됩니다. 눌러서 그림 속 자리를 보세요.</p>
+      <div class="tlist">${items.map(([k,l,o])=>`<button data-k="${k}"><small>${l}</small><b>${esc(o.name)}</b> — ${esc(o.desc)}</button>`).join('')}</div>
+      <div class="tstep" style="margin-top:4px">${esc(DEMO.chapters[0].t)}</div><div class="tch">${esc(DEMO.chapters[0].x)}</div>`+acts(2); bind();
+    const pick=k=>{ hi=k; FXT=FOC[k]; box.querySelectorAll('.tlist button').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); };
+    box.querySelectorAll('.tlist button').forEach(b=>b.onclick=()=>{ run++; pick(b.dataset.k); });
+    for(const [k] of items){ if(my!==run) return; pick(k); await sleep(2600); }
+    if(my===run){ hi=null; FXT=820; box.querySelectorAll('.tlist button').forEach(b=>b.classList.remove('on')); }
+  }
+  else if(i===3){ sceneOn(true); stoneOn=0; hi='folkS'; FXT=560; const s=DEMO.stones[0];
+    box.innerHTML=head(3,'주민이 당신에게 묻습니다')+`<div class="tstep">${esc(s.who)}가 묻습니다</div><div class="tq">${esc(s.q)}</div>
+      <div class="ttype" id="tty"></div><div id="tafter"></div>`+acts(3); bind();
+    await sleep(900); if(my!==run) return; const ok=await type(document.getElementById('tty'),s.a,70); if(!ok||my!==run) return;
+    await sleep(500); if(my!==run) return; hi='stone';
+    for(let k=1;k<=20;k++){ if(my!==run) return; stoneOn=k/20; await sleep(40); }
+    document.getElementById('tafter').innerHTML=`<p>답이 호숫가에 <b>비석</b>으로 섰습니다. 그리고 그 답으로 다음 장이 쓰였습니다.</p><div class="tstep">${esc(DEMO.chapters[1].t)}</div><div class="tch">${esc(DEMO.chapters[1].x)}</div>`;
+  }
+  else if(i===4){ sceneOn(true); hi=null; stoneOn=1; FXT=820;
+    box.innerHTML=head(4,'쓴 만큼 이야기가 자라, 한 권의 책이 됩니다')+`<p>세계의 지도, 주민의 질문, 당신이 세운 비석, 그 답으로 이어진 장들이 <b>연대기 한 권</b>으로 묶입니다. 표지에는 당신의 별자리가 들어갑니다.</p>
+      <div class="tacts"><button class="tgo" id="tBook">연대기 미리 보기 · PDF</button></div>`+acts(4,'마치기'); bind();
+    document.getElementById('tBook').onclick=()=>{ ev('PDF 미리 보기'); openBook(DEMO); };
+  }
+}
+function finish(){ ev('끝까지'); const ai=AI();
+  box.innerHTML=`<div class="ttop"><span class="tstep">한 바퀴 보기 · 끝</span><button class="tx" data-t="x" style="margin-left:auto">닫기 ×</button></div><h3>이제 당신의 차례입니다</h3>
+    <p>${ai?'당신이 읽은 책 세 권을 띄우면, 당신만의 세계가 깨어나고 이야기가 시작됩니다.':'별과 별자리는 지금 바로 만들 수 있어요.'+(planet()?' 책 속 인물이 당신에게 묻는 곳은 <b>백년의 고독 행성</b>에 열려 있습니다.':'')+' 당신의 책으로 깨우는 세계와 이야기는 곧 열립니다.'}</p>
+    <div class="tacts"><button class="tgo" data-t="mine">내 책 띄우기</button>${planet()?'<button data-t="planet">백년의 고독 행성으로</button>':''}</div>`;
+  box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ const k=b.dataset.t; close(); if(k==='mine'){ const me=document.getElementById('me'); if(me&&me.classList.contains('fold')){ const f=document.getElementById('meFold'); if(f) f.click(); } const q=document.getElementById('q'); q.value=''; q.focus(); } else if(k==='planet'){ const g=document.getElementById('gopill'); if(g) g.click(); } });
+}
+function open(){ if(!T.hidden) return; saved={f:tFocus.clone(),d:tDist,cur}; card.hidden=true; const bk=document.getElementById('book'); if(bk) bk.hidden=true;
+  if(matchMedia('(max-width:760px)').matches){ const me=document.getElementById('me'), f=document.getElementById('meFold'); if(me&&f&&!me.classList.contains('fold')) f.click(); }
+  T.hidden=false; T.classList.remove('scene'); t0=performance.now(); ev('시작'); requestAnimationFrame(loop); go(0); }
+function close(){ run++; T.hidden=true; T.classList.remove('scene'); sv.innerHTML=''; stEl.innerHTML=''; mk.innerHTML=''; lit=0; lines=0; step=-1;
+  if(saved){ tFocus.copy(saved.f); tDist=saved.d; } }
+window.openTour=open;
+addEventListener('keydown',e=>{ if(T.hidden) return; const bk=document.getElementById('book'); if(bk&&!bk.hidden) return;
+  if(e.key==='Escape'){ close(); e.stopImmediatePropagation(); } else if(e.key==='ArrowRight'&&e.target.tagName!=='INPUT'){ go(step+1); } else if(e.key==='ArrowLeft'&&e.target.tagName!=='INPUT'){ go(step-1); } },true);
+
+// 여는 곳: 왼쪽 위 칸 맨 앞 + (공개판) 첫 안내
+{ const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='tourBtn'; b.type='button'; b.textContent='▶ 한 바퀴 보기'; b.onclick=open; sub.prepend(b); }
+setTimeout(()=>{ const h=document.getElementById('hello'); const go1=document.getElementById('helloGo');
+  if(h&&go1){ const b=document.createElement('button'); b.type='button'; b.id='helloTour'; b.textContent='▶ 먼저 한 바퀴 보기 (1분)'; b.className=go1.className;
+    b.style.cssText='margin-left:8px;background:transparent;color:var(--gold);border:1px solid rgba(240,198,116,.6)';
+    go1.insertAdjacentElement('afterend',b); b.onclick=()=>{ go1.click(); setTimeout(open,300); }; } },0);
+})();
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
