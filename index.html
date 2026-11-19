@@ -1647,6 +1647,350 @@ ${ASKRULE}`;
   }
 })();
 
+window.CARDIMG={"img": [0, 1, 2, 3, 4, 5, 6, 7, 16, 18, 22, 33, 34, 40, 41, 42, 43, 45, 61, 63, 68, 70, 72, 75, 76, 82, 83, 89, 91, 94, 105, 106, 107, 108, 109, 110, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 150, 154, 156, 157, 158, 159, 161, 162, 163, 164, 165, 166, 167, 168, 169]};
+window.MEMBERS={"에스파다": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169], "책좋아": [0, 1, 2, 4, 5, 6, 7, 48, 49, 51, 53, 55, 57, 58, 59, 61, 62, 63, 64, 65, 67, 68, 70, 71, 73, 75, 76, 77, 78, 79, 80, 82, 83, 84, 85, 87, 90, 91, 92, 93, 94, 95, 96, 98, 99, 100, 101, 102, 104, 105, 106, 107, 110, 112, 114, 115, 117, 119, 125, 126, 127, 128, 136, 148, 149, 164], "벙찐": [6, 7, 31, 37, 39, 43, 49, 55, 60, 73, 77, 82, 83, 84, 92, 95, 96, 98, 99, 104, 106, 109, 114, 115, 125, 127, 136, 164], "소리": [6, 26, 27, 29, 31, 34, 37, 39, 44, 46, 47, 49, 52, 54, 55, 57, 59, 60, 62, 63, 64, 65, 66, 68, 72, 73, 84, 85, 89, 93, 95, 96, 97, 98, 102, 105, 108, 110, 115, 136, 147, 149, 150], "단아": [0, 1, 2, 3, 4, 5, 6, 7, 26, 27, 28, 29, 30, 31, 32, 33, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 77, 78, 79, 80, 82, 83, 84, 85, 87, 89, 90, 91, 92, 93, 95, 96, 97, 99, 100, 101, 102, 104, 105, 106, 107, 109, 110, 114, 115, 117, 119, 124, 125, 126, 127, 128, 136, 147, 149, 150, 164], "플라잉": [0, 2, 3, 4, 6, 117, 119, 128, 136], "미지": [58, 63, 68, 73, 80, 81, 82, 83, 85, 91, 95, 96, 97, 102, 104, 105, 106, 107, 108, 113, 115, 124, 136, 149, 150], "슈슈": [0, 3, 7, 97, 104], "아토미": [26, 36, 48, 58, 80, 85, 97, 105], "에델바이스": [26, 33, 35, 45, 52, 63, 108], "에스텔": [26, 27, 28, 32, 42, 50, 53, 54, 68, 72, 79, 80, 84, 96, 149, 150], "우승": [32, 36, 72, 100, 105, 124, 149, 150], "짠": [37, 49, 54, 55, 62, 65, 70, 72, 73, 77, 78, 81, 82, 89, 93, 94, 97, 98, 99, 102, 105, 112, 114], "한량": [105, 108, 136, 150], "호얌": [26, 28, 36, 37, 39, 41, 42, 47, 48, 49, 50, 52], "미토맘": [76, 85, 97, 114], "미미": [26, 27, 29, 30, 31, 43, 48, 63, 75, 80, 81, 89, 95, 104]};
+// 견본 8(11/19): 내 카드 — 읽은 책이 카드가 된다
+// 에스파다: "세 권을 떠올리고 조합을 생각하는 것부터가 높은 벽" → 카드로.
+//          "내가 가진 카드가 얼마나 있나 흥미를 갖고, 그 카드를 갖기 위해 책을 읽어야겠다고 생각하지 않을까"
+//          "회원들이 읽은 책은 홈페이지 별자리에 이미 있다. 책좋아가 들어오면 너머는 이미 알고 있어야 하고, 펼쳐 보이고, 섞어서 보여 줘야 한다"
+// 자료: 회원자료.json(책미사 홈페이지 '생각의 지도'에 공개된 회원 별자리 → 너머 카드 번호, 회원카드.py), 카드자료.json(그림 있는 카드)
+// 뒷면 = 여덟 물음 무늬, 앞면 = 책 그림(있으면)·제목·한 줄, 테두리로 땅(이야기)/법칙(생각).
+(function(){
+const CQ=DATA.Q, CIMG=new Set((window.CARDIMG&&window.CARDIMG.img)||[]), MEM=window.MEMBERS||{};
+const COL=['#e6a64e','#a68ae0','#4fbccf','#d9b84a','#d0605a','#e2849f','#76b884','#6a92e0'];
+const SYM=[
+ '<path d="M20 3l3.2 12.8L36 20l-12.8 3.2L20 37l-3.2-13.8L4 20l12.8-4.2z" fill="currentColor"/><circle cx="20" cy="20" r="3" fill="#0a0e1b"/>',
+ '<ellipse cx="20" cy="20" rx="12" ry="15" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="20" cy="18" r="4.5" fill="currentColor"/><path d="M12 30q8-7 16 0" fill="none" stroke="currentColor" stroke-width="2.4"/>',
+ '<circle cx="20" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="20" cy="20" r="2.6" fill="currentColor"/><g stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M20 5v5M20 30v5M5 20h5M30 20h5M9.4 9.4l3.5 3.5M27.1 27.1l3.5 3.5M9.4 30.6l3.5-3.5M27.1 12.9l3.5-3.5"/></g>',
+ '<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="20" cy="20" r="9.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M20 12v16M16.5 15.5h5a2.5 2.5 0 010 5h-3a2.5 2.5 0 000 5h5" fill="none" stroke="currentColor" stroke-width="2"/>',
+ '<path d="M20 6v28M11 34h18M7 11h26" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M7 11l-5 10h10zM33 11l-5 10h10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 21a5 3 0 0010 0M28 21a5 3 0 0010 0" fill="currentColor"/>',
+ '<path d="M11 12l1.6 4.4 4.4 1.6-4.4 1.6L11 24l-1.6-4.4L5 18l4.4-1.6zM29 16l1.6 4.4 4.4 1.6-4.4 1.6L29 28l-1.6-4.4L23 22l4.4-1.6z" fill="currentColor"/><path d="M12 22q8 12 16-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2 3"/>',
+ '<path d="M20 20m-2 0a2 2 0 104 0a4.5 4.5 0 10-9 0a7 7 0 1014 0a9.5 9.5 0 10-19 0a12 12 0 1024 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+ '<ellipse cx="20" cy="20" rx="16" ry="6.5" transform="rotate(-24 20 20)" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="6.5" fill="currentColor"/><circle cx="33.5" cy="12.5" r="2.4" fill="currentColor"/>'];
+const svg=(i,cls)=>`<svg viewBox="0 0 40 40" aria-hidden="true"${cls?` class="${cls}"`:''}>${SYM[i]}</svg>`;
+const qOf=b=>(b.q&&b.q.length?b.q:[0]);
+// 희귀도: 이 카드를 가진 회원 수(모든 모임에 오는 방장 에스파다는 빼고 셈). 11/19 에스파다: 희귀도부터
+const RC=OUR.map(()=>0); Object.entries(MEM).forEach(([n,ks])=>{ if(n!=='에스파다') ks.forEach(k=>RC[k]++); });
+const rar=k=>{ const c=RC[k]; return c<=1?{lv:3,nm:'희귀',g:'✦✦✦',c}:c<=3?{lv:2,nm:'드묾',g:'✦✦',c}:{lv:1,nm:'흔함',g:'✦',c}; };
+const rarTxt=(k,mine)=>{ const c=RC[k]; if(mine) return c<=1?'회원 중 당신만 가진 카드':`회원 ${c}명이 가진 카드`; return c?`회원 ${c}명이 가진 카드`:'아직 책미사 회원 누구도 갖지 않은 카드예요. 읽으면 당신이 처음 갖게 됩니다'; };
+const WKEY2='chaekmisa-who';
+const sget=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const sset=(k,v)=>{ try{ if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} };
+let WHO=sget(WKEY2);            // 닉네임, '' = 회원 아님, null = 아직 안 물음
+let SEEN=false;                 // 이번에 카드를 펼쳐 보였나(처음 한 번만 날아오며 펼쳐짐)
+
+// 조커(11/19 에스파다: 조커부터): 책미사 170권 밖에서 '읽었어요' 한 책. 어느 성운(물음)에도 속하지 않고, 패에서는 빈자리를 채운다.
+const JSYM='<g>'+[0,1,2,3,4,5,6,7].map(i=>{ const a=i/8*Math.PI*2-Math.PI/2; return `<circle cx="${(20+12*Math.cos(a)).toFixed(1)}" cy="${(20+12*Math.sin(a)).toFixed(1)}" r="3" fill="${['#e6a64e','#a68ae0','#4fbccf','#d9b84a','#d0605a','#e2849f','#76b884','#6a92e0'][i]}"/>`; }).join('')+'<path d="M20 13l1.8 5.2L27 20l-5.2 1.8L20 27l-1.8-5.2L13 20l5.2-1.8z" fill="#f3ead8"/></g>';
+const jsvg=cls=>`<svg viewBox="0 0 40 40" aria-hidden="true"${cls?` class="${cls}"`:''}>${JSYM}</svg>`;
+function jokers(){ return (typeof READ==='function'?READ():[]).filter(m=>OUR.findIndex(b=>norm(b.t)===norm(m.t))<0).map(m=>({t:m.t,a:m.a||'',y:m.y,joker:true,k:'joker',q:[],s:'책미사 밖에서 읽은 책. 어느 성운에도 속하지 않아, 패의 빈자리를 채웁니다.',id:'j:'+m.t})); }
+const cardOf=id=>typeof id==='number'?OUR[id]:(jokers().find(j=>j.id===id)||null);
+const idOf=b=>b.joker?b.id:OUR.indexOf(b);
+// 가진 카드 = 회원 기록(홈페이지 별자리) + 여기서 '읽었어요' 한 책
+function owned(){ const s=new Set(WHO&&MEM[WHO]?MEM[WHO]:[]);
+  (typeof READ==='function'?READ():[]).forEach(m=>{ const n=OUR.findIndex(b=>norm(b.t)===norm(m.t)); if(n>=0) s.add(n); });
+  return s; }
+
+const st=document.createElement('style'); st.textContent=`
+#cx{position:fixed;inset:0;z-index:28;background:radial-gradient(130% 90% at 50% 45%,rgba(5,7,14,.42),rgba(5,7,14,.7) 70%,rgba(5,7,14,.88));overflow:auto;text-shadow:0 1px 8px rgba(0,0,0,.85);font-family:var(--f-body);color:var(--ink)}
+#cx .cin{max-width:980px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 24px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 110px) max(16px,env(safe-area-inset-left,0px))}
+#cx .ctop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#cx .ceb{font-size:11px;letter-spacing:.16em;color:var(--gold)}
+#cx .lnk{background:none;border:0;color:var(--ink-dim);font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}
+#cx .cclose{margin-left:auto;background:none;border:0;color:var(--ink-dim);font-size:13px;cursor:pointer}
+#cx h3{font-family:var(--f-display);font-size:clamp(22px,4vw,32px);margin:8px 0 4px;text-align:center;text-wrap:balance}
+#cx h3 em{font-style:normal;color:var(--gold)}
+#cx .clead{text-align:center;color:var(--ink-dim);font-size:13.5px;margin:0 auto 18px;line-height:1.65;max-width:56ch}
+/* 누구세요 */
+#cx .who{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px;margin:0 auto}
+#cx .who button{border-radius:999px;padding:8px 16px;font-size:14px}
+#cx .who button small{color:var(--ink-dim);margin-left:4px;font-size:11.5px}
+#cx .guest{display:block;margin:18px auto 0}
+/* 카드첩 */
+#cx .tally{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 18px}
+#cx .tally span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-dim);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 7px;font-variant-numeric:tabular-nums}
+#cx .tally svg{width:14px;height:14px}
+#cx .tally b{color:var(--ink);font-weight:600}
+#cx .cacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 22px}
+#cx .cacts .go,#cx .bar .go{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:600}
+#cx .cacts button[disabled],#cx .bar button[disabled]{opacity:.45;cursor:default}
+#cx .suit{margin:0 0 22px}
+#cx .suit h4{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-family:var(--f-display);font-size:16px;font-weight:600}
+#cx .suit h4 svg{width:18px;height:18px}
+#cx .suit h4 small{font-family:var(--f-body);font-size:12px;color:var(--ink-dim);font-weight:400;font-variant-numeric:tabular-nums}
+#cx .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+#cx .mc{all:unset;cursor:pointer;box-sizing:border-box;aspect-ratio:5/7;border-radius:9px;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:transform .15s}
+#cx .mc:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#cx .mc.own{background:#11162a;border:1.2px solid var(--fr)}
+#cx .mc.own.land{--fr:var(--gold)} #cx .mc.own.law{--fr:#b9c3d6}
+#cx .mc.own:hover{transform:translateY(-3px)}
+#cx .rr{position:absolute;top:4px;right:4px;z-index:1;font-size:9px;letter-spacing:.05em;padding:1px 5px;border-radius:999px;background:rgba(8,10,20,.78);color:#cfd6e6;text-shadow:none;line-height:1.5}
+#cx .rr.l2{color:#9fd3ff} #cx .rr.l3{color:#1a1206;background:linear-gradient(90deg,#f0c674,#ffe9b0,#f0c674)}
+#cx .mc.r3,#cx .front.r3{box-shadow:0 0 0 1px #f0c674,0 0 16px rgba(240,198,116,.55)}
+#cx .mc.r3::before,#cx .front.r3::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,240,200,.38) 45%,rgba(160,220,255,.28) 52%,transparent 66%);background-size:250% 100%;animation:holo 3.2s linear infinite;mix-blend-mode:screen}
+@keyframes holo{from{background-position:120% 0}to{background-position:-120% 0}}
+#cx .front .rr{top:8px;right:8px;font-size:clamp(8px,1.3vw,10.5px)}
+#cx .back.jk{background:radial-gradient(120% 90% at 50% 40%,#2a2240 0,#0a0e1b 70%);border:1.5px solid #c9b6ff;box-shadow:inset 0 0 0 5px #0a0e1b,inset 0 0 0 6px rgba(201,182,255,.4)}
+#cx .back.jk .sym svg{width:56%;filter:drop-shadow(0 0 8px rgba(201,182,255,.7))}
+#cx .front.joker{--fr:#c9b6ff;box-shadow:inset 0 0 0 4px #11162a,inset 0 0 0 5px rgba(201,182,255,.4)}
+#cx .art.jk{background:radial-gradient(80% 80% at 50% 50%,#3a2d5c,#11162a)} #cx .art.jk svg{width:44%!important;opacity:1!important}
+#cx .mc.own.joker{--fr:#c9b6ff}
+#cx .mc.add{border:1.2px dashed rgba(201,182,255,.6);display:grid;place-items:center;text-align:center;color:#c9b6ff;font-size:11.5px;line-height:1.4;padding:6px;background:rgba(42,34,64,.35)}
+#cx .mc.add b{display:block;font-size:22px;font-weight:400}
+#cx .jform{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px} #cx .jform input{flex:1;min-width:140px;font:inherit;font-size:13px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+#cx .rtally{display:flex;gap:8px;justify-content:center;margin:-8px 0 16px;font-size:12.5px;color:var(--ink-dim);flex-wrap:wrap}
+#cx .rtally b{color:var(--ink)}
+#cx .mc .pic{width:100%;aspect-ratio:5/4;object-fit:cover;object-position:50% 35%;display:block}
+#cx .mc .art{width:100%;aspect-ratio:5/4;display:grid;place-items:center;background:radial-gradient(80% 80% at 50% 50%,color-mix(in srgb,var(--c) 30%,#11162a),#11162a)}
+#cx .mc .art svg{width:36%;color:var(--c)}
+#cx .mc .mt{padding:5px 6px;font-size:10.5px;line-height:1.3;font-family:var(--f-display);font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#cx .mc.not{background:radial-gradient(100% 80% at 50% 40%,color-mix(in srgb,var(--c) 14%,transparent),rgba(8,11,21,.35));border:1px dashed color-mix(in srgb,var(--c) 35%,transparent);display:grid;place-items:center}
+#cx .mc.not svg{width:34%;color:var(--c);opacity:.35}
+#cx .mc.sel{outline:2.5px solid var(--gold);outline-offset:2px;transform:translateY(-4px)}
+#cx .mc.sel::after{content:attr(data-n);position:absolute;top:5px;left:5px;z-index:2;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1a1206;font:700 12px/20px var(--f-body);text-align:center}
+body.cxo .top,body.cxo #stops,body.cxo #world,body.cxo #obs,body.cxo #me,body.cxo #labels,body.cxo #gopill,body.cxo #hello,body.cxo #cap,body.cxo #card{visibility:hidden!important}
+#cx .mc.own{box-shadow:0 6px 18px rgba(0,0,0,.5)}
+/* 아래 막대: 고른 카드 */
+#cx .bar{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,13,26,.97);border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(16px,env(safe-area-inset-left,0px))}
+#cx .bar .bi{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#cx .bar .bt{flex:1;min-width:200px;font-size:13px;line-height:1.5;color:var(--ink-dim)}
+#cx .bar .bt b{color:var(--gold);font-family:var(--f-display);font-size:16px;font-weight:600}
+/* 뒤집기 */
+#cx .crow{display:flex;gap:min(3vw,22px);justify-content:center}
+#cx .cslot{display:grid;justify-items:center;gap:6px}
+#cx .card{width:min(28vw,200px);aspect-ratio:5/7;perspective:1000px;position:relative;border:0;padding:0;background:none;color:inherit;font:inherit;cursor:pointer;display:block}
+#cx .card:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:14px}
+#cx .card.shuf{animation:cshuf .9s ease-in-out both}
+#cx .cslot:nth-child(2) .card.shuf{animation-delay:.12s} #cx .cslot:nth-child(3) .card.shuf{animation-delay:.24s}
+@keyframes cshuf{0%{transform:translateY(-40px) rotate(8deg);opacity:0}40%{transform:translateX(-14px) rotate(-5deg);opacity:1}70%{transform:translateX(10px) rotate(3deg)}100%{transform:none}}
+#cx .inner{position:absolute;inset:0;transition:transform .7s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+#cx .card.open .inner{transform:rotateY(180deg)}
+#cx .face{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-sizing:border-box;text-align:left}
+#cx .back{background:radial-gradient(120% 90% at 50% 40%,color-mix(in srgb,var(--c) 22%,#0b1020) 0,#0a0e1b 70%);border:1.5px solid color-mix(in srgb,var(--c) 70%,transparent);display:grid;grid-template-rows:auto 1fr auto;padding:9% 8%;box-shadow:inset 0 0 0 5px #0a0e1b,inset 0 0 0 6px color-mix(in srgb,var(--c) 35%,transparent)}
+#cx .back .ctp{font-size:clamp(7px,1.3vw,9.5px);letter-spacing:.32em;color:color-mix(in srgb,var(--c) 80%,#fff);text-align:center;opacity:.85}
+#cx .back .sym{display:grid;place-items:center;position:relative}
+#cx .back .sym::before{content:"";position:absolute;width:74%;aspect-ratio:1;border-radius:50%;border:1px solid color-mix(in srgb,var(--c) 30%,transparent)}
+#cx .back .sym svg{width:46%;height:auto;color:var(--c);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--c) 60%,transparent))}
+#cx .back .nm{font-family:var(--f-display);text-align:center;font-size:clamp(10px,1.9vw,14px);line-height:1.35}
+#cx .back .corner{position:absolute;width:11%;color:var(--c);opacity:.7;top:6%}
+#cx .back .corner.a{left:7%} #cx .back .corner.b{right:7%}
+#cx .front{transform:rotateY(180deg);background:#11162a;display:flex;flex-direction:column;border:1.5px solid var(--fr)}
+#cx .front.land{--fr:var(--gold);box-shadow:inset 0 0 0 4px #11162a,inset 0 0 0 5px rgba(240,198,116,.4)}
+#cx .front.law{--fr:#b9c3d6;box-shadow:inset 0 0 0 4px #11162a,inset 0 0 0 5px rgba(185,195,214,.33)}
+#cx .front .pic{width:100%;aspect-ratio:5/4;object-fit:cover;object-position:50% 35%;display:block;border-bottom:1px solid var(--line)}
+#cx .front .art{width:100%;aspect-ratio:5/4;display:grid;place-items:center;background:radial-gradient(80% 80% at 50% 50%,color-mix(in srgb,var(--c) 30%,#11162a),#11162a);border-bottom:1px solid var(--line)}
+#cx .front .art svg{width:34%;color:var(--c);opacity:.9}
+#cx .front .txt{padding:6% 8% 7%;display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;overflow:hidden}
+#cx .front .kind{display:flex;align-items:center;gap:4px;font-size:clamp(7px,1.2vw,9px);letter-spacing:.2em;color:var(--fr)}
+#cx .front .su{display:inline-flex;gap:3px;margin-left:auto} #cx .front .su i{width:clamp(10px,1.8vw,14px);display:block} #cx .front .su svg{width:100%;display:block}
+#cx .front .t{font-family:var(--f-display);font-weight:700;font-size:clamp(10.5px,1.9vw,14.5px);line-height:1.25}
+#cx .front .a{font-size:clamp(7px,1.2vw,9.5px);color:var(--ink-dim)}
+#cx .front .s{font-size:clamp(7px,1.25vw,10px);line-height:1.45;opacity:.88;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#cx .redraw{font:inherit;font-size:11.5px;color:var(--ink-dim);background:none;border:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:1.6em}
+#cx .redraw[disabled]{visibility:hidden}
+#cx .chand{margin-top:18px;text-align:center;display:grid;gap:6px;justify-items:center}
+#cx .chand[hidden]{display:none}
+#cx .hn{font-family:var(--f-display);font-size:clamp(22px,4vw,30px);color:var(--gold)}
+#cx .hd{color:var(--ink-dim);font-size:13px;line-height:1.6;max-width:52ch}
+#cx .cq{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;align-items:center;font-size:12.5px;color:var(--ink-dim)}
+#cx .cq button{border-radius:999px;padding:5px 11px;font-size:12.5px}
+#cx .cq button[aria-pressed="true"]{background:var(--gold);color:#1a1206;border-color:var(--gold)}
+#cx .cmsg{text-align:center;font-size:13px;color:var(--ink-dim);margin-top:10px;line-height:1.6}
+@media (max-width:560px){#cx .mgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px} #cx .mc .mt{font-size:9.5px;padding:4px}}
+@media (prefers-reduced-motion:reduce){#cx .mc.r3::before,#cx .front.r3::before{animation:none} #cx .inner{transition:none} #cx .card.shuf{animation:none}}`;
+document.head.appendChild(st);
+
+const X=document.createElement('div'); X.id='cx'; X.hidden=true; X.setAttribute('role','dialog'); X.setAttribute('aria-label','내 카드');
+X.innerHTML='<div class="cin"></div><div class="bar" hidden><div class="bi"></div></div>'; document.body.appendChild(X);
+const box=X.querySelector('.cin'), bar=X.querySelector('.bar'), barIn=bar.querySelector('.bi');
+let H=[], CQi=null, SEL=[];
+
+const backHTML=b=>{ if(b.joker) return `<div class="face back jk"><div class="ctp" style="color:#c9b6ff">책미사 너머</div><div class="sym">${jsvg()}</div><div class="nm">조커</div></div>`; const i=qOf(b)[0]; return `<div class="face back" style="--c:${COL[i]}"><div class="ctp">책미사 너머</div><div class="sym">${svg(i)}</div><div class="nm">${CQ[i]}</div>${svg(i,'corner a')}${svg(i,'corner b')}</div>`; };
+const picHTML=(n,b)=>{ const i=qOf(b)[0]; return CIMG.has(n)?`<img class="pic" src="cardimg/b${n}.jpg" alt="" loading="lazy">`:`<div class="art" style="--c:${COL[i]}">${svg(i)}</div>`; };
+const frontHTML=b=>{ if(b.joker) return `<div class="face front joker"><div class="art jk">${jsvg()}</div><div class="txt"><div class="kind">조커 · 밖에서 읽은 책</div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a||'')}</div><div class="s">${esc(b.s)}</div></div></div>`; const n=OUR.indexOf(b);
+  const r=rar(n);
+  return `<div class="face front ${b.k==='land'?'land':'law'} r${r.lv}"><span class="rr l${r.lv}">${r.g} ${r.nm}</span>${picHTML(n,b)}<div class="txt"><div class="kind">${b.k==='land'?'땅 · 이야기':'법칙 · 생각'}<span class="su">${qOf(b).map(q=>`<i style="color:${COL[q]}" title="${CQ[q]}">${svg(q)}</i>`).join('')}</span></div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a||'')}</div><div class="s">${esc(b.s||'')}</div></div></div>`; };
+const top=(extra)=>`<div class="ctop"><span class="ceb">책미사 너머 · 내 카드</span>${extra||''}<button class="cclose" data-a="close">닫기 ✕</button></div>`;
+function bindTop(){ const c=box.querySelector('[data-a="close"]'); if(c) c.onclick=close; const w=box.querySelector('[data-a="who"]'); if(w) w.onclick=()=>{ SEL=[]; whoView(); }; const al=box.querySelector('[data-a="album"]'); if(al) al.onclick=()=>albumView(); }
+
+// ① 누구세요
+function whoView(){ bar.hidden=true;
+  const names=Object.keys(MEM);
+  box.innerHTML=top()+`<h3>책미사에서 함께 읽으셨나요?</h3>
+    <p class="clead">닉네임을 고르면 책미사 홈페이지 별자리에 남은 기록으로, 함께 읽은 책이 모두 카드가 되어 기다리고 있습니다.</p>
+    <div class="who">${names.map(n=>`<button type="button" data-n="${esc(n)}">${esc(n)}<small>${MEM[n].length}장</small></button>`).join('')}</div>
+    <button type="button" class="lnk guest" data-n="">회원이 아니에요 · 읽은 책으로 카드 모으기</button>`;
+  bindTop();
+  box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{ WHO=b.dataset.n; sset(WKEY2,WHO); SEEN=false; if(window.__ev) __ev(WHO?'카드/회원 고름':'카드/회원 아님',1); albumView(); });
+}
+
+// ② 카드첩: 가진 카드는 앞면, 없는 카드는 뒷면 무늬만
+function albumView(){
+  const own=owned(), JK=jokers(), n=own.size, first=!SEEN; SEEN=true;
+  const bySuit=CQ.map((_,i)=>OUR.map((b,k)=>({b,k})).filter(x=>qOf(x.b)[0]===i));
+    const mini=({b,k})=>{ const i=qOf(b)[0];
+    if(own.has(k)){ const si=SEL.indexOf(k); const r=rar(k); return `<button type="button" class="mc own ${b.k==='land'?'land':'law'} r${r.lv}${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} style="--c:${COL[i]}" data-k="${k}" title="${esc(b.t)} · ${rarTxt(k,true)}"><span class="rr l${r.lv}">${r.g}</span>${picHTML(k,b)}<span class="mt">${esc(b.t)}</span></button>`; }
+    return `<button type="button" class="mc not" style="--c:${COL[i]}" data-k="${k}" aria-label="아직 없는 카드: ${esc(b.t)}">${svg(i)}</button>`; };
+  const who=WHO?`${esc(WHO)}님의`:'나의';
+  box.innerHTML=top(WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+
+    `<h3>${who} 카드 <em>${n}</em> / ${OUR.length}</h3>
+    <p class="clead">${n?`${WHO?'책미사에서 함께 읽은 책':'읽은 책'}이 카드가 되었습니다. 빈칸은 아직 읽지 않은 책입니다. 누르면 무슨 책인지 보이고, 읽으면 열립니다.`:'아직 카드가 없어요. 빈칸을 눌러 책을 보고, 읽은 책은 [읽었어요]를 누르면 카드가 됩니다.'}</p>
+    <div class="tally">${CQ.map((q,i)=>`<span title="${q}"><i style="color:${COL[i]};display:flex">${svg(i)}</i>${q} <b>${bySuit[i].filter(x=>own.has(x.k)).length}</b>/${bySuit[i].length}</span>`).join('')}</div>
+    ${n?`<div class="rtally">${[3,2,1].map(l=>{ const c=[...own].filter(k=>rar(k).lv===l).length; return `<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${c}</b>장</span>`; }).join('<span>·</span>')}</div>`:''}
+    <div class="cacts"><button type="button" class="go" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button></div>
+    <div class="suit"><h4><i style="display:flex">${jsvg()}</i>조커 <small>책미사 밖에서 읽은 책 · ${JK.length}장</small></h4>
+      <div class="mgrid">${JK.map(j=>{ const si=SEL.indexOf(j.id); return `<button type="button" class="mc own joker${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} data-j="${esc(j.id)}" title="${esc(j.t)} · 조커"><div class="art jk">${jsvg()}</div><span class="mt">${esc(j.t)}</span></button>`; }).join('')}<button type="button" class="mc add" data-a="jadd"><span><b>+</b>밖에서 읽은 책으로<br>조커 만들기</span></button></div></div>
+    ${bySuit.map((xs,i)=>`<div class="suit"><h4><i style="color:${COL[i]};display:flex">${svg(i)}</i>${CQ[i]} <small>${xs.filter(x=>own.has(x.k)).length} / ${xs.length}</small></h4>
+      <div class="mgrid">${xs.filter(x=>own.has(x.k)).sort((a,b)=>RC[a.k]-RC[b.k]).map(mini).join('')}${xs.filter(x=>!own.has(x.k)).map(mini).join('')}</div></div>`).join('')}`;
+  bindTop();
+  box.querySelector('[data-a="shuffle"]').onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false);
+  box.querySelector('[data-a="jadd"]').onclick=jokerForm;
+  box.querySelectorAll('.mc:not(.add)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
+    if(el.classList.contains('not')) return peek(k);
+    const i=SEL.indexOf(k); if(i>=0) SEL.splice(i,1); else { if(SEL.length>=3) SEL.shift(); SEL.push(k); }
+    box.querySelectorAll('.mc.own').forEach(m=>{ const s=SEL.indexOf(m.dataset.j||+m.dataset.k); m.classList.toggle('sel',s>=0); if(s>=0) m.dataset.n=s+1; else delete m.dataset.n; });
+    selBar(); });
+  if(first){ flyIn(); if(window.__ev) __ev('카드/카드첩 펼침',1); }
+  selBar();
+}
+// 처음 펼칠 때: 카드마다 지금 하늘에 떠 있는 그 책의 별 자리에서 날아와 제 칸에 앉는다
+function flyIn(){ if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const els=[...box.querySelectorAll('.mc.own')], vw=innerWidth, vh=innerHeight;
+  els.forEach((el,i)=>{ const r=el.getBoundingClientRect(), b=OUR[+el.dataset.k];
+    let s={x:vw/2,y:vh/2}; try{ const p=scr(b.p); if(p.ok&&p.x>-50&&p.x<vw+50&&p.y>-50&&p.y<vh+50) s=p; }catch(e){}
+    const dx=s.x-(r.left+r.width/2), dy=s.y-(r.top+r.height/2);
+    el.animate([{transform:`translate(${dx}px,${dy}px) scale(.06)`,opacity:0,filter:'brightness(4)'},{transform:`translate(${dx}px,${dy}px) scale(.1)`,opacity:1,filter:'brightness(4)',offset:.12},{transform:'none',opacity:1,filter:'none'}],
+      {duration:1200,delay:Math.min(i*24,2000),easing:'cubic-bezier(.25,.8,.25,1)',fill:'backwards'}); }); }
+function selBar(note){
+  if(note){ bar.hidden=false; barIn.innerHTML=note; return; }
+  if(!SEL.length){ bar.hidden=true; return; }
+  bar.hidden=false;
+  const p=SEL.length===3?hand(SEL.map(cardOf)):null;
+  barIn.innerHTML=`<div class="bt">${p?`<b>${p.name}</b> · ${SEL.map(k=>esc(cardOf(k).t)).join(' · ')}`:`카드를 세 장 고르면 패가 됩니다 (${SEL.length}/3): ${SEL.map(k=>esc(cardOf(k).t)).join(' · ')}`}</div>
+    <button type="button" data-a="clr">비우기</button><button type="button" class="go" data-a="use" ${SEL.length===3?'':'disabled'}>이 세 장으로</button>`;
+  barIn.querySelector('[data-a="clr"]').onclick=()=>{ SEL=[]; albumView(); };
+  barIn.querySelector('[data-a="use"]').onclick=()=>{ if(SEL.length===3) dealFrom(SEL.map(cardOf),true); };
+}
+function peek(k){ const b=OUR[k];
+  const r=rar(k); selBar(`<div class="bt">아직 없는 카드 · <b>${esc(b.t)}</b> ${esc(b.a||'')} · <span style="color:var(--gold)">${r.g} ${r.nm}</span><br>${esc(b.s||'')}<br><small>${rarTxt(k,false)}</small></div>
+    <button type="button" data-a="wish">읽고 싶어요</button><button type="button" class="go" data-a="read">읽었어요 · 카드 받기</button><button type="button" data-a="x">✕</button>`);
+  barIn.querySelector('[data-a="x"]').onclick=()=>selBar();
+  const addStar=(read)=>{ const q=document.getElementById('q'); if(!q) return; q.value=b.t; document.getElementById(read?'bRead':'bWish').click(); };
+  barIn.querySelector('[data-a="wish"]').onclick=()=>{ addStar(false); selBar(`<div class="bt">「${esc(b.t)}」, 읽고 싶은 별로 띄웠어요. 다 읽고 [읽었어요]를 누르면 카드가 열립니다.</div><button type="button" data-a="x">확인</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); };
+  barIn.querySelector('[data-a="read"]').onclick=()=>{ addStar(true); if(window.__ev){ __ev('카드/읽고 받음'); if(rar(k).lv===3) __ev('카드/희귀 카드 받음'); } setTimeout(()=>{ SEEN=true; albumView(); selBar(`<div class="bt">새 카드 · <b>${esc(b.t)}</b> 카드가 카드첩에 들어왔어요. <span style="color:var(--gold)">${rar(k).g} ${rar(k).nm}</span> · ${rarTxt(k,false)}</div><button type="button" data-a="x">확인</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); },400); };
+}
+
+// 내 카드 묶음(성운 카드 + 조커)
+function pool(){ return [...owned()].map(k=>OUR[k]).concat(jokers()); }
+// 조커 만들기: 책미사 170권 밖에서 읽은 책 → 원래의 [읽었어요]로 별을 띄우고 조커가 된다
+function jokerForm(){
+  selBar(`<div class="bt" style="min-width:240px"><b>조커 만들기</b> · 책미사 밖에서 읽은 책 이름을 적어 주세요.
+    <form class="jform" id="jf"><input id="jin" autocomplete="off" placeholder="예: 데미안"><button type="submit" class="go">읽었어요 · 조커 받기</button></form><small id="jmsg"></small></div><button type="button" data-a="x">✕</button>`);
+  barIn.querySelector('[data-a="x"]').onclick=()=>selBar();
+  const i=document.getElementById('jin'); i.focus();
+  document.getElementById('jf').onsubmit=ev=>{ ev.preventDefault(); const v=i.value.trim(), m=document.getElementById('jmsg'); if(!v) return;
+    const n=OUR.findIndex(b=>norm(b.t)===norm(v));
+    if(n>=0){ m.textContent=`「${OUR[n].t}」는 책미사 170권에 있는 책이라 조커가 아니라 성운 카드예요. 빈칸에서 [읽었어요]를 눌러 주세요.`; return; }
+    if(jokers().some(j=>norm(j.t)===norm(v))){ m.textContent='이미 가진 조커예요.'; return; }
+    const q=document.getElementById('q'); q.value=v; document.getElementById('bRead').click(); if(window.__ev) __ev('카드/조커 만듦');
+    setTimeout(()=>{ SEEN=true; albumView(); selBar(`<div class="bt">새 조커 · <b>${esc(v)}</b> 카드가 카드첩에 들어왔어요. 패에 넣으면 빈자리를 채웁니다.</div><button type="button" data-a="x">확인</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); },500); };
+}
+// ③ 세 장: 섞어서 뽑으면 엎어 둔 채로, 직접 고르면 바로 열린 채로
+function dealFrom(cards,openNow){ bar.hidden=true; H=cards.map(b=>({b,open:openNow})); CQi=null; draw(true); if(window.__ev) __ev(openNow?'카드/직접 고름':'카드/섞어 뽑음'); }
+function hand(all){ all=all||H.map(h=>h.b);
+  const cs=all.filter(b=>!b.joker), J=all.length-cs.length;
+  const qs=cs.map(b=>qOf(b)[0]), cnt={}; qs.forEach(q=>cnt[q]=(cnt[q]||0)+1);
+  const top=(cs.length?Math.max(...Object.values(cnt)):0)+J;
+  const sh0=CQ.map((_,i)=>cs.filter(b=>qOf(b).includes(i)).length).reduce((m,v,i)=>v>m.v?{v,i}:m,{v:0,i:qs[0]||0}), sh={v:sh0.v+J,i:sh0.i};
+  const lands=cs.filter(b=>b.k==='land').length, laws=cs.length-lands;
+  let name,desc,center;
+  if(!cs.length){ name='조커 셋'; center=0; desc='세 장 모두 책미사 밖에서 온 책입니다. 성운도 물음도 이야기꾼이 새로 정합니다.'; }
+  else if(top>=3&&J&&new Set(qs).size===1){ name='한 물음을 깊이'; center=qs[0]; desc=`「${CQ[center]}」를 묻는 카드에 조커가 붙어, 한 물음을 끝까지 파고드는 세계가 됩니다.`; }
+  else if(top>=3&&!J){ name='한 물음을 깊이'; center=qs[0]; desc=`세 장 모두 「${CQ[center]}」를 묻습니다. 한 물음을 끝까지 파고드는 세계가 됩니다.`; }
+  else if(sh.v>=2){ name='이어진 별'; center=sh0.v?sh0.i:qs[0]; desc=`두 장이 「${CQ[center]}」로 이어져 있고, 한 장이 그 사이에 끼어듭니다.`; }
+  else { name='세 갈래 길'; center=qs[0]; desc='세 장이 모두 다른 물음을 들고 왔습니다. 멀리 떨어진 별들이 한 땅에서 만납니다.'; }
+  const kind=J?`땅 ${lands} · 법칙 ${laws} · 조커 ${J} — 조커는 이야기꾼이 땅이나 법칙으로 앉힙니다`:lands===3?'땅 셋 — 법칙 없이 주민들의 이야기만 있는 세계':lands===0?'법칙 셋 — 이야기꾼이 땅부터 지어 냅니다':`땅 ${lands} · 법칙 ${3-lands}`;
+  if(J&&cs.length&&!desc.includes('조커')) desc+=' 조커가 빈자리를 채웁니다.';
+  return {name,desc,center,kind};
+}
+function draw(shuf){
+  const all=H.every(h=>h.open), mine=pool();
+  box.innerHTML=top(`<button type="button" class="lnk" data-a="album">← 카드첩으로</button>`)+`
+   <h3>${all?'세 장이 모였습니다':'카드를 눌러 뒤집어 보세요'}</h3>
+   <p class="clead">${all?'마음에 안 드는 카드는 내 카드에서 한 장씩 다시 뽑을 수 있어요.':'모두 당신이 가진 카드입니다. 뒷면 무늬는 그 책이 붙든 물음입니다.'}</p>
+   <div class="crow">${H.map((h,i)=>`<div class="cslot"><button type="button" class="card${h.open?' open':''}${shuf&&!h.open?' shuf':''}" data-i="${i}" aria-label="${h.open?esc(h.b.t):'엎어 둔 카드: '+CQ[qOf(h.b)[0]]}"><div class="inner">${backHTML(h.b)}${frontHTML(h.b)}</div></button><button type="button" class="redraw" data-r="${i}" ${h.open&&mine.length>3?'':'disabled'}>다시 뽑기</button></div>`).join('')}</div>
+   <div class="chand" ${all?'':'hidden'}></div>
+   <div class="cacts" style="margin-top:18px">${all?'':'<button type="button" data-a="all">한꺼번에 뒤집기</button>'}<button type="button" data-a="again">다시 섞기</button></div>
+   <div class="cmsg" id="cmsg"></div>`;
+  bindTop();
+  box.querySelector('[data-a="again"]').onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false);
+  const ab=box.querySelector('[data-a="all"]'); if(ab) ab.onclick=()=>{ H.forEach(h=>h.open=true); box.querySelectorAll('.card').forEach(c=>c.classList.add('open')); setTimeout(()=>draw(false),720); };
+  box.querySelectorAll('.card').forEach(el=>el.onclick=()=>{ const h=H[+el.dataset.i]; if(h.open) return; h.open=true; el.classList.remove('shuf'); el.classList.add('open'); if(window.__ev) __ev('카드/뒤집음',1); if(H.every(x=>x.open)) setTimeout(()=>draw(false),720); else { const r=el.parentNode.querySelector('.redraw'); if(r&&mine.length>3) r.disabled=false; } });
+  box.querySelectorAll('[data-r]').forEach(el=>el.onclick=()=>{ const i=+el.dataset.r, used=new Set(H.map(h=>idOf(h.b))); const rest=mine.filter(b=>!used.has(idOf(b))); if(!rest.length) return; H[i]={b:rest[Math.floor(Math.random()*rest.length)],open:false}; CQi=null; draw(false); });
+  if(all) showHand();
+}
+function showHand(){
+  const p=hand(); if(CQi===null) CQi=p.center;
+  const nj=H.filter(h=>!h.b.joker), opts=nj.length?[...new Set(nj.flatMap(h=>qOf(h.b)))]:CQ.map((_,i)=>i);
+  const el=box.querySelector('.chand');
+  el.innerHTML=`<div class="hn">${p.name}</div><div class="hd">${p.desc}<br>${p.kind}</div>
+    <div class="cq">중심 물음 ${opts.map(q=>`<button type="button" data-q="${q}" aria-pressed="${q===CQi}">${CQ[q]}</button>`).join('')}</div>`;
+  el.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{ CQi=+b.dataset.q; showHand(); });
+  const acts=box.querySelector('.cacts'); if(!acts.querySelector('[data-a="wake"]')){ acts.insertAdjacentHTML('afterbegin','<button type="button" class="go" data-a="wake">이 세 장으로 세계 깨우기</button>'); acts.querySelector('[data-a="wake"]').onclick=()=>wakeCards(false); }
+}
+
+async function wakeCards(force){ const msg=document.getElementById('cmsg');
+  if(typeof SAMPLE==='undefined'||!SAMPLE){ msg.innerHTML='<b style="color:var(--gold)">이 세 장으로 세계를 써 줄 이야기꾼은 곧 열립니다.</b><br>그때까지 카드를 모으고 패를 짜 두세요. 읽은 책은 빈칸을 눌러 [읽었어요], 책미사 밖의 책은 조커로.'; if(window.__ev) __ev('카드/깨우기 눌렀으나 이야기꾼 없음'); return; }
+  if(!force&&WORLD&&!WORLD.example){
+    msg.innerHTML=`<div style="margin:6px auto;max-width:520px;padding:10px 12px;border:1px solid rgba(240,198,116,.5);border-radius:9px">지금 세계 「${esc(WORLD.name)}」가 있어요. 견본은 세계를 하나만 두므로, 이 세 장으로 새로 깨우면 지금 세계는 사라집니다.
+      <div class="acts" style="margin-top:8px;justify-content:center"><button data-a="keep">그대로 두기</button><button class="go" data-a="replace">새로 깨우기</button></div></div>`;
+    msg.querySelector('[data-a="keep"]').onclick=()=>{ msg.innerHTML=''; };
+    msg.querySelector('[data-a="replace"]').onclick=()=>wakeCards(true); return; }
+  const p=hand(), Qn=CQ[CQi], qi=(window.QDATA&&QDATA.Q.find(x=>x.q===Qn))||{s:''};
+  const bk=H.map(h=>({t:h.b.t,a:h.b.a,y:h.b.y,ours:true})), lines=H.map(h=>h.b.joker?`- ${h.b.t}${h.b.a?' / '+h.b.a:''} (조커 카드: 책미사 170권 밖에서 독자가 읽은 책. 소설·시·희곡이면 땅과 주민, 아니면 법칙으로 앉히고, 이 물음과 이어지는 자리를 이야기꾼이 정한다. 책을 잘 모르면 제목의 인상으로 하나만)`:`- ${h.b.t} (${h.b.k==='land'?'땅':'법칙'} 카드): ${h.b.s||''}`).join('\n');
+  close(); busy=true; ctl=new AbortController();
+  waiting(`세 장의 카드가 「${Qn}」 아래로 내려앉고 있습니다`, bk.map(b=>b.t).join(' · '));
+  const prompt=`${RULES}
+
+이 세계의 중심 물음: 「${Qn}」${qi.s?' — '+qi.s:''}
+독자${WHO?`(책미사 회원 ${WHO})`:''}가 자기가 읽은 책으로 모은 카드에서 이 세 장을 꺼냈다. 패 이름은 「${p.name}」(${p.desc}).
+서로 상관없어 보이는 책일수록, 이 물음 아래에서 셋이 왜 한 세계에 모였는지를 이야기가 스스로 찾아낸다. 억지로 맞추지 말고, 어긋남 자체를 이 세계의 사건으로 쓴다.
+
+여덟 진영(질문): ${CAMPS.join(", ")}
+넨 계열(읽는 힘): ${NEN}
+
+꺼낸 카드(책):
+${lines}
+${JSON.stringify(books(bk),null,0)}
+
+할 일:
+1. 세계 이름 하나(짧게, 이 물음이 깃든 풍경).
+2. lands, folk, laws. 책마다 적어도 하나. 땅 카드는 땅과 주민, 법칙 카드는 법칙이 된다. desc는 한두 문장, 그 책이 이 물음에 내놓는 답이 묻어나게.
+3. camp: "${Qn}"(정확히 이것), campWhy 한 문장: 세 권이 이 물음에 어떻게 다르게 답하는지.
+4. nen: 위 여섯 계열 중 하나(이름만), nenWhy 한 문장.
+5. scene: 제1장. 세 책에서 온 것들이 이 땅에서 처음 마주쳐, 중심 물음을 두고 엇갈리다가 하나의 사건이 일어나는 장면. 500~700자, 과거형, 대사 포함, 문단은 줄바꿈으로.
+6. ${ASKRULE} 이번에는 중심 물음을 그 주민의 말투로 바꿔 묻는다.
+7. next: 이 물음에 또 다르게 답할 실제로 있는 책 한 권(title, author, why 한 문장).
+
+JSON 하나만 답한다:
+{"name":"","lands":[{"book":"","name":"","desc":""}],"folk":[{"book":"","name":"","desc":""}],"laws":[{"book":"","law":""}],"camp":"","campWhy":"","nen":"","nenWhy":"","scene":"","ask":{"who":"","q":""},"next":{"title":"","author":"","why":""}}`;
+  try{ const r=await SAMPLE.json(prompt,{signal:ctl.signal});
+    if(!r||typeof r!=='object') throw {code:'empty'};
+    WORLD={created:new Date().toISOString().slice(0,10),question:Qn,hand:p.name,cards:true,who:WHO||'',books:bk.map(b=>b.t),name:String(r.name||"이름 없는 세계"),lands:arr(r.lands),folk:arr(r.folk),laws:arr(r.laws),
+      camp:String(r.camp||Qn),campWhy:String(r.campWhy||""),nen:String(r.nen||""),nenWhy:String(r.nenWhy||""),
+      chapters:[{t:"제1장 · 깨어남",x:String(r.scene||"")}],stones:[],ask:r.ask||null,next:r.next||null};
+    saveW(); refreshWake(); render(WORLD); if(window.__ev) __ev('카드/세계 깨움');
+  }catch(e){ const m=errCopy(e)||(e&&e.code==='cancelled'?'':'세계를 쓰다가 멈췄어요. 잠시 뒤 다시 눌러 주세요.'+(e&&(e.code||e.message)?` (${esc(String(e.code||e.message))})`:'')); if(m){ wrap.innerHTML=`<div class="wait"><p class="err">${m}</p><div class="acts" style="justify-content:center"><button id="cBack">돌아가기</button></div></div>`; const b=document.getElementById('cBack'); if(b) b.onclick=closeWorld; } else closeWorld(); }
+  finally{ busy=false; } }
+
+function open(){ card.hidden=true; X.hidden=false; document.body.classList.add('cxo'); SEEN=false; try{ stopJourney(); }catch(e){} X.scrollTop=0; SEL=[]; if(WHO===null) whoView(); else albumView(); if(window.__ev) __ev('카드/시작',1); }
+function close(){ X.hidden=true; bar.hidden=true; document.body.classList.remove('cxo'); try{ card.hidden=true; }catch(e){} }
+window.openCards=open;
+addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stopImmediatePropagation(); } },true);
+{ const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='cBtn'; b.type='button'; b.textContent='🂠 내 카드';
+  b.style.cssText='color:var(--gold);border-color:rgba(240,198,116,.55)'; b.onclick=open;
+  const q=document.getElementById('qBtn'); if(q) q.insertAdjacentElement('beforebegin',b); else sub.prepend(b); }
+})();
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
