@@ -1231,7 +1231,7 @@ const css=`#tour{position:fixed;inset:0;z-index:28;display:flex;flex-direction:c
 #tour .ttype.done::after{display:none}
 @keyframes tblink{50%{opacity:0}}
 #tour .tlist{display:grid;gap:6px;margin:6px 0 8px}
-#tour .tlist button{all:unset;cursor:pointer;display:block;padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--ink)}
+#tour .tlist button{all:unset;cursor:pointer;display:block;padding:6px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--ink)}
 #tour .tlist button.on{border-color:var(--gold);background:rgba(240,198,116,.08)}
 #tour .tlist small{display:block;font-size:11px;letter-spacing:.08em;color:var(--gold)}
 #tour .tch{font-family:var(--f-display);font-size:15px;line-height:1.85;white-space:pre-line;color:var(--ink);border-left:2px solid rgba(240,198,116,.4);padding-left:12px;margin:6px 0 8px}
@@ -1327,11 +1327,14 @@ async function go(i){
     for(let k=1;k<=30;k++){ if(my!==run) return; lines=k/30; await sleep(50); }
   }
   else if(i===2){ sceneOn(true); FXT=820;
-    const items=[['village','땅 · 백년의 고독에서',DEMO.lands[0]],['egg','땅 · 데미안에서',DEMO.lands[1]],['folkU','주민 · 백년의 고독에서',DEMO.folk[0]],['folkS','주민 · 데미안에서',DEMO.folk[1]],['law','하늘의 법칙 · 사피엔스에서',{name:'함께 믿는 이야기의 등불',desc:DEMO.laws[0].law}]];
+    // 화면에는 짧게, 전문은 연대기(5단계)에
+    const items=[['village','땅 · 백년의 고독',{name:DEMO.lands[0].name,desc:'비가 막 그친 하얀 마을'}],['egg','땅 · 데미안',{name:DEMO.lands[1].name,desc:'금 간 거대한 돌 알, 틈으로 금빛이 샌다'}],
+      ['folkU','주민 · 백년의 고독',{name:'우르술라',desc:'창가의 등불을 끄지 않는 사람'}],['folkS','주민 · 데미안',{name:'싱클레어',desc:'알의 금이 제 이마의 표식과 같다는 걸 안 소년'}],
+      ['law','법칙 · 사피엔스',{name:'등불',desc:'함께 믿는 이야기만 빛나고, 아무도 믿지 않으면 꺼진다'}]];
     const FOC={village:300,egg:1240,folkU:260,folkS:560,law:700};
-    box.innerHTML=head(2,`별자리 아래에서 세계가 깨어납니다 · 「${DEMO.name}」`)+`<p class="tsub">소설은 땅과 주민이 되고, 비소설은 이 세계의 법칙이 됩니다. 눌러서 그림 속 자리를 보세요.</p>
-      <div class="tlist">${items.map(([k,l,o])=>`<button data-k="${k}"><small>${l}</small><b>${esc(o.name)}</b> — ${esc(o.desc)}</button>`).join('')}</div>
-      <div class="tstep" style="margin-top:4px">${esc(DEMO.chapters[0].t)}</div><div class="tch">${esc(DEMO.chapters[0].x)}</div>`+acts(2); bind();
+    box.innerHTML=head(2,`별자리 아래에서 세계가 깨어납니다 · 「${DEMO.name}」`)+`<p class="tsub">소설은 땅과 주민이, 비소설은 법칙이 됩니다.</p>
+      <div class="tlist">${items.map(([k,l,o])=>`<button data-k="${k}"><small>${l}</small><b>${esc(o.name)}</b> · ${esc(o.desc)}</button>`).join('')}</div>
+      <div class="tstep" style="margin-top:4px">${esc(DEMO.chapters[0].t)}</div><div class="tch">${esc(DEMO.chapters[0].x.split(String.fromCharCode(10))[0])} …</div>`+acts(2); bind();
     const pick=k=>{ hi=k; FXT=FOC[k]; box.querySelectorAll('.tlist button').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); };
     box.querySelectorAll('.tlist button').forEach(b=>b.onclick=()=>{ run++; pick(b.dataset.k); });
     for(const [k] of items){ if(my!==run) return; pick(k); await sleep(2600); }
@@ -1343,7 +1346,7 @@ async function go(i){
     await sleep(900); if(my!==run) return; const ok=await type(document.getElementById('tty'),s.a,70); if(!ok||my!==run) return;
     await sleep(500); if(my!==run) return; hi='stone';
     for(let k=1;k<=20;k++){ if(my!==run) return; stoneOn=k/20; await sleep(40); }
-    document.getElementById('tafter').innerHTML=`<p>답이 호숫가에 <b>비석</b>으로 섰습니다. 그리고 그 답으로 다음 장이 쓰였습니다.</p><div class="tstep">${esc(DEMO.chapters[1].t)}</div><div class="tch">${esc(DEMO.chapters[1].x)}</div>`;
+    document.getElementById('tafter').innerHTML=`<p>답이 호숫가에 <b>비석</b>으로 섰습니다. 그리고 그 답으로 다음 장이 쓰였습니다.</p><div class="tstep">${esc(DEMO.chapters[1].t)}</div><div class="tch">${esc(DEMO.chapters[1].x.split(String.fromCharCode(10)).slice(2,3).join(''))} …</div><p class="tsub">이어지는 글은 다음 단계의 연대기 한 권에 다 들어 있어요.</p>`;
   }
   else if(i===4){ sceneOn(true); hi=null; stoneOn=1; FXT=820;
     box.innerHTML=head(4,'쓴 만큼 이야기가 자라, 한 권의 책이 됩니다')+`<p>세계의 지도, 주민의 질문, 당신이 세운 비석, 그 답으로 이어진 장들이 <b>연대기 한 권</b>으로 묶입니다. 표지에는 당신의 별자리가 들어갑니다.</p>
@@ -1452,7 +1455,7 @@ body.diving #cap,body.diving .stops,body.diving #labels,body.diving .top,body.di
 .hs i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--gold);background:rgba(240,198,116,.18);box-shadow:0 0 10px rgba(240,198,116,.7);animation:pulse 2.6s infinite}
 .hs.done i{background:var(--gold)}
 .hs:hover span,.hs:focus-visible span{color:var(--gold)}
-#spot{position:absolute;top:calc(env(safe-area-inset-top,0px) + 60px);right:max(16px,env(safe-area-inset-right,0px));width:min(370px,calc(100vw - 32px));max-height:calc(100vh - 130px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;backdrop-filter:blur(8px);z-index:4}
+#spot{box-sizing:border-box;position:absolute;top:calc(env(safe-area-inset-top,0px) + 60px);right:max(16px,env(safe-area-inset-right,0px));width:min(370px,calc(100vw - 32px));max-height:calc(100vh - 130px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;backdrop-filter:blur(8px);z-index:4}
 #spot[hidden]{display:none}
 #spot h2{font-family:var(--f-display);font-size:24px;margin:.25rem 0 .1rem;line-height:1.3}
 #spot .who{font-size:13px;color:var(--ink-dim)}
@@ -1483,7 +1486,7 @@ body.diving #cap,body.diving .stops,body.diving #labels,body.diving .top,body.di
 #toast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:var(--panel);border:1px solid rgba(240,198,116,.5);border-radius:999px;padding:10px 18px;font-family:var(--f-display);font-size:15px;color:var(--gold);opacity:0;transition:opacity .6s,transform .6s;pointer-events:none;z-index:5;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (max-width:640px){
-  #spot{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-height:58vh}
+  #spot{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-height:58vh;box-sizing:border-box}
   #oinfo{padding:14px}
   #oinfo h2{font-size:24px}
   #oinfo dl{font-size:12px}
@@ -1970,7 +1973,10 @@ function drawA(t,dt){
 
 // ===== 세 사람: 얼굴 없이 그림자와 불빛으로 (B판) =====
 // 고리를 누르면 그 사람이 창가·문간으로 다가온다. 좌표는 macondo-b.jpg 위 세계 좌표.
-const NEAR={mel:0,fish:0,house:0};
+const NEAR={mel:0,fish:0,house:0}; let APPR=null;
+// 휴대폰: 글 칸이 집을 덮으므로, 그 사람이 다가오는 걸 먼저 보여 주고 1.3초 뒤에 글 칸
+{ const _os=openSpot; openSpot=function(s){ if(s&&NEAR[s.id]!=null&&VIS==='B'&&matchMedia('(max-width:640px)').matches){ curSpot=s; APPR=s.id; $('spot').hidden=true; camXT=Math.max(0,Math.min(maxCam(),s.x-GW/GS/2));
+    setTimeout(()=>{ if(curSpot===s&&APPR===s.id&&mode==='ground') _os(s); APPR=null; },1300); return; } APPR=null; _os(s); }; }
 function person(x,y,h,bend,col,o){ o=o||{}; // 발 위치(x,y), 키 h, 숙임 bend(0~1), o.hat 넓은 모자, o.arm 등불 든 팔(0~1), o.shawl 숄
   const k=h/100, X=a=>WX(x+a*k), Y=b=>WY(y-b*k), lean=bend*10;
   g.fillStyle=col; g.beginPath();
@@ -1994,7 +2000,7 @@ function person(x,y,h,bend,col,o){ o=o||{}; // 발 위치(x,y), 키 h, 숙임 be
     g.quadraticCurveTo(X(19),Y(56+a*14),X(17+a*4),Y(42+a*30)); g.stroke(); }
 }
 function figures(t,dt){
-  for(const id in NEAR){ const on=!$('spot').hidden&&curSpot&&curSpot.id===id; NEAR[id]+=((on?1:0)-NEAR[id])*Math.min(1,dt*3); }
+  for(const id in NEAR){ const on=APPR===id||(!$('spot').hidden&&curSpot&&curSpot.id===id); NEAR[id]+=((on?1:0)-NEAR[id])*Math.min(1,dt*3); }
   // 멜키아데스: 파란 창 안, 촛불 앞 굽은 그림자. 가끔 양피지를 넘기는 손
   { const n=NEAR.mel; g.save(); g.beginPath(); g.rect(WX(852),WY(483),WX(888)-WX(852),WY(525)-WY(483)); g.clip();
     const sway=Math.sin(t*.7)*2*(1-n); person(868+sway+(1-n)*6,532+(1-n)*4,38+n*8,.55-.35*n,'rgba(8,14,26,.8)',{hat:1});
