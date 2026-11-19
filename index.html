@@ -234,7 +234,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <h2>책미사 너머</h2>
   <p>당신이 읽은 책이 이 우주의 별이 됩니다. 읽은 만큼 땅이 생기고, 쓴 만큼 이야기가 자랍니다.</p>
   <ol>
-    <li>우주가 천천히 멀어집니다. 인류가 펴낸 책 1억 3천만 권의 하늘입니다.</li>
+    <li>우주가 천천히 멀어집니다. 인류가 펴낸 모든 책의 하늘입니다. <small>(2010년 구글 추산 약 1억 3천만 권)</small></li>
     <li>왼쪽 위에 읽은 책을 적고 <b>읽었어요</b>를 누르면 그 책이 나온 해의 자리에 당신의 별이 뜹니다. <small>읽고 싶은 책은 희미한 별로.</small></li>
     <li>읽은 별이 셋이 되면 당신의 세계가 깨어납니다. <small>(이야기꾼 준비 중 · 지금은 예시 세계)</small></li>
     <li>쌓인 이야기는 <b>연대기 한 권</b>으로 묶어 PDF로 받고, <b>천문대</b>에 별로 올립니다.</li>
@@ -541,7 +541,18 @@ const RULES=`너는 '책미사 너머'의 이야기꾼이다. 한 독자가 읽�
 - 소설·시·희곡은 '땅'(그 책의 대표 장소를 세계의 땅으로)과 '주민'(그 책의 실제 등장인물)이 된다.
 - 비소설은 이 세계의 '법칙' 한 줄이 된다. 그 책의 핵심 생각을 세계의 물리 법칙처럼, 한 문장으로.
 - 책 내용을 잘 모르면 인물·줄거리를 지어내지 말고, 제목에서 받은 인상으로 땅이나 법칙 하나만 만든다.
-- 한국어, 따뜻하고 단정한 소설체. 과장된 수사와 감탄은 피한다.`;
+- 한국어, 따뜻하고 단정한 소설체. 과장된 수사와 감탄은 피한다.
+- 연대기는 일곱 장이 한 권이다. 처음 고른 중심 물음을 끝까지 놓지 않는다.`;
+// 견본 7(11/19): 끝없는 연재 대신 일곱 장 한 권
+const BOOKLEN=7;
+const ARC={2:'흔들림 — 주민들이 중심 물음을 두고 처음으로 엇갈린다. 서로 다른 책에서 온 답이 부딪히기 시작한다.',
+ 3:'흔들림이 깊어진다 — 독자가 남긴 비석이 세계에 파문을 일으키고, 누군가는 그 답을 따르고 누군가는 거스른다.',
+ 4:'부딪힘 — 서로 다른 답들이 정면으로 맞선다. 사건이 일어나고 무언가를 잃는다.',
+ 5:'부딪힘이 커진다 — 각자의 답이 대가를 치른다. 땅이나 법칙 하나가 흔들린다.',
+ 6:'고비 — 가장 어두운 순간. 한 주민이 자기 답을 의심한다. 다음 장에서 닫을 수 있게 실마리 하나를 남긴다.',
+ 7:'끝 — 이 권의 마지막 장. 중심 물음에 이 세계 나름의 답을 내놓고 이야기를 닫는다. 모두가 같은 답에 이를 필요는 없지만, 이 권에서 벌어진 일은 매듭짓는다. 새 사건을 열지 않는다.'};
+const centerQ=w=>w.question||w.camp||'';
+const volNo=w=>(w.vols?w.vols.length:0)+1;
 const ASKRULE=`'ask'는 주민 한 명이 독자에게 직접 묻는 질문 한 문장이다. 그 주민의 책에서 나온 물음이되, 독자 자신의 삶에 대해 묻는다.`;
 
 async function build(){
@@ -584,6 +595,10 @@ function lastChapters(w){ return w.chapters.slice(-2).map(c=>`[${c.t}]\n${c.x}`)
 
 async function nextChapter(answer){
   if(busy||!WORLD||WORLD.example) return;
+  if(WORLD.done) return;
+  if(WORLD.chapters.filter(c=>c.x).length>=BOOKLEN){   // 마지막 질문에 답함 → 책을 덮는다(이야기꾼을 부르지 않음)
+    WORLD.final={who:WORLD.ask?WORLD.ask.who:'',q:WORLD.ask?WORLD.ask.q:'',a:answer||''}; WORLD.ask=null; WORLD.done=true; saveW(); render(WORLD);
+    if(window.__ev) __ev('세계/한 권 완성'); document.getElementById('volDone')?.scrollIntoView({block:'start'}); return; }
   if(!SAMPLE){ return; }
   busy=true; ctl=new AbortController();
   if(WORLD.ask){ WORLD.stones.push({who:WORLD.ask.who,q:WORLD.ask.q,a:answer||""}); }
@@ -600,13 +615,17 @@ ${lastChapters({chapters:WORLD.chapters.slice(0,-1)})}
 방금 ${WORLD.ask?WORLD.ask.who:"주민"}이(가) 독자에게 물었다: "${WORLD.ask?WORLD.ask.q:""}"
 독자의 답: "${answer||"(답하지 않고 고개만 끄덕였다)"}"
 
+중심 물음: 「${centerQ(WORLD)}」 · 이 권은 일곱 장, 지금은 제${no}장.
+이 장이 맡은 자리: ${ARC[no]||ARC[7]}
+
 할 일: 제${no}장을 쓴다. 400~600자, 과거형, 대사 포함, 문단은 줄바꿈으로. 독자의 답이 이 세계 안에서 비석·소문·사건 같은 무언가로 남아 이야기를 움직이게 하라(답을 그대로 인용해도 된다). 주민과 법칙은 위 세계 것만 쓴다.
 첫 줄에 장 제목만 쓴다(예: "제${no}장 · 비석이 선 날"). 그다음 줄부터 본문.
 맨 마지막 줄은 정확히 이 형식: 질문|주민 이름|독자에게 묻는 질문 한 문장
-${ASKRULE}`;
+${no>=BOOKLEN?`이번 질문은 이 권의 마지막 질문이다. 주민 한 명이 중심 물음 「${centerQ(WORLD)}」을 독자에게 그대로 돌려준다. 예: "그럼 당신은요? 당신이라면 ${centerQ(WORLD)}에 뭐라고 답하겠어요?" (그 주민의 말투로)`:ASKRULE}`;
   try{
     const {text}=await SAMPLE(prompt,{signal:ctl.signal,cache:false,onText:({text})=>{ if(box) box.innerHTML=paras(stripAsk(text).body); }});
-    const {title,body,ask}=parseChapter(text,no);
+    let {title,body,ask}=parseChapter(text,no);
+    if(no>=BOOKLEN&&!ask) ask={who:(WORLD.folk[0]||{}).name||'주민',q:`당신이라면 「${centerQ(WORLD)}」에 뭐라고 답하겠어요?`};
     WORLD.chapters[WORLD.chapters.length-1]={t:title,x:body}; WORLD.ask=ask; saveW(); render(WORLD);
     document.getElementById('ch'+(WORLD.chapters.length-1))?.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
   }catch(e){
@@ -622,6 +641,7 @@ function parseChapter(text,no){ const {body,askLine}=stripAsk(text.trim()); cons
 
 async function grow(){
   if(busy||!WORLD) return; const nb=newBooks(); if(!nb.length) return;
+  if(WORLD.done){ openWorld(WORLD); return; }   // 완성된 권: 새 별은 2권에서 들어온다
   if(!SAMPLE){ openWorld(WORLD); return; }
   busy=true; ctl=new AbortController();
   waiting("새 별이 세계로 떨어지고 있습니다", nb.map(m=>m.t).join(" · "));
@@ -773,7 +793,7 @@ function cover(b,w,author){
   for(let i=0;i<520;i++){ x.globalAlpha=.15+rn()*.6; x.fillStyle=rn()<.15?"#ffb38a":"#e9ecff"; const r=rn()*1.8+.4; x.beginPath(); x.arc(rn()*PW,rn()*PH,r,0,7); x.fill(); }
   x.globalAlpha=1;
   // 표지의 별자리: 이 세계를 깨운 별들
-  const st=w.books.map(t=>{ const m=MINE.find(q=>q.t===t); return m&&m.p?{t,x:m.p.x,y:m.p.z}:{t,x:hash(t)*2-1,y:hash(t+"y")*2-1}; });
+  const st=w.books.map(t=>{ const m=MINE.find(q=>q.t===t)||(typeof OUR!=='undefined'?OUR.find(q=>q.t===t):null); return m&&m.p?{t,x:m.p.x,y:m.p.z}:{t,x:hash(t)*2-1,y:hash(t+"y")*2-1}; });
   const xs=st.map(s=>s.x), ys=st.map(s=>s.y), x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
   const bx=MX+40, by=330, bw=PW-2*MX-80, bh=620;
   const P=st.map(s=>({t:s.t, X:bx+(x1>x0?(s.x-x0)/(x1-x0):.5)*bw, Y:by+(y1>y0?(s.y-y0)/(y1-y0):.5)*bh}));
@@ -819,6 +839,11 @@ function makeBook(w){
       b.text(s.a?`당신이 세운 비석 — "${s.a}"`:"당신은 말없이 고개를 끄덕였다.",{font:`26px ${SANS}`,color:VIO,lh:44,gap:0,indent:28}); b.space(40); }
     b.text(c.x,{font:`34px ${SERIF}`,lh:66,gap:30});
   });
+  // 마지막 비석(일곱 장을 다 쓰고 책을 덮을 때)
+  if(w.final){ b.page("body"); b.space(220); b.label("마지막 비석",VIO); b.head(`「${w.question||w.camp||''}」`,{size:46}); b.rule();
+    b.text(`${w.final.who}이(가) 물었다. "${w.final.q}"`,{font:`28px ${SANS}`,color:SOFT,lh:48,gap:20});
+    b.text(w.final.a?`"${w.final.a}"`:"당신은 말없이 책을 덮었다.",{font:`700 40px ${SERIF}`,lh:72,gap:30});
+    b.space(40); b.text("이 답으로 한 권이 닫혔다.",{font:`28px ${SERIF}`,color:FAINT,lh:48,align:"center"}); }
   // 판권
   b.page("body"); b.y=PH-760;
   const L=(t,o)=>b.text(t,Object.assign({align:"center",gap:0},o));
@@ -826,7 +851,7 @@ function makeBook(w){
   L(`지은이 · ${author}`,{font:`26px ${SANS}`,color:INK,lh:44});
   L(`처음 깨어난 날 · ${ymd(w.created)}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
   L(`이 판을 묶은 날 · ${ymd(today())}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
-  L(`별 ${w.books.length}개 · ${w.chapters.filter(c=>c.x).length}장`,{font:`24px ${SANS}`,color:SOFT,lh:42});
+  L(`${w.volNo?w.volNo+'권 · ':''}별 ${w.books.length}개 · ${w.chapters.filter(c=>c.x).length}장`,{font:`24px ${SANS}`,color:SOFT,lh:42});
   L(`천문대 기록 번호 · ${recordNo(w)}`,{font:`24px ${SANS}`,color:SOFT,lh:42});
   b.space(40); L("한 세계의 연대기는 그 세계 주인의 것이다.",{font:`28px ${SERIF}`,color:INK,lh:48}); L("— 우주 헌장 5조",{font:`22px ${SANS}`,color:FAINT,lh:40});
   b.space(40); L("책미사 너머 천문대 · 견본",{font:`22px ${SANS}`,color:FAINT,lh:40});
@@ -947,7 +972,7 @@ function publish(w){
 function showPubStar(p){
   obs.hidden=true; bk.hidden=true; ww.hidden=true;
   const q=pubPos(p); stopJourney(); cur=-2; tFocus.copy(q).multiplyScalar(.6); tDist=34;
-  capSet(`<span class="me">『${esc(p.name)}』</span>가 별이 되었습니다`,`${esc(p.author)}의 연대기 · ${esc(p.no)}${p.ed>1?` · ${p.ed}판`:""}. 1억 3천만 권의 하늘에 한 권이 더해졌습니다. 이제 누군가 이 별을 자기 세계에 띄울 수 있습니다.`);
+  capSet(`<span class="me">『${esc(p.name)}』</span>가 별이 되었습니다`,`${esc(p.author)}의 연대기 · ${esc(p.no)}${p.ed>1?` · ${p.ed}판`:""}. 인류가 펴낸 책의 하늘에 한 권이 더해졌습니다. 이제 누군가 이 별을 자기 세계에 띄울 수 있습니다.`);
 }
 
 // 연대기 화면에 '천문대에 등재하기'
@@ -1377,6 +1402,239 @@ setTimeout(()=>{ const h=document.getElementById('hello'); const go1=document.ge
     go1.insertAdjacentElement('afterend',b); b.onclick=()=>{ go1.click(); setTimeout(open,300); }; } },0);
 })();
 
+window.QDATA={"Q": [{"n": 1, "q": "어떻게 살아야 하는가", "s": "한 번뿐인 삶, 무엇으로 채울 것인가"}, {"n": 2, "q": "나는 누구인가", "s": "나는 왜 이런 사람이 되었을까"}, {"n": 3, "q": "인간과 기술의 미래", "s": "기계는 사람을 어디까지 대신할까"}, {"n": 4, "q": "돈과 욕망", "s": "얼마면 충분한가"}, {"n": 5, "q": "사회와 정의", "s": "무엇이 공정한가"}, {"n": 6, "q": "사랑과 관계", "s": "곁에 있는 사람을 우리는 얼마나 아는가"}, {"n": 7, "q": "생각하는 법", "s": "어떻게 하면 더 잘 생각할 수 있을까"}, {"n": 8, "q": "세계와 과학", "s": "세계는 어떻게 움직이는가"}], "tags": {"워런 버핏 전설의 투자자": ["돈과 욕망"], "백년의 고독": ["사랑과 관계", "사회와 정의"], "읽기의 위기": ["생각하는 법", "인간과 기술의 미래"], "우아한 사고를 위한 철학": ["생각하는 법", "어떻게 살아야 하는가"], "마침내 특이점이 시작된다": ["인간과 기술의 미래"], "어떻게 살아낼 것인가": ["어떻게 살아야 하는가", "생각하는 법"], "윗집 부부": ["사랑과 관계", "어떻게 살아야 하는가"], "너무 시끄러운 고독": ["어떻게 살아야 하는가"], "리스크테이커": ["돈과 욕망", "생각하는 법"], "죄와 벌": ["사회와 정의", "어떻게 살아야 하는가"], "리더는 언제 차이를 만들어내는가": ["사회와 정의", "어떻게 살아야 하는가"], "경제학자는 결코 손해 보지 않는다": ["돈과 욕망", "생각하는 법"], "변신": ["나는 누구인가", "사랑과 관계"], "인간 실격": ["나는 누구인가"], "이토록 친밀한 배신자": ["사랑과 관계", "나는 누구인가"], "여름": ["사랑과 관계"], "인피니트 게임": ["돈과 욕망", "어떻게 살아야 하는가"], "리스크 프레임": ["생각하는 법", "돈과 욕망"], "철학은 어떻게 삶의 무기가 되는가": ["생각하는 법", "어떻게 살아야 하는가"], "뇌 과학의 모든 역사": ["세계와 과학", "나는 누구인가"], "숫자에 속지 않고 숫자 읽는 법": ["생각하는 법"], "보이지 않는 중국": ["사회와 정의", "돈과 욕망"], "부분과 전체": ["세계와 과학", "생각하는 법"], "자기 앞의 生": ["사랑과 관계", "어떻게 살아야 하는가"], "중동을 보면 미래경제가 보인다": ["돈과 욕망", "사회와 정의"], "당신의 삶에 명상이 필요할 때": ["나는 누구인가"], "위대한 과학 고전 30권을 1권으로 읽는 책": ["세계와 과학"], "19호실로 가다": ["나는 누구인가", "사랑과 관계"], "멋진 신세계": ["인간과 기술의 미래", "사회와 정의"], "자이언트 임팩트": ["돈과 욕망", "인간과 기술의 미래"], "팀장의 본질": ["사랑과 관계", "돈과 욕망"], "이기적 유전자": ["세계와 과학"], "인간이 만든 물질, 물질이 만든 인간": ["세계와 과학", "인간과 기술의 미래"], "브람스를 좋아하세요": ["사랑과 관계"], "영화를 빨리 감기로 보는 사람들": ["인간과 기술의 미래", "사회와 정의"], "장하준의 경제학 강의": ["돈과 욕망", "사회와 정의"], "물고기는 존재하지 않는다": ["어떻게 살아야 하는가", "세계와 과학"], "자기돌봄의 시": ["나는 누구인가"], "괴델, 에셔, 바흐": ["생각하는 법", "세계와 과학"], "책 읽어주는 남자": ["사회와 정의", "사랑과 관계"], "스케일의 법칙": ["세계와 과학", "사회와 정의"], "위어드": ["사회와 정의", "나는 누구인가"], "과부하 시대": ["인간과 기술의 미래", "나는 누구인가"], "인비저블": ["어떻게 살아야 하는가", "나는 누구인가"], "파우스트": ["어떻게 살아야 하는가", "돈과 욕망"], "마케팅 설계자": ["돈과 욕망"], "디컨슈머": ["돈과 욕망", "사회와 정의"], "그리스인 조르바": ["어떻게 살아야 하는가"], "AI 2041": ["인간과 기술의 미래"], "그들의 생각을 바꾸는 방법": ["사랑과 관계", "생각하는 법"], "현대미술": ["생각하는 법"], "브라질에 비가 내리면 스타벅스 주식을 사라": ["돈과 욕망"], "이방인": ["어떻게 살아야 하는가", "사회와 정의"], "메트로폴리스": ["사회와 정의"], "세이노의 가르침": ["돈과 욕망", "어떻게 살아야 하는가"], "욕망이라는 이름의 전차": ["사랑과 관계", "나는 누구인가"], "세컨드 브레인": ["생각하는 법", "인간과 기술의 미래"], "나의 돈 많은 고등학교친구": ["돈과 욕망"], "불확실성의 시대": ["돈과 욕망", "사회와 정의"], "금각사": ["나는 누구인가", "어떻게 살아야 하는가"], "도둑맞은 집중력": ["나는 누구인가", "인간과 기술의 미래"], "탁월함에 이르는 피터 드러커의 습관": ["어떻게 살아야 하는가"], "미술관에 간 클래식": ["생각하는 법"], "이토록 굉장한 세계": ["세계와 과학"], "비열한 시장과 도마뱀의 뇌": ["돈과 욕망", "나는 누구인가"], "이반 일리치의 죽음": ["어떻게 살아야 하는가"], "시몽의 아빠": ["사랑과 관계"], "살아 있는 것은 모두 게임을 한다": ["나는 누구인가", "생각하는 법"], "유현준의 인문건축기행": ["사회와 정의", "생각하는 법"], "브랜드 설계자": ["돈과 욕망"], "노화의 재설계": ["세계와 과학", "어떻게 살아야 하는가"], "파이 이야기": ["어떻게 살아야 하는가", "생각하는 법"], "슈퍼사이트": ["인간과 기술의 미래"], "우리는 모든 것의 주인이기를 원한다": ["돈과 욕망", "나는 누구인가"], "프랑켄슈타인": ["인간과 기술의 미래", "사랑과 관계"], "기계 속의 악마": ["세계와 과학", "인간과 기술의 미래"], "인간을 진화 시키는 AI": ["인간과 기술의 미래"], "아침 그리고 저녁": ["어떻게 살아야 하는가"], "시대예보:핵개인의 시대": ["사회와 정의", "사랑과 관계"], "스태그플레이션 2024년 경제전망": ["돈과 욕망"], "신은 주사위놀이를 하지 않는다": ["생각하는 법", "세계와 과학"], "일론 머스크": ["인간과 기술의 미래", "어떻게 살아야 하는가"], "지킬 앤 하이드": ["나는 누구인가"], "히트 리프레시": ["인간과 기술의 미래", "돈과 욕망"], "칠드런 액트": ["사회와 정의", "사랑과 관계"], "코스모스": ["세계와 과학"], "보보스": ["사회와 정의", "돈과 욕망"], "레버리지": ["돈과 욕망"], "모순": ["어떻게 살아야 하는가", "사랑과 관계"], "도리언 그레이의 초상": ["나는 누구인가", "돈과 욕망"], "군중의 망상": ["생각하는 법", "돈과 욕망"], "열린사회와 그 적들": ["사회와 정의", "생각하는 법"], "초월기업의 법칙": ["돈과 욕망", "인간과 기술의 미래"], "아무튼, 술, 클래식, 식물": ["어떻게 살아야 하는가"], "빅 픽처": ["어떻게 살아야 하는가", "나는 누구인가"], "두 도시 이야기": ["사회와 정의", "사랑과 관계"], "링크": ["세계와 과학", "사회와 정의"], "불변의 법칙": ["생각하는 법", "돈과 욕망"], "메리골드 마음사진관": ["나는 누구인가"], "히든 포텐셜": ["어떻게 살아야 하는가", "나는 누구인가"], "우리는 여전히 삶을 사랑하는가": ["어떻게 살아야 하는가"], "케이크와 맥주": ["사랑과 관계"], "세포의 노래": ["세계와 과학"], "미움받을 용기": ["나는 누구인가", "사랑과 관계"], "부자의 언어": ["돈과 욕망"], "위대한 개츠비": ["돈과 욕망", "사랑과 관계"], "어떻게 팔지 막막할 때 읽는 카피 책": ["돈과 욕망"], "진정성이라는 거짓말": ["사회와 정의", "나는 누구인가"], "나 같은 기계들": ["인간과 기술의 미래", "사랑과 관계"], "내 영혼이 따뜻했던 날들": ["사랑과 관계", "어떻게 살아야 하는가"], "꿈의 인문학": ["나는 누구인가"], "뉴맵": ["사회와 정의", "돈과 욕망"], "컨셉 수업": ["생각하는 법", "돈과 욕망"], "시간의 지배자": ["세계와 과학", "생각하는 법"], "연인": ["사랑과 관계"], "수학자의 생각법": ["생각하는 법"], "나는 왜 이런 사람이 됐을까?": ["나는 누구인가"], "온전히 평등하고 지극히 차별적인": ["사회와 정의"], "소년이 온다": ["사회와 정의"], "AI 반도체 혁명": ["인간과 기술의 미래", "돈과 욕망"], "경험의 멸종": ["인간과 기술의 미래", "어떻게 살아야 하는가"], "편안함의 습격": ["어떻게 살아야 하는가", "나는 누구인가"], "스토너": ["어떻게 살아야 하는가"], "노인과 바다": ["어떻게 살아야 하는가"], "순수의 시대": ["사랑과 관계", "사회와 정의"], "넥서스": ["인간과 기술의 미래", "사회와 정의"], "지리의 힘 1": ["세계와 과학", "사회와 정의"], "공간혁명": ["사회와 정의", "인간과 기술의 미래"], "맡겨진 소녀": ["사랑과 관계"], "공정하다는 착각": ["사회와 정의", "어떻게 살아야 하는가"], "질투라는 감옥": ["나는 누구인가", "사회와 정의"], "빨강의 자서전": ["사랑과 관계", "나는 누구인가"], "메소드": ["나는 누구인가", "생각하는 법"], "그러나 꽃보다도 적게 산 나여": ["어떻게 살아야 하는가", "나는 누구인가"], "배터리 전쟁": ["인간과 기술의 미래", "돈과 욕망"], "신약의 전쟁": ["세계와 과학", "돈과 욕망"], "사이토 히토리의 어떻게 살 것인가": ["어떻게 살아야 하는가", "돈과 욕망"], "21세기를 위한 21가지 제언": ["인간과 기술의 미래", "사회와 정의"], "불안한 사람들": ["사랑과 관계", "나는 누구인가"], "소크라테스 익스프레스": ["어떻게 살아야 하는가", "생각하는 법"], "파리대왕": ["사회와 정의", "나는 누구인가"], "타인에 대한 연민": ["사회와 정의", "사랑과 관계"], "호밀밭의 파수꾼": ["나는 누구인가", "어떻게 살아야 하는가"], "오만과 편견": ["사랑과 관계"], "작별인사": ["인간과 기술의 미래", "나는 누구인가"], "참을 수 없는 존재의 가벼움": ["사랑과 관계", "어떻게 살아야 하는가"], "엔드 오브 타임": ["세계와 과학", "어떻게 살아야 하는가"], "지구는 괜찮아 우리가 문제지": ["세계와 과학", "사회와 정의"], "나를 살리는 논어 한마디": ["어떻게 살아야 하는가", "생각하는 법"], "예감은 틀리지 않는다": ["나는 누구인가", "사랑과 관계"], "토지": ["사회와 정의", "사랑과 관계"], "이처럼 사소한 것들": ["사회와 정의", "어떻게 살아야 하는가"], "프랭클린 익스프레스": ["어떻게 살아야 하는가", "생각하는 법"], "동물농장": ["사회와 정의"], "2022년 글로벌/우리나라 경제 트렌드는 어떻게 바뀔 것인가?": ["돈과 욕망"], "시대예보:호명사회": ["사회와 정의", "인간과 기술의 미래"], "글쓰기의 힘": ["생각하는 법"], "지금 당장 양자컴퓨터에 투자하라": ["돈과 욕망", "인간과 기술의 미래"], "맥베스": ["돈과 욕망", "나는 누구인가"], "초예측 트럼프 2.0 새로운 시대": ["돈과 욕망", "사회와 정의"], "공급망 붕괴의 시대": ["돈과 욕망", "사회와 정의"], "미국주식 처음공부": ["돈과 욕망"], "셰일 혁명과 미국 없는 세계": ["사회와 정의", "돈과 욕망"], "카라마조프가의 형제들": ["어떻게 살아야 하는가", "사회와 정의"], "굿 에너지": ["세계와 과학", "어떻게 살아야 하는가"], "환율의 대전환": ["돈과 욕망"], "어서 오세요, 휴남동 서점입니다": ["어떻게 살아야 하는가", "사랑과 관계"], "싯다르타": ["어떻게 살아야 하는가", "나는 누구인가"], "양자컴퓨터의 미래": ["인간과 기술의 미래", "세계와 과학"], "지리의 힘 2": ["세계와 과학", "사회와 정의"], "가호": ["나는 누구인가", "사랑과 관계"], "다시, 책으로": ["생각하는 법", "인간과 기술의 미래"], "남에게 보여주려고 인생을 낭비하지 마라": ["어떻게 살아야 하는가", "나는 누구인가"], "달과 6펜스": ["어떻게 살아야 하는가", "나는 누구인가"], "러브 머신": ["사랑과 관계", "인간과 기술의 미래"], "브레이크넥": ["사회와 정의", "인간과 기술의 미래"], "드디어 만나는 천문학 수업": ["세계와 과학"]}, "asks": {"어떻게 살아낼 것인가": "나이와 상관없이 생애 후반부까지 가슴속에 품고 타오르게 만들고 싶은 ‘나만의 내면의 불꽃’은 무엇인가요?", "책 읽어주는 남자": "배우지 못한 사람은 생각하지 못한 사람인가?", "나의 돈 많은 고등학교친구": "돈으로 사도 되는 것과 안 되는 것은 어디서 갈릴까?", "살아 있는 것은 모두 게임을 한다": "처음 온 사람을 독서모임에 계속 오게 하는 보상은 무엇일까?", "시간의 지배자": "인간을 다른 동물과 가르는 것은 미래를 그리는 힘일까?", "질투라는 감옥": "질투는 왜 느껴도 말하지 못하는 감정일까?", "순수의 시대": "메이는 순진한 아내였을까, 모든 걸 얻어 낸 전략가였을까?", "윗집 부부": "이웃은 담 하나 너머의 사람일까, 마음 가까이의 사람일까?", "마침내 특이점이 시작된다": "답은 AI가 해도 질문은 사람이 해야 할까?", "너무 시끄러운 고독": "한 인간의 영혼을 품위 있고 고결하게 지켜 주는 힘은 어디에서 온다고 보시나요?", "죄와 벌": "라스콜니코프의 ‘비범한 사람’ 이론에서 가장 위험한 대목은 어디일까요?", "브라질에 비가 내리면 스타벅스 주식을 사라": "주식은 도박일까, 투자일까?", "우리는 모든 것의 주인이기를 원한다": "내 것은 정말 내 것일까?", "아침 그리고 저녁": "마침표는 왜 하필 거기에 찍혔을까?", "보보스": "소득과 지위, 무엇을 더 앞에 둘까?", "맡겨진 소녀": "맡겨진 것과 버려진 것은 어떻게 다를까?", "리더는 언제 차이를 만들어내는가": "내가 겪은 조직에서 ‘그 사람이 아니었으면 달랐을’ 순간이 있었나요?", "시대예보:호명사회": "경쟁이 비싸지는 사회에서, 나는 어디를 내 본진으로 고를까?", "지금 당장 양자컴퓨터에 투자하라": "아직 아무도 정복하지 못한 기술에, 나는 얼마나 긴 시간을 걸 수 있을까?", "넥서스": "정보가 많을수록, 나는 더 좋은 결정을 하고 있을까?", "호밀밭의 파수꾼": "방황하는 아이에게, 나는 조언하는 어른일까 들어 주는 어른일까?", "어서 오세요, 휴남동 서점입니다": "나는 왜 소설과 멀어졌다가, 왜 다시 읽게 되었을까?", "경제학자는 결코 손해 보지 않는다": "열한 가지 이론 가운데 내 일상에 바로 써먹을 수 있는 것은 무엇이었나요?", "예감은 틀리지 않는다": "소설을 읽을 때 작가의 의도가 먼저일까, 나의 해석이 먼저일까?", "스케일의 법칙": "비싼 야외공연 티켓을 샀는데 당일 춥고 비가 오면, 그래도 갈까?", "유현준의 인문건축기행": "집은 나에게 자산일까, 기억일까?", "그들의 생각을 바꾸는 방법": "믿는다고 말하는 것과 내가 보이는 태도는 같을까?", "싯다르타": "깨달음은 정말 말로 전할 수 없는 것일까?", "AI 2041": "일상에서 알고리즘의 추천에 삶의 선택을 맡기며 편리함을 얻는 대신, 내 선택권이나 주의력을 빼앗기고 있다고 느낀 경험이 있나요? '단순한 체류 시간'이 아닌 '인간에게 진정 유익한 시간'을 위해 AI의 목적함수는 어떻게 바뀌어야 할까요?", "AI 반도체 혁명": "좋은 AI 반도체를 명확히 구분하기 어려운 이유는 무엇인가?", "가호": "가호는 주체적인 주인공인가, 이계의 요구에 휘말린 자인가? 온전히 자기 의지로 선택한 순간은 언제인가?", "사이토 히토리의 어떻게 살 것인가": "나는 나 자신을 조건 없이 충분히 괜찮은 사람으로 인정하고 있는가?", "스토너": "스토너가 슬론 교수의 강의에서 전율을 느끼고 진로를 바꾼 것처럼, 내 삶의 궤적을 송두리째 바꾼 결정적 계기나 인물은 누구인가?", "읽기의 위기": "과거의 종이책 독서와 비교할 때 스마트폰 이후 내 집중력은 어떻게 달라졌는가?", "히든 포텐셜": "사람들이 자신의 잠재력을 최대한 발휘하도록 돕는 방법은 무엇인가?", "우아한 사고를 위한 철학": "아무도 나를 볼 수 없다면, 나는 지금과 같은 사람일까?", "리스크테이커": "나는 ‘리버’에 가까운 사람일까요, ‘빌리지’에 가까운 사람일까요?", "백년의 고독": "일상에서 허무를 잊으려고 되풀이하는 나만의 ‘황금 물고기’는 무엇인가요?"}};
+// 견본 7: 질문에서 시작하기 — 질문 → 그 질문에 답한 책들(별자리) → 세 권 → 세계
+// 11/19 에스파다: "관련 없는 책들을 억지로 맞추는 건 신중하다면 안 할 것 같다" → 질문을 먼저, 책은 그 질문이 끌어당긴다.
+// 자료: 질문자료.json(책미사개발에서 뽑음, 엮기.py가 QDATA로 넣음)
+(function(){
+const QD=window.QDATA; if(!QD) return;
+const nrm=s=>String(s).replace(/\s|[,.·:'"!?()\-]/g,"").toLowerCase();
+const TAG={}; Object.entries(QD.tags).forEach(([t,qs])=>TAG[nrm(t)]=qs);
+const ASK={}; Object.entries(QD.asks).forEach(([t,q])=>ASK[nrm(t)]=q);
+const booksOf=q=>OUR.filter(b=>(TAG[nrm(b.t)]||[]).includes(q)).sort((a,b)=>a.y-b.y);
+const isMine=b=>MINE.some(m=>m.read!==false&&nrm(m.t)===nrm(b.t));
+
+const css=`#qx{position:fixed;inset:0;z-index:27;pointer-events:none;font-family:var(--f-body)}
+#qx[hidden]{display:none}
+#qx svg{position:absolute;inset:0;width:100%;height:100%}
+#qx .qr{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:1.5px solid rgba(240,198,116,.55)}
+#qx .qr.pick{width:40px;height:40px;margin:-20px 0 0 -20px;border:2px solid var(--gold);box-shadow:0 0 16px rgba(240,198,116,.7)}
+#qx .qr.mine{border-color:#f4f6ff;box-shadow:0 0 12px rgba(244,246,255,.8)}
+#qx .qr b{position:absolute;left:50%;top:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;font:500 12px var(--f-body);color:#fff;text-shadow:0 1px 6px #000;background:rgba(5,7,14,.55);padding:1px 7px;border-radius:999px}
+#qx .qbox{pointer-events:auto;position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(780px,100%);box-sizing:border-box;background:rgba(8,10,20,.94);border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;padding:16px 20px calc(env(safe-area-inset-bottom,0px) + 14px);max-height:58vh;overflow:auto;backdrop-filter:blur(8px)}
+#qx .qtop{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#qx .qstep{font-size:11px;letter-spacing:.14em;color:var(--gold)}
+#qx .qx{margin-left:auto;background:none;border:0;color:var(--ink-dim);font-size:12px;cursor:pointer}
+#qx h3{font-family:var(--f-display);font-size:22px;line-height:1.35;margin:2px 0 6px;color:var(--ink)}
+#qx p{margin:0 0 8px;font-size:14px;line-height:1.7;color:var(--ink)}
+#qx .sub{color:var(--ink-dim);font-size:13px}
+#qx .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin:8px 0}
+#qx .qgrid button{all:unset;cursor:pointer;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line);display:grid;gap:3px}
+#qx .qgrid button:hover,#qx .qgrid button:focus-visible{border-color:var(--gold);background:rgba(240,198,116,.07)}
+#qx .qgrid b{font-family:var(--f-display);font-size:16px;color:var(--ink)}
+#qx .qgrid span{font-size:12px;line-height:1.5;color:var(--ink-dim)}
+#qx .qgrid small{font-size:11px;color:var(--gold)}
+#qx .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;max-height:150px;overflow:auto}
+#qx .chips button{border-radius:999px;padding:5px 10px;font-size:12px}
+#qx .chips button[aria-pressed="true"]{background:var(--gold);color:#1a1206;border-color:var(--gold)}
+#qx .chips button.mine{border-color:rgba(244,246,255,.7)}
+#qx .three{display:grid;gap:8px;margin:6px 0}
+#qx .chips[hidden]{display:none}
+#qx .three div{padding:7px 12px;border-radius:9px;border:1px solid rgba(240,198,116,.35);background:rgba(240,198,116,.05)}
+#qx .three b{font-family:var(--f-display);font-size:15px}
+#qx .three small{display:block;font-size:11px;color:var(--ink-faint)}
+#qx .three em{display:block;font-style:normal;font-size:13px;line-height:1.6;color:var(--ink);margin-top:3px}
+#qx .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+#qx .acts .sp{flex:1}
+#qx .acts button{border-radius:8px;padding:9px 16px;font-size:14px}
+#qx .acts .go{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:500}
+@media (min-width:1100px){ #qx .qbox{left:auto;right:16px;transform:none;bottom:auto;top:84px;width:430px;border-radius:14px;border-bottom:1px solid var(--line);max-height:calc(100vh - 110px)} #qx .qgrid{grid-template-columns:1fr 1fr} }
+#qBtn{border-color:rgba(240,198,116,.7)!important;color:var(--gold)!important}
+@media (max-width:760px){ #qx .qbox{max-height:62vh;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 12px)} #qx h3{font-size:19px} #qx .qgrid{grid-template-columns:1fr 1fr} }`;
+const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+document.body.insertAdjacentHTML('beforeend',`<section id="qx" hidden aria-label="질문에서 시작하기"><svg id="qsv"></svg><div id="qrings"></div><div class="qbox" id="qbox" role="dialog" aria-live="polite"></div></section>`);
+const X=document.getElementById('qx'), box=document.getElementById('qbox'), sv=document.getElementById('qsv'), rg=document.getElementById('qrings');
+let Q=null, LIST=[], PICK=[], saved=null, raf=0;
+
+function frame(){ if(X.hidden) return; raf=requestAnimationFrame(frame);
+  if(!Q){ rg.innerHTML=''; sv.innerHTML=''; return; }
+  const pts=LIST.map(b=>({b,s:scr(b.p)}));
+  rg.innerHTML=pts.filter(o=>o.s.ok).map(({b,s})=>{ const pk=PICK.includes(b), mn=isMine(b);
+    const lab=pk||mn||b===LIST[0]||b===LIST[LIST.length-1];
+    return `<div class="qr${pk?' pick':''}${mn?' mine':''}" style="left:${s.x}px;top:${s.y}px">${lab?`<b>${esc(b.t)}${mn&&!pk?' · 내 별':''}</b>`:''}</div>`; }).join('');
+  // 별자리: 나온 해 순서대로 잇는다(질문이 시간을 건너온 길). 고른 세 권은 굵게.
+  const seq=pts.filter(o=>o.s.ok); let d='';
+  for(let i=1;i<seq.length;i++) d+=`<line x1="${seq[i-1].s.x}" y1="${seq[i-1].s.y}" x2="${seq[i].s.x}" y2="${seq[i].s.y}" stroke="rgba(240,198,116,.22)" stroke-width="1"/>`;
+  const P3=PICK.map(b=>scr(b.p)).filter(s=>s.ok);
+  for(let i=0;i<P3.length;i++){ const a=P3[i], c=P3[(i+1)%P3.length]; if(P3.length<3&&i===P3.length-1) break; d+=`<line x1="${a.x}" y1="${a.y}" x2="${c.x}" y2="${c.y}" stroke="rgba(240,198,116,.9)" stroke-width="2" stroke-dasharray="6 5"/>`; }
+  sv.innerHTML=d;
+}
+function fitTo(list){ if(!list.length) return; const c=new THREE.Vector3(); list.forEach(b=>c.add(b.p)); c.divideScalar(list.length);
+  const spread=Math.max(...list.map(b=>b.p.distanceTo(c))); stopJourney(); cur=-2; tFocus.copy(c).multiplyScalar(.6);
+  tDist=Math.min(1750,Math.max(90,(spread+c.length()*.4)*2.6*(innerWidth<innerHeight?2:1))); }
+const top=(i,t)=>`<div class="qtop"><span class="qstep">질문에서 시작하기 · ${i}/3</span><button class="qx" data-a="x">닫기 ×</button></div><h3>${t}</h3>`;
+function bindX(){ box.querySelectorAll('[data-a="x"]').forEach(b=>b.onclick=close); }
+
+function stepA(){ Q=null; PICK=[];
+  box.innerHTML=top(1,'어떤 물음을 붙잡고 있나요?')+`<p class="sub">이야기는 질문에서 시작합니다. 하나를 고르면, 그 물음에 답한 책들이 별자리로 모입니다.</p>
+   <div class="qgrid">${QD.Q.map(q=>`<button data-q="${esc(q.q)}"><b>${esc(q.q)}</b><span>${esc(q.s)}</span><small>책미사의 별 ${booksOf(q.q).length}개</small></button>`).join('')}</div>`; bindX();
+  box.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>stepB(b.dataset.q)); }
+
+function suggest(list){ // 내가 읽은 책 먼저, 모자라면 시대가 고르게(가장 먼, 가운데, 가장 가까운)
+  const mine=list.filter(isMine).slice(0,3); const rest=list.filter(b=>!mine.includes(b)); const out=[...mine];
+  const idx=[0,Math.floor(rest.length/2),rest.length-1]; for(const i of idx){ if(out.length>=3) break; const b=rest[i]; if(b&&!out.includes(b)) out.push(b); }
+  return out; }
+function stepB(q){ Q=q; LIST=booksOf(q); PICK=[]; fitTo(LIST); const qi=QD.Q.find(x=>x.q===q);
+  const mine=LIST.filter(isMine), first=LIST[0], last=LIST[LIST.length-1];
+  box.innerHTML=top(2,`「${esc(q)}」`)+`<p class="sub">${esc(qi.s)}</p>
+   <p>책미사가 함께 읽은 170권 가운데 <b>${LIST.length}권</b>이 이 물음에 답했습니다. 가장 먼 답은 『${esc(first.t)}』(${yrTxt(first.y)}), 가장 가까운 답은 『${esc(last.t)}』(${yrTxt(last.y)})입니다.
+   ${mine.length?` 당신이 읽은 별 가운데 <b>${mine.length}권</b>도 여기 있습니다.`:''}</p>
+   <p class="sub">흐린 금빛 선은 이 질문이 시간을 건너온 길입니다.</p>
+   <div class="acts"><button data-a="back">다른 질문</button><span class="sp"></span><button class="go" data-a="next">세 권 고르기</button></div>`; bindX();
+  box.querySelector('[data-a="back"]').onclick=stepA; box.querySelector('[data-a="next"]').onclick=()=>{ OPEN=false; stepC(suggest(LIST)); }; }
+
+let OPEN=false;
+function stepC(pick){ PICK=pick; fitTo(PICK.length===3?PICK:LIST);
+  const three=PICK.map(b=>{ const a=ASK[nrm(b.t)]; return `<div><b>『${esc(b.t)}』</b><small>${esc(b.a||'')} · ${yrTxt(b.y)}${isMine(b)?' · 내 별':''}</small>${a?`<em>이 책이 묻는 말 — ${esc(a)}</em>`:''}</div>`; }).join('');
+  box.innerHTML=top(3,'같은 물음에 다르게 답한 세 권')+`<p class="sub">세 권은 아무렇게나 모인 게 아니라, 「${esc(Q)}」라는 물음 아래 서 있습니다. ${LIST.some(isMine)?'당신이 읽은 별을 먼저 골랐어요.':'시대가 고르게 골랐어요.'} 눌러서 바꿀 수 있습니다.</p>
+   <div class="three">${three}</div>
+   <button class="qx" style="margin:2px 0 6px;padding:4px 0;color:var(--gold)" data-a="chips">${OPEN?'목록 접기 ▴':`다른 책으로 바꾸기 ▾ (${LIST.length}권)`}</button>
+   <div class="chips" ${OPEN?'':'hidden'}>${LIST.map((b,i)=>`<button data-i="${i}" class="${isMine(b)?'mine':''}" aria-pressed="${PICK.includes(b)}">${esc(b.t)}</button>`).join('')}</div>
+   <div id="qmsg" class="sub"></div>
+   <div class="acts"><button data-a="back">이전</button><span class="sp"></span><button class="go" data-a="wake" ${PICK.length===3?'':'disabled'}>이 질문으로 세계 깨우기</button></div>`; bindX();
+  box.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ const o=LIST[+b.dataset.i]; let p=PICK.filter(x=>x!==o); if(p.length===PICK.length){ if(p.length>=3) p.shift(); p.push(o); } stepC(p); });
+  box.querySelector('[data-a="chips"]').onclick=()=>{ OPEN=!OPEN; stepC(PICK); };
+  box.querySelector('[data-a="back"]').onclick=()=>{ OPEN=false; stepB(Q); };
+  box.querySelector('[data-a="wake"]').onclick=()=>wake(false); }
+
+async function wake(force){ const msg=document.getElementById('qmsg');
+  if(typeof SAMPLE==='undefined'||!SAMPLE){ msg.innerHTML='<b style="color:var(--gold)">이 화면에서는 이야기꾼(Claude)을 부를 수 없어요.</b> 당신의 질문으로 깨우는 세계는 곧 열립니다.'; return; }
+  // 견본 페이지 안에서는 confirm 창이 막혀 아무 반응이 없었다(11/19) → 칸 안에서 묻는다
+  if(!force&&typeof WORLD!=='undefined'&&WORLD&&!WORLD.example){
+    msg.innerHTML=`<div style="margin:6px 0;padding:10px 12px;border:1px solid rgba(240,198,116,.5);border-radius:9px">지금 세계 「${esc(WORLD.name)}」가 있어요. 견본은 세계를 하나만 두므로, 이 질문으로 새로 깨우면 지금 세계는 사라집니다.
+      <div class="acts" style="margin-top:8px"><button data-a="keep">그대로 두기</button><button class="go" data-a="replace">새로 깨우기</button></div></div>`;
+    msg.querySelector('[data-a="keep"]').onclick=()=>{ msg.innerHTML=''; };
+    msg.querySelector('[data-a="replace"]').onclick=()=>wake(true); return; }
+  msg.innerHTML='이야기꾼을 부르는 중…';
+  const Qn=Q, qi=QD.Q.find(x=>x.q===Q), bk=PICK.map(b=>({t:b.t,a:b.a,y:b.y,ours:true}));
+  close(); busy=true; ctl=new AbortController();
+  waiting(`「${Qn}」 아래로 별이 내려앉고 있습니다`, bk.map(b=>b.t).join(' · '));
+  const prompt=`${RULES}
+
+이 세계의 중심 물음: 「${Qn}」 — ${qi.s}
+독자는 이 물음을 붙잡고 아래 세 권을 골랐다. 세 권은 같은 물음에 서로 다르게 답한 책이다. 세계의 땅·주민·법칙이 모두 이 물음을 향하게 한다.
+
+여덟 진영(질문): ${CAMPS.join(", ")}
+넨 계열(읽는 힘): ${NEN}
+
+고른 별(책):
+${JSON.stringify(books(bk),null,0)}
+
+할 일:
+1. 세계 이름 하나(짧게, 이 물음이 깃든 풍경).
+2. lands, folk, laws. 책마다 적어도 하나. desc는 한두 문장, 그 책이 이 물음에 내놓는 답이 묻어나게.
+3. camp: "${Qn}"(정확히 이것), campWhy 한 문장: 세 권이 이 물음에 어떻게 다르게 답하는지.
+4. nen: 위 여섯 계열 중 하나(이름만), nenWhy 한 문장.
+5. scene: 제1장. 세 책에서 온 주민들이 이 땅에서 만나, 중심 물음을 두고 서로 다른 답을 내놓다가 하나의 사건이 일어나는 장면. 500~700자, 과거형, 대사 포함, 문단은 줄바꿈으로.
+6. ${ASKRULE} 이번에는 중심 물음을 그 주민의 말투로 바꿔 묻는다.
+7. next: 이 물음에 또 다르게 답할 실제로 있는 책 한 권(title, author, why 한 문장).
+
+JSON 하나만 답한다:
+{"name":"","lands":[{"book":"","name":"","desc":""}],"folk":[{"book":"","name":"","desc":""}],"laws":[{"book":"","law":""}],"camp":"","campWhy":"","nen":"","nenWhy":"","scene":"","ask":{"who":"","q":""},"next":{"title":"","author":"","why":""}}`;
+  try{ const r=await SAMPLE.json(prompt,{signal:ctl.signal});
+    if(!r||typeof r!=='object') throw {code:'empty'};
+    WORLD={created:new Date().toISOString().slice(0,10),question:Qn,books:bk.map(b=>b.t),name:String(r.name||"이름 없는 세계"),lands:arr(r.lands),folk:arr(r.folk),laws:arr(r.laws),
+      camp:String(r.camp||Qn),campWhy:String(r.campWhy||""),nen:String(r.nen||""),nenWhy:String(r.nenWhy||""),
+      chapters:[{t:"제1장 · 깨어남",x:String(r.scene||"")}],stones:[],ask:r.ask||null,next:r.next||null};
+    saveW(); refreshWake(); render(WORLD); if(window.__ev) __ev('질문/세계 깨움');
+  }catch(e){ const m=errCopy(e)||(e&&e.code==='cancelled'?'':'세계를 쓰다가 멈췄어요. 잠시 뒤 다시 눌러 주세요.'+(e&&(e.code||e.message)?` (${esc(String(e.code||e.message))})`:'')); if(m){ wrap.innerHTML=`<div class="wait"><p class="err">${m}</p><div class="acts" style="justify-content:center"><button id="qBack">돌아가기</button></div></div>`; const b=document.getElementById('qBack'); if(b) b.onclick=closeWorld; } else closeWorld(); }
+  finally{ busy=false; } }
+
+function open(){ if(!X.hidden) return; saved={f:tFocus.clone(),d:tDist}; card.hidden=true;
+  if(matchMedia('(max-width:760px)').matches){ const me=document.getElementById('me'), f=document.getElementById('meFold'); if(me&&f&&!me.classList.contains('fold')) f.click(); }
+  X.hidden=false; stepA(); cancelAnimationFrame(raf); frame(); if(window.__ev) __ev('질문/시작',1); }
+function close(){ X.hidden=true; Q=null; PICK=[]; rg.innerHTML=''; sv.innerHTML=''; cancelAnimationFrame(raf); if(saved){ tFocus.copy(saved.f); tDist=saved.d; } }
+window.openQuestion=open;
+addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stopImmediatePropagation(); } },true);
+{ const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='qBtn'; b.type='button'; b.textContent='✦ 질문에서 시작하기';
+  b.onclick=open; const t=document.getElementById('tourBtn'); if(t) t.insertAdjacentElement('afterend',b); else sub.prepend(b); }
+})();
+
+// ---------- 견본 7(11/19): 일곱 장이 한 권 ----------
+// 끝없는 연재 대신 1~7장(시작·흔들림·부딪힘·고비·끝) → 마지막 질문 → 마지막 비석 → 한 권 완성 → 2권
+(function(){
+  const nCh=w=>w.chapters.filter(c=>c.x).length;
+  const volBook=(w,v,i)=>Object.assign({},w,{name:`${w.name} · ${i+1}권`,volNo:i+1,chapters:v.chapters,stones:v.stones,final:v.final,question:v.question,created:v.created,books:v.books||w.books,__vol:1});
+  const _ob=openBook; openBook=function(w){
+    if(w&&!w.example&&!w.__vol&&(w.done||(w.vols&&w.vols.length))) w=Object.assign({},w,{name:`${w.name} · ${volNo(w)}권`,volNo:volNo(w),__vol:1});
+    return _ob(w); };
+  const _r=render; render=function(w,streaming){ _r(w,streaming); if(w.example) return;
+    const n=nCh(w), V=volNo(w);
+    const h=wrap.querySelector('.chron h3'); if(h) h.innerHTML=`연대기 <span style="font-weight:400;color:var(--ink-dim);font-size:.85em">· ${V}권 · ${Math.min(n,BOOKLEN)}/${BOOKLEN}장 · 중심 물음 「${esc(centerQ(w))}」</span>`;
+    const ask=wrap.querySelector('.ask');
+    if(ask&&n>=BOOKLEN&&!w.done){
+      const who=ask.querySelector('.who'); if(who) who.textContent=`마지막 질문 · ${w.ask.who||''}이(가) 당신에게 묻습니다`;
+      const gn=document.getElementById('goNext'); if(gn) gn.textContent='마지막 비석을 세우고 책 덮기';
+      const sk=document.getElementById('skip'); if(sk) sk.textContent='답 없이 책 덮기';
+      const ta=document.getElementById('ans'); if(ta) ta.placeholder='이 답이 이 권의 마지막 쪽이 됩니다.';
+    } else if(ask&&!w.done){ const sk=document.getElementById('skip'); const left=BOOKLEN-n;
+      if(sk) sk.insertAdjacentHTML('afterend',`<span style="font-size:12px;color:var(--ink-faint);align-self:center">이 권은 ${left}장 남았어요</span>`); }
+    const chron=wrap.querySelector('.chron');
+    if(w.done&&chron){ const f=w.final||{};
+      chron.insertAdjacentHTML('afterend',`<div class="ask" id="volDone" style="border-color:rgba(240,198,116,.6)">
+        <div class="who" style="color:var(--gold)">${V}권이 완성되었습니다</div>
+        <div class="from">${esc(f.who||'')}이(가) 물었다. "${esc(f.q||'')}"</div>
+        <div class="q">${f.a?`"${esc(f.a)}"`:'당신은 말없이 책을 덮었다.'}</div>
+        <div class="from">이 답으로 「${esc(w.name)}」 ${V}권이 닫혔습니다. 일곱 장과 비석들을 한 권으로 묶어 가져가세요.</div>
+        <div class="acts"><button class="go" id="volPdf">📖 ${V}권을 PDF로 묶기</button></div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+          <div class="who">이어서 ${V+1}권</div>
+          <div class="from">같은 세계, 같은 주민들로 다음 권을 엽니다. 물음은 그대로 두거나 바꿀 수 있어요. 새로 읽은 별은 ${V+1}권에서 세계로 들어옵니다.</div>
+          <div class="acts" style="align-items:center"><select id="volQ" style="font:inherit;font-size:14px;color:var(--ink);background:#0b0e1a;border:1px solid var(--line);border-radius:8px;padding:7px 10px">
+            ${[centerQ(w),...CAMPS.filter(c=>c!==centerQ(w))].filter(Boolean).map((c,i)=>`<option value="${esc(c)}">${i===0?'같은 물음 · ':''}${esc(c)}</option>`).join('')}</select>
+            <button id="volNext">${V+1}권 시작하기</button></div><div class="err" id="volErr"></div></div></div>`);
+      document.getElementById('volPdf').onclick=()=>openBook(w);
+      document.getElementById('volNext').onclick=()=>newVolume(document.getElementById('volQ').value);
+      const g=document.getElementById('bkGo'); if(g) g.parentElement.remove(); }
+    if(w.vols&&w.vols.length&&chron){
+      chron.insertAdjacentHTML('afterbegin',`<div class="from" style="margin-bottom:10px">지난 권: ${w.vols.map((v,i)=>`<button data-vol="${i}" style="border-radius:8px;margin:2px">📖 ${i+1}권 · 「${esc(v.question||'')}」</button>`).join(' ')}</div>`);
+      chron.querySelectorAll('[data-vol]').forEach(b=>b.onclick=()=>openBook(volBook(w,w.vols[+b.dataset.vol],+b.dataset.vol))); }
+  };
+  async function newVolume(q){
+    if(busy||!WORLD||!WORLD.done) return; const err=document.getElementById('volErr');
+    if(!SAMPLE){ if(err) err.textContent='이 화면에서는 이야기꾼을 부를 수 없어요.'; return; }
+    const prev={chapters:WORLD.chapters,stones:WORLD.stones,final:WORLD.final,question:centerQ(WORLD),created:WORLD.created,books:WORLD.books.slice()};
+    const last=WORLD.chapters.filter(c=>c.x).slice(-1)[0]||{t:'',x:''}, V=volNo(WORLD)+1;
+    busy=true; ctl=new AbortController();
+    const keep=JSON.stringify(WORLD);
+    WORLD.vols=(WORLD.vols||[]).concat([prev]); WORLD.chapters=[{t:'제1장',x:''}]; WORLD.stones=[]; WORLD.done=false; WORLD.final=null; WORLD.ask=null; WORLD.question=q;
+    render(WORLD,true); const box=document.getElementById('live');
+    const prompt=`${RULES}
+
+이 독자의 세계: ${worldBrief(WORLD)}
+
+지난 권(${V-1}권)의 마지막 장:
+[${last.t}]
+${last.x}
+
+지난 권은 중심 물음 「${prev.question}」으로 일곱 장을 지나 닫혔다. 마지막에 ${prev.final.who||'주민'}이(가) 물었고("${prev.final.q||''}"), 독자는 "${prev.final.a||'(말없이 책을 덮었다)'}"라고 답했다.
+
+이제 ${V}권 제1장을 쓴다. 중심 물음: 「${q}」${q===prev.question?' (같은 물음을 한 번 더, 더 깊이)':' (새 물음)'} · 이 권도 일곱 장, 지금은 제1장.
+이 장이 맡은 자리: 시작 — 지난 권에서 시간이 조금 흐른 뒤. 독자의 마지막 답이 세계에 남긴 흔적에서 출발하고, 중심 물음이 다시(또는 새로) 떠오르는 사건 하나로 연다.
+400~600자, 과거형, 대사 포함, 문단은 줄바꿈으로.
+첫 줄에 장 제목만 쓴다(예: "제1장 · ..."). 그다음 줄부터 본문.
+맨 마지막 줄은 정확히 이 형식: 질문|주민 이름|독자에게 묻는 질문 한 문장
+${ASKRULE}`;
+    try{
+      const {text}=await SAMPLE(prompt,{signal:ctl.signal,cache:false,onText:({text})=>{ if(box) box.innerHTML=paras(stripAsk(text).body); }});
+      const {title,body,ask}=parseChapter(text,1);
+      WORLD.chapters=[{t:title,x:body}]; WORLD.ask=ask; saveW(); refreshWake(); render(WORLD); if(window.__ev) __ev('세계/다음 권');
+      document.getElementById('ch0')?.scrollIntoView({block:'start'});
+    }catch(e){ WORLD=JSON.parse(keep); render(WORLD); const m=errCopy(e)||'다음 권을 여는 데 실패했어요. 다시 눌러 주세요.'; const er=document.getElementById('volErr'); if(er) er.textContent=m; }
+    finally{ busy=false; }
+  }
+})();
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
@@ -1494,6 +1752,7 @@ body.diving #cap,body.diving .stops,body.diving #labels,body.diving .top,body.di
   #gcap{top:calc(env(safe-area-inset-top,0px) + 90px)}
 }
 #vis,#bwait{display:none!important}
+#qBtn{display:none!important} /* 질문에서 시작하기는 이야기꾼이 붙을 때까지 견본에서만 */
 #gopill{top:auto;left:auto;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 64px)}
 @media (max-width:760px){ #gopill{bottom:calc(env(safe-area-inset-bottom,0px) + 112px)} }
 </style>
@@ -1513,7 +1772,7 @@ body.diving #cap,body.diving .stops,body.diving #labels,body.diving .top,body.di
       <button type="button" data-go="orbit">백년의 고독</button>›
       <button type="button" data-go="ground">마콘도</button>
     </nav>
-    <div id="vis" role="group" aria-label="그림 비교"><button type="button" data-v="now">지금</button><button type="button" data-v="A">A · 다듬은 코드</button><button type="button" data-v="B">B · 그림+코드</button><label id="bpick" class="pick" hidden>그림 바꾸기<input id="bfile2" type="file" accept="image/*"></label></div>
+    <div id="vis" hidden><button type="button" data-v="now" hidden></button><button type="button" data-v="A" hidden></button><button type="button" data-v="B" hidden></button><label id="bpick" hidden><input id="bfile2" type="file" hidden></label></div>
     <span class="sp"></span>
     <button id="snd" type="button" aria-pressed="false">빗소리 켜기</button>
   </div>
@@ -1533,20 +1792,7 @@ body.diving #cap,body.diving .stops,body.diving #labels,body.diving .top,body.di
   </aside>
   <div id="gcap"><h1>마콘도</h1><p id="gRain"></p><div class="hint" id="gHint">옆으로 끌어서 둘러보세요 · 빛나는 고리를 누르면 그곳 사람을 만납니다</div></div>
   <aside id="spot" hidden></aside>
-  <div id="bwait" hidden>
-    <div class="eb">B · 그림 한 장 + 살아 있는 코드</div>
-    <h2>그림이 들어갈 자리</h2>
-    <p>배경은 그림 한 장이 맡고, 비·번개·나비·하늘로 오르는 시트·강물 동그라미는 지금처럼 코드가 그 위에서 움직입니다. ChatGPT에 밑그림과 지시문을 함께 주고 받은 그림을 넣으면 바로 이 자리에서 보입니다.</p><p class="note">밑그림과 지시문은 PC의 <b>책미사너머\그림\행성\마콘도</b> 폴더에 있습니다.</p>
-    <div class="row"><label class="pick gold">그림 넣어 보기<input id="bfile" type="file" accept="image/*"></label><button type="button" id="bshow">그림 지시문 보기</button></div>
-    <div id="bprompt" hidden><pre>Use the attached image as a strict layout guide. Keep the exact composition, horizon line, and the position and size of every element. Repaint it as a finished painting in landscape 3:2 (1536x1024).
-
-Scene: a small Caribbean village in 1920s Colombia at night in heavy rain, magical realism mood.
-Keep, in the same places as the guide: a few small whitewashed houses on the left; a huge old chestnut tree in a courtyard; a large two-story whitewashed colonial house with a terracotta tile roof and an arched veranda, its upstairs window glowing pale blue and its ground-floor workshop window on the right end glowing intense gold; small houses with almond trees; a small yellow steam locomotive with passenger cars at a tiny station, headlight facing left, a banana plantation behind it; a wooden signpost at the far right; a small plain stone slab near the lower left of the village (no writing on it); a dark river across the bottom with large smooth white stones like prehistoric eggs; heavy storm clouds over distant Sierra Nevada mountains.
-
-Style: painterly matte painting with gouache and oil texture, muted deep teal-blue night palette, warm amber window light, wet reflections on the street and river, cinematic, quiet and melancholic.
-Do not include any people, animals, text, letters, or signs with writing. Do not imitate any specific artist, film, or game.</pre><div class="row"><small>밑그림을 함께 올리고 · 가로 3:2 · 사람·글자 없이</small><button type="button" id="bcopy">복사</button></div></div>
-    <p class="note">넣은 그림은 이 브라우저에서만 보입니다. 마음에 들면 세로에게 파일을 주세요. 고리 자리를 그림에 맞춰 옮겨 올립니다.</p>
-  </div>
+  <div id="bwait" hidden><input id="bfile" type="file" hidden><button type="button" id="bshow" hidden></button><div id="bprompt" hidden><pre></pre><button type="button" id="bcopy" hidden></button></div></div>
   <div id="toast" role="status"></div>
 </section>
 
