@@ -2093,6 +2093,208 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
 })();
 /*}DOORS*/
 
+/*CONST{*/
+// ---------- 견본 10(11/20): 작은 창 — 내 별자리를 옆에서 내려다보는 두 번째 카메라 ----------
+// 에스파다: 도표(물음 팔각)가 아니라 같은 우주 안에서 내 별들이 놓인 모양을, 영화처럼 오른쪽 아래 작은 화면에.
+//          선이 선명하면 3D에서 선밖에 안 보여 공간의 의미가 사라진다 → 선 없이, 옆에서 비스듬히 내려다보며 천천히 돈다.
+//          책미사 별(170)은 희미하게.
+// 자리: 큰 화면과 같은 좌표(책이 처음 나온 해 = 한가운데에서의 거리). 은하 원반은 큰 화면의 별 22만 개 가운데 일부를 옮겨 씀.
+(function(){
+if(typeof THREE==='undefined'||typeof OUR==='undefined') return;
+const HOLE=14;                                   // 한가운데 빈 자리(책미사 · 지금)
+const rr=r=>HOLE+5.2*Math.sqrt(Math.max(0,r));   // 거리 눌러 담기(가까운 별도 한가운데 뭉치지 않게)
+const hs=(x,z)=>{ const v=Math.sin(x*12.9898+z*78.233)*43758.5453; return v-Math.floor(v); };
+function vp(x,y,z,seed){ const r=Math.hypot(x,z), a=Math.atan2(z,x), R2=rr(r);
+  const u=(seed==null?hs(x,z):seed)-.5, th=(4+R2*.32)*u*Math.abs(u)*2.2+y*.6;   // 위아래 두께: 바깥일수록 두껍게, 가운데로 모이게
+  return [Math.cos(a)*R2, th, Math.sin(a)*R2]; }
+const VP=p=>{ const v=vp(p.x,p.y,p.z); return new THREE.Vector3(v[0],v[1],v[2]); };
+const MEM=window.MEMBERS||{};
+const QCOL=['#e6a64e','#a68ae0','#4fbccf','#d9b84a','#d0605a','#e2849f','#76b884','#6a92e0'];
+const RCNT=OUR.map(()=>0); Object.values(MEM).forEach(ks=>ks.forEach(k=>RCNT[k]++)); const RMAX=Math.max(1,...RCNT);
+const hsx=t=>{ let h=2166136261; for(const c of String(t)){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return ((h>>>0)%10000)/10000; };
+function starLook(b,k,bright){ const c=new THREE.Color(k>=0&&OUR[k].q&&OUR[k].q.length?QCOL[OUR[k].q[0]]:'#dfe6ff');
+  const j=hsx(b.t+'c'); c.lerp(new THREE.Color(j<.5?'#ffffff':'#fff1d6'),.25+j*.25);     // 별빛처럼 조금 바래게, 별마다 다르게
+  const n=k>=0?RCNT[k]:0, sz=(4.5+13*Math.sqrt(n/RMAX))*(.75+hsx(b.t+'s')*.6);
+  const lum=bright?(.8+hsx(b.t+'l')*.45):.26; return {c:[c.r*lum,c.g*lum,c.b*lum],s:bright?sz:sz*.55}; }
+const small=()=>matchMedia('(max-width:760px)').matches;
+const sget=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const ev=n=>{ try{ if(window.__ev) __ev('별자리창/'+n); }catch(e){} };
+
+const css=`
+#cw{position:fixed;z-index:14;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 20px);width:320px;border-radius:14px;overflow:hidden;background:#03050b;border:1px solid rgba(240,198,116,.28);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 18px 44px rgba(0,0,0,.55);font-family:var(--f-body,system-ui);color:#efe8d6;transition:width .35s,height .35s,border-radius .35s}
+#cw .cwh{position:absolute;left:0;right:0;top:0;padding:9px 12px 14px;z-index:2;pointer-events:none;text-shadow:0 1px 6px #000;background:linear-gradient(#03050bcc,#03050b00)}
+#cw .cwk{font-size:10.5px;letter-spacing:.18em;color:var(--gold,#f0c674);opacity:.85}
+#cw .cwt{font-size:14px;font-weight:700;margin-top:2px;line-height:1.3}
+#cw .cws{font-size:11px;color:#a9a294;margin-top:1px}
+#cw canvas{display:block;width:100%;height:220px;cursor:grab;touch-action:none}
+#cw canvas:active{cursor:grabbing}
+#cw .cwb{position:absolute;top:7px;right:7px;z-index:3;display:flex;gap:4px}
+#cw .cwb button[data-a=me]{width:auto;padding:0 8px;font-size:11.5px;color:var(--gold,#f0c674);border-color:rgba(240,198,116,.4)}
+#cw.view{border-color:rgba(166,138,224,.55)}
+#cw .cwb button{width:26px;height:26px;border-radius:7px;border:1px solid rgba(239,232,214,.18);background:rgba(8,11,22,.7);color:#efe8d6;font-size:13px;line-height:1;cursor:pointer;padding:0}
+#cw .cwl{position:absolute;inset:0;pointer-events:none;z-index:1}
+#cw .cwl span{transition:opacity .9s;position:absolute;transform:translate(-50%,-150%);font-size:10.5px;white-space:nowrap;color:#fff3d6;text-shadow:0 1px 5px #000,0 0 3px #000}
+#cw .cwl span.c{color:var(--gold,#f0c674);font-size:10px;opacity:.8}
+#cw .cwtip{position:absolute;z-index:3;pointer-events:none;background:rgba(5,7,14,.92);border:1px solid rgba(240,198,116,.3);border-radius:8px;padding:5px 8px;font-size:11.5px;transform:translate(-50%,-125%);white-space:nowrap}
+#cw .cwm{display:none;gap:6px;padding:10px 12px 12px;overflow-x:auto;scrollbar-width:none;border-top:1px solid rgba(239,232,214,.1);background:#05070f}
+#cw .cwm::-webkit-scrollbar{display:none}
+#cw.big .cwm{display:flex}
+#cw .cwm button{flex:none;padding:6px 12px;border-radius:999px;border:1px solid rgba(239,232,214,.18);background:transparent;color:#d8d0bd;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+#cw .cwm button[aria-pressed="true"]{border-color:var(--gold,#f0c674);color:var(--gold,#f0c674);background:rgba(240,198,116,.1)}
+#cw .cwm small{opacity:.6;margin-left:4px}
+#cw.big .cwf{bottom:auto;top:auto;position:absolute;bottom:58px}
+#cw .cwf{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:10px;color:#8d877b;pointer-events:none;z-index:2}
+#cw.big{right:50%;bottom:50%;transform:translate(50%,50%);width:min(860px,94vw);z-index:26}
+#cw.big canvas{height:min(560px,70vh)}
+#cw.big .cwt{font-size:20px} #cw.big .cws{font-size:12.5px} #cw.big .cwk{font-size:12px}
+#cwdim{position:fixed;inset:0;z-index:25;background:rgba(3,5,11,.6)}
+body.cxo #cw,body.cxo #cwdim{visibility:hidden!important}
+@media (max-width:760px){
+  #cw{bottom:calc(env(safe-area-inset-bottom,0px) + 140px);right:12px;width:96px;height:96px;border-radius:50%}
+  #cw canvas{height:96px}
+  #cw:not(.big) .cwh,#cw:not(.big) .cwb,#cw:not(.big) .cwl,#cw:not(.big) .cwf{display:none}
+  #cw.big{width:94vw;height:auto;border-radius:14px}
+  #cw.big canvas{height:58vh}
+  body.dz-u #cw:not(.big){bottom:calc(env(safe-area-inset-bottom,0px) + 196px)}
+}`;
+const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+
+const W=document.createElement('div'); W.id='cw'; W.setAttribute('aria-label','내 별자리, 옆에서 본 모습');
+W.innerHTML=`<div class="cwh"><div class="cwk">옆에서 본 내 별자리</div><div class="cwt"></div><div class="cws"></div></div>
+<div class="cwb"><button type="button" data-a="me" title="내 별자리로" aria-label="내 별자리로" hidden>↩ 나</button><button type="button" data-a="big" title="크게 보기" aria-label="크게 보기">⤢</button></div>
+<canvas></canvas><div class="cwl"></div><div class="cwf">끌어서 돌려 보기 · 별을 누르면 그 책의 하늘로</div><div class="cwm" aria-label="다른 회원의 별자리 구경"></div>`;
+document.body.appendChild(W);
+const cv=W.querySelector('canvas'), LB=W.querySelector('.cwl');
+const tip=document.createElement('div'); tip.className='cwtip'; tip.hidden=true; W.appendChild(tip);
+const dim=document.createElement('div'); dim.id='cwdim'; dim.hidden=true; document.body.appendChild(dim);
+
+const Rd=new THREE.WebGLRenderer({canvas:cv,antialias:true}); Rd.setPixelRatio(Math.min(2,devicePixelRatio||1)); Rd.setClearColor(0x03050b,1);
+const S=new THREE.Scene(), C=new THREE.PerspectiveCamera(38,1,1,20000);
+const tx=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); const g=x.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.22,'rgba(255,255,255,.8)'); g.addColorStop(.5,'rgba(255,255,255,.14)'); g.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+// 점 크기는 화면 픽셀 기준(카메라가 멀어도 별이 사라지지 않게), 가까운 별은 조금 크게
+const mats=[];
+function mat(){ const m=new THREE.ShaderMaterial({uniforms:{map:{value:tx},px:{value:1},D:{value:100}},vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+  vertexShader:`attribute float size; varying vec3 vC; uniform float px; uniform float D; void main(){ vC=color; vec4 mv=modelViewMatrix*vec4(position,1.); gl_PointSize=size*px*clamp(pow(D/-mv.z,1.4),.35,2.8); gl_Position=projectionMatrix*mv; }`,
+  fragmentShader:`uniform sampler2D map; varying vec3 vC; void main(){ gl_FragColor=vec4(vC,1.)*texture2D(map,gl_PointCoord); }`}); mats.push(m); return m; }
+function pts(list,f){ const n=list.length,p=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
+  list.forEach((o,i)=>{ const r=f(o,i); p.set(r.p,i*3); c.set(r.c,i*3); s[i]=r.s; });
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3)); g.setAttribute('color',new THREE.BufferAttribute(c,3)); g.setAttribute('size',new THREE.BufferAttribute(s,1));
+  return new THREE.Points(g,mat()); }
+
+// 은하 원반: 큰 화면의 '인류가 펴낸 책' 별에서 일부만 옮김(같은 모양, 같은 자리)
+(function(){ let src=null; try{ src=scene.children.find(o=>o.isPoints&&o.geometry.getAttribute('position').count>50000); }catch(e){}
+  if(!src) return; const P=src.geometry.getAttribute('position').array, Cc=src.geometry.getAttribute('color').array, n=P.length/3, step=Math.max(1,Math.floor(n/(small()?5000:12000)));
+  const L=[]; for(let i=0;i<n;i+=step) L.push(i);
+  S.add(pts(L,i=>({p:vp(P[i*3],P[i*3+1],P[i*3+2],Math.random()),c:[Cc[i*3]*.45,Cc[i*3+1]*.45,Cc[i*3+2]*.45],s:.7+Math.random()*Math.random()*3.4}))); })();
+// 해의 고리(아주 희미하게): 어디쯤이 2000년·1900년인지 공간의 눈금
+try{ [2000,1900,1800,1450].forEach(y=>{ const r=rr(R(NOW-y)), a=[]; for(let k=0;k<=128;k++){ const t=k/128*Math.PI*2; a.push(new THREE.Vector3(Math.cos(t)*r,0,Math.sin(t)*r)); }
+  S.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(a),new THREE.LineBasicMaterial({color:0xefe8d6,transparent:true,opacity:.06}))); }); }catch(e){}
+// 한가운데 '책미사 · 지금'
+const CEN=pts([0],()=>({p:[0,0,0],c:[1,.85,.5],s:7})); S.add(CEN);
+
+let ON=[], nextPick=0, HULL=null, OURP=null, MINEP=null, BOOKS=[], SIG='', NEWSET=new Set(), born=0, FIT=100;
+let VIEW=null;
+function whoName(){ const w=sget('chaekmisa-who'); return w&&MEM[w]?w:''; }
+function build(){
+  [OURP,MINEP].forEach(o=>{ if(o){ S.remove(o); o.geometry.dispose(); } }); MINEP=null; LB.innerHTML='';
+  const who=VIEW||whoName(), rd=VIEW?[]:((typeof READ==='function')?READ():[]), seen=new Set(); BOOKS=[];
+  rd.slice().reverse().forEach(m=>{ const k=OUR.findIndex(b=>norm(b.t)===norm(m.t)); const key=k>=0?'k'+k:'m'+norm(m.t); if(seen.has(key)) return; seen.add(key); BOOKS.push({t:m.t,star:k>=0?OUR[k]:m,key,y:k>=0?OUR[k].y:m.y}); });
+  if(who) MEM[who].forEach(k=>{ const key='k'+k; if(seen.has(key)) return; seen.add(key); BOOKS.push({t:OUR[k].t,star:OUR[k],key,y:OUR[k].y}); });
+  const mine=new Set(BOOKS.map(b=>b.key)), ghost=!BOOKS.length;
+  // 책미사 별: 희미하게(내 별이 없으면 조금 더 밝게)
+  OURP=pts(OUR.map((b,k)=>[b,k]).filter(([b,k])=>!mine.has('k'+k)),([b,k])=>{ const L=starLook(b,k,ghost); return {p:vp(b.p.x,b.p.y,b.p.z),c:L.c,s:L.s}; }); S.add(OURP);
+  // 내 별: 환하게
+  BOOKS.forEach(b=>b.isNew=NEWSET.has(b.key));
+  if(HULL){ S.remove(HULL); HULL.geometry.dispose(); HULL=null; }
+  if(BOOKS.length){ BOOKS.forEach(b=>b.vp=VP(b.star.p));
+ BOOKS.forEach(b=>{ const k=b.key[0]==='k'?+b.key.slice(1):-1; b.look=starLook(b,k,true); });
+    MINEP=pts(BOOKS,b=>({p:[b.vp.x,b.vp.y,b.vp.z],c:b.look.c,s:b.isNew?b.look.s*2:b.look.s})); S.add(MINEP); }
+  // 화면에 담을 크기: 내 별(없으면 책미사 별)이 들어오게. 아주 먼 별 한두 개 때문에 너무 작아지지 않게 90%쯤으로
+  const rs=(ghost?OUR.map(b=>b.p):BOOKS.map(b=>b.star.p)).map(p=>rr(Math.hypot(p.x,p.z))).sort((a,b)=>a-b);
+  const r70=rs.length?rs[Math.min(rs.length-1,Math.floor(rs.length*.7))]:60; FIT=Math.max(HOLE*1.4,r70*.72);
+  // 글: 가장 먼 별(가장 오래된 책), 한가운데, 크게 볼 때는 최근 넉 권
+  const far=BOOKS.length?BOOKS.reduce((a,b)=>Math.hypot(b.star.p.x,b.star.p.z)>Math.hypot(a.star.p.x,a.star.p.z)?b:a):null;
+  BOOKS.forEach(b=>{ const s=document.createElement('span'); s.textContent=b.t; s.style.opacity=0; LB.appendChild(s); b.el=s; b.shownAt=-1e9; });
+  ON=[]; nextPick=0;
+  const yr=y=>y<0?`기원전 ${-y}년`:`${y}년`;
+  W.querySelector('.cwt').textContent= ghost?'책미사의 별자리':(who?`${who}님의 별자리`:'나의 별자리');
+  W.querySelector('.cwk').textContent=VIEW?'옆에서 본 별자리 · 구경 중':'옆에서 본 내 별자리';
+  W.querySelector('[data-a=me]').hidden=!VIEW; W.classList.toggle('view',!!VIEW);
+  markChips();
+  W.querySelector('.cws').textContent= ghost?'함께 읽은 170권 · 읽은 책을 띄우면 당신의 별이 이 하늘에 켜집니다'
+    :`별 ${BOOKS.length}개`+(far&&far.y!=null?` · 가장 먼 별 『${far.t}』(${yr(far.y)})`:'');
+  born=performance.now();
+}
+// 카메라: 옆에서 비스듬히 내려다보며 천천히 돈다
+let az=.6, el=.13, drag=null, moved=0;
+function size(){ const w=W.clientWidth, h=cv.clientHeight||1; Rd.setSize(w,h,false); C.aspect=w/h; C.updateProjectionMatrix();
+  const k=(small()&&!W.classList.contains('big'))?1.25:1; mats.forEach(m=>m.uniforms.px.value=k*Math.min(2,devicePixelRatio||1)*(h<150?.8:1)); }
+function camDist(){ const tn=Math.tan(C.fov*Math.PI/360); return Math.max(FIT/tn, FIT/(tn*C.aspect))*1.05; }
+cv.addEventListener('pointerdown',e=>{ if(small()&&!W.classList.contains('big')) return; drag={x:e.clientX,y:e.clientY}; moved=0; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.clientX-drag.x, dy=e.clientY-drag.y; moved+=Math.abs(dx)+Math.abs(dy); az-=dx*.008; el=Math.max(.05,Math.min(1.45,el+dy*.006)); drag={x:e.clientX,y:e.clientY}; tip.hidden=true; return; }
+  const b=pick(e); if(b){ tip.hidden=false; tip.textContent=b.t; const r=W.getBoundingClientRect(); tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; cv.style.cursor='pointer'; } else { tip.hidden=true; cv.style.cursor=''; } });
+cv.addEventListener('pointerup',e=>{ const wasDrag=drag&&moved>6; drag=null; if(wasDrag) return;
+  if(small()&&!W.classList.contains('big')){ setBig(true); return; }
+  const b=pick(e); if(b&&b.star&&b.star.p){ try{ flyTo(b.star); }catch(_){} ev('별 눌러 날아감'); if(W.classList.contains('big')) setBig(false); } });
+cv.addEventListener('pointerleave',()=>{ tip.hidden=true; });
+const V=new THREE.Vector3();
+function scrOf(p){ V.copy(p).project(C); const r=cv.getBoundingClientRect(); return {x:(V.x+1)/2*r.width,y:(1-V.y)/2*r.height,z:V.z}; }
+function pick(e){ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let best=null,bd=14*14;
+  BOOKS.forEach(b=>{ const s=scrOf(b.vp); if(s.z>1) return; const d=(s.x-x)**2+(s.y-y)**2; if(d<bd){bd=d;best=b;} }); return best; }
+function chips(){ const box=W.querySelector('.cwm'); const me=whoName();
+  const L=Object.entries(MEM).filter(([n])=>n!==me).sort((a,b)=>b[1].length-a[1].length);
+  box.innerHTML=`<button type="button" data-v="">나${me?`<small>${me}</small>`:''}</button>`+L.map(([n,ks])=>`<button type="button" data-v="${n}">${n}<small>${ks.length}</small></button>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const v=b.dataset.v||null; if(v===VIEW) return; VIEW=v; NEWSET=new Set(); build(); size(); ev(v?'회원 구경':'내 별자리로'); });
+  markChips(); }
+function markChips(){ W.querySelectorAll('.cwm button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v||null)===VIEW))); }
+function setBig(on){ if(on) chips();
+  W.classList.toggle('big',on); dim.hidden=!on; const bb=W.querySelector('[data-a=big]'); bb.textContent=on?'✕':'⤢'; bb.title=on?'작게':'크게 보기'; size(); if(on) ev('크게 봄'); }
+W.querySelector('[data-a=me]').onclick=()=>{ VIEW=null; NEWSET=new Set(); build(); size(); ev('내 별자리로'); };
+W.querySelector('[data-a=big]').onclick=()=>setBig(!W.classList.contains('big'));
+dim.onclick=()=>setBig(false);
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&W.classList.contains('big')) setBig(false); });
+addEventListener('resize',size);
+if(window.ResizeObserver) new ResizeObserver(()=>size()).observe(W);
+
+// 닉네임·읽은 별이 바뀌면 다시 짓고, 새로 켠 별은 크게 반짝
+function sig(){ const rd=(typeof READ==='function')?READ().map(m=>m.t):[]; return (sget('chaekmisa-who')||'')+'|'+rd.join('|'); }
+function check(){ const s=sig(); if(s===SIG) return; const prev=SIG; SIG=s; NEWSET=new Set();
+  if(prev){ const before=new Set(prev.split('|').slice(1)); (typeof READ==='function'?READ():[]).forEach(m=>{ if(!before.has(m.t)){ const k=OUR.findIndex(b=>norm(b.t)===norm(m.t)); NEWSET.add(k>=0?'k'+k:'m'+norm(m.t)); } }); if(NEWSET.size) ev('새 별 켜짐'); }
+  build(); size(); }
+setInterval(check,1200);
+
+let last=0;
+function hiddenNow(){ if(document.body.classList.contains('cxo')) return true; const w=document.getElementById('world'), o=document.getElementById('obs');
+  return (w&&!w.hidden)||(o&&!o.hidden)||document.hidden; }
+function loop(t){ requestAnimationFrame(loop); const slow=small()&&!W.classList.contains('big');
+  const hide=hiddenNow(); W.style.display=hide?'none':''; if(hide) return;
+  if(slow&&t-last<80) return; const dt=Math.min(.1,(t-last)/1000||0); last=t;
+  if(!drag) az+=dt*.09;   // 천천히: 한 바퀴에 약 70초
+  const d=camDist(); C.position.set(Math.cos(az)*Math.cos(el)*d, Math.sin(el)*d, Math.sin(az)*Math.cos(el)*d); C.lookAt(0,0,0);
+  mats.forEach(m=>m.uniforms.D.value=d);
+  const age=(t-born)/1000;
+  if(MINEP&&age<3){ const a=MINEP.geometry.getAttribute('size'); let any=false; BOOKS.forEach((b,i)=>{ if(b.isNew){ any=true; a.array[i]=b.look.s*(1+1.6*Math.max(0,1-age/3))*(1+.45*Math.sin(age*8)); } }); if(any) a.needsUpdate=true; }
+  Rd.render(S,C);
+  if(!slow){ const big=W.classList.contains('big');
+    // 3.5초마다 고르기: 지금 카메라 쪽(앞)에 있고 창 안에 들어온 별 가운데, 최근에 이름을 안 보여 준 별 먼저.
+    // 크게 볼 때 5개, 작은 창 3개. 글자끼리 겹치지 않게.
+    const W0=cv.clientWidth, H0=cv.clientHeight, inside=s=>s.z<1&&s.x>50&&s.x<W0-50&&s.y>60&&s.y<H0-20;
+    if(t>nextPick){ nextPick=t+3500; const want=big?5:3;
+      const cand=BOOKS.map(b=>({b,s:scrOf(b.vp),d:C.position.distanceTo(b.vp)})).filter(o=>inside(o.s))
+        .sort((x,y)=>(x.b.shownAt-y.b.shownAt)||(x.d-y.d));
+      const pick=[]; for(const o of cand){ if(pick.length>=want) break; if(pick.some(q=>Math.abs(q.s.x-o.s.x)<110&&Math.abs(q.s.y-o.s.y)<20)) continue; pick.push(o); }
+      ON=pick.map(o=>o.b); ON.forEach(b=>b.shownAt=t); }
+    BOOKS.forEach(b=>{ if(!b.el) return; const on=ON.includes(b); const sc=scrOf(b.vp); const vis=on&&inside(sc);
+      b.el.style.opacity=vis?1:0; if(vis||b.el.style.opacity!=='0'){ b.el.style.left=sc.x+'px'; b.el.style.top=sc.y+'px'; } }); } }
+check(); size(); requestAnimationFrame(loop);
+{ const b=document.createElement('button'); b.type='button'; b.id='cwBtn'; b.textContent='✦ 내 별자리 크게 보기';
+  b.onclick=()=>{ setBig(true); ev('내 세계 문에서 엶'); };
+  const put=()=>{ const l=document.querySelector('.dsheet.w .dlist'); if(l){ l.appendChild(b); return true; } const sub=document.querySelector('#me .sub'); if(sub&&!b.parentNode) sub.appendChild(b); return false; };
+  if(!put()) setTimeout(put,1600); }
+})();
+/*}CONST*/
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
