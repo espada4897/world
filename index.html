@@ -1991,6 +1991,108 @@ addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stop
   const q=document.getElementById('qBtn'); if(q) q.insertAdjacentElement('beforebegin',b); else sub.prepend(b); }
 })();
 
+/*DOORS{*/
+// ---------- 견본 9(11/20): 메뉴 정리 — 왼쪽 위는 '내 별 띄우기'만, 나머지는 문 넷 ----------
+// 🌌 우주(한 바퀴·책미사 별자리·시간 이동) / 🂠 내 카드 / 🌍 내 세계(깨우기·예시·연대기·질문에서) / 🔭 천문대
+// 원래 단추를 그대로 옮겨 담는다(글씨·동작은 원래 코드가 계속 바꿈). 새 단추가 #me .sub에 붙어도 저절로 문 안으로.
+(function(){
+  const css=`
+#doors{position:fixed;z-index:16;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:5px;border-radius:999px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#doors>button{display:flex;align-items:center;gap:7px;padding:8px 15px;border-radius:999px;border:0;background:transparent;color:#efe8d6;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+#doors>button .i{font-size:16px;line-height:1}
+#doors>button:hover{background:rgba(240,198,116,.10)}
+#doors>button[aria-expanded="true"]{background:rgba(240,198,116,.16);color:var(--gold)}
+#doors>button .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:none}
+#doors>button.new .dot{display:inline-block}
+.dsheet{position:fixed;z-index:17;top:calc(env(safe-area-inset-top,0px) + 66px);left:50%;transform:translateX(-50%);width:min(340px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.dsheet h3{margin:0 0 4px;font-size:15px;color:var(--gold);font-weight:700}
+.dsheet .dsub{margin:0 0 10px;font-size:12.5px;color:#b9b2a3;line-height:1.55}
+.dsheet .dlist{display:flex;flex-direction:column;gap:7px}
+.dsheet .dlist button{display:block!important;width:100%;text-align:left;padding:11px 13px!important;border-radius:10px!important;font-size:14px!important;margin:0!important}
+.dsheet .dlist button[hidden]{display:none!important}
+.dsheet .dnote{margin:10px 0 0;font-size:12px;color:#9c968a;line-height:1.5}
+#me .sub:empty{display:none}
+body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
+@media (max-width:760px){
+  #doors{top:auto;bottom:0;left:0;right:0;transform:none;border-radius:0;border-width:1px 0 0;padding:4px max(6px,env(safe-area-inset-left,0px)) calc(env(safe-area-inset-bottom,0px) + 4px);gap:0;justify-content:space-around}
+  #doors>button{flex:1;flex-direction:column;gap:2px;padding:6px 2px;border-radius:10px;font-size:11.5px;position:relative}
+  #doors>button .i{font-size:19px}
+  #doors>button .dot{position:absolute;top:5px;right:calc(50% - 18px)}
+  .dsheet{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 66px);left:12px;right:12px;width:auto;transform:none;max-height:60vh;overflow-y:auto}
+  /* 시간 이동 줄은 🌌 우주 문을 열 때만 */
+  #stops{display:none!important}
+  body.dz-u #stops{display:flex!important;bottom:calc(env(safe-area-inset-bottom,0px) + 66px)}
+  body.dz-u .dsheet.u{bottom:calc(env(safe-area-inset-bottom,0px) + 116px)}
+  #cap{bottom:calc(env(safe-area-inset-bottom,0px) + 74px)!important}
+  #card{bottom:calc(env(safe-area-inset-bottom,0px) + 70px)!important;max-height:calc(100dvh - 140px)}
+}`;
+  const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+  const ev=(n)=>{ try{ if(window.__ev) __ev('메뉴/'+n); }catch(e){} };
+
+  const nav=document.createElement('nav'); nav.id='doors'; nav.setAttribute('aria-label','책미사 너머의 네 문');
+  const D=[['u','🌌','우주'],['c','🂠','내 카드'],['w','🌍','내 세계'],['o','🔭','천문대']];
+  nav.innerHTML=D.map(([k,i,t])=>`<button type="button" data-d="${k}" aria-expanded="false"><span class="i">${i}</span><span>${t}</span><span class="dot"></span></button>`).join('');
+  document.body.appendChild(nav);
+
+  function sheet(k,h,sub,note){ const s=document.createElement('div'); s.className='dsheet '+k; s.hidden=true;
+    s.innerHTML=`<h3>${h}</h3><p class="dsub">${sub}</p><div class="dlist"></div>${note?`<p class="dnote">${note}</p>`:''}`; document.body.appendChild(s); return s; }
+  const SU=sheet('u','🌌 우주 둘러보기','인류가 펴낸 모든 책의 하늘. 한가운데 170개 별은 책미사가 함께 읽은 책입니다.','<span class="pc">시간 이동은 화면 아래 줄에서 — 책미사·100년·400년… 누르면 그 시대로 갑니다.</span>');
+  const SW=sheet('w','🌍 내 세계','','');
+  const sp=SU.querySelector('.pc'); if(matchMedia('(max-width:760px)').matches&&sp) sp.textContent='시간 이동은 바로 아래 줄에서 — 책미사·100년·400년… 누르면 그 시대로 갑니다.';
+
+  // 원래 단추를 제자리로 옮기기
+  const sub=document.querySelector('#me .sub');
+  const txt=b=>(b.textContent||'').trim();
+  function where(b){
+    if(b.id==='clr') return null;                       // 내 별 지우기는 별 칸에 남김
+    if(b.id==='tourBtn'||b.id==='ourC') return 'u';
+    if(b.id==='cBtn') return 'c';
+    if(/천문대/.test(txt(b))&&!b.id) return 'o';
+    return 'w';                                          // 깨우기·예시 세계·연대기·질문에서·그 밖의 새 단추
+  }
+  const HOLD={c:null,o:null};
+  const ORDER={wake:0,qBtn:1,bkMe:3};
+  function sortW(){ const l=SW.querySelector('.dlist'); [...l.children].sort((a,b)=>(ORDER[a.id]??2)-(ORDER[b.id]??2)).forEach(x=>l.appendChild(x)); }
+  function sweep(){ if(!sub) return; [...sub.querySelectorAll(':scope > button'),...document.querySelectorAll('.dsheet .dlist > button')].forEach(b=>{ if(b.dataset.door) return; const w=where(b); if(!w) return;
+      if(w==='u') SU.querySelector('.dlist').appendChild(b);
+      else if(w==='w'){ SW.querySelector('.dlist').appendChild(b); sortW(); }
+      else { HOLD[w]=b; b.style.display='none'; b.dataset.door=w; } });
+    // 지움 단추만 남은 줄은 그대로, 비면 숨김(:empty)
+  }
+  sweep(); [300,1500,4000].forEach(t=>setTimeout(sweep,t));
+  if(sub) new MutationObserver(sweep).observe(sub,{childList:true});
+  // 깨우기 단추가 나타나면 🌍에 점
+  const wake=document.getElementById('wake');
+  function refreshW(){ const n=(typeof READ==='function')?READ().length:0; const ready=wake&&!wake.hidden;
+    nav.querySelector('[data-d=w]').classList.toggle('new',!!ready);
+    const hasW=(typeof WORLD!=='undefined')&&WORLD&&!WORLD.example;
+    SW.querySelector('.dsub').innerHTML= ready?'<b style="color:var(--gold)">읽은 별이 셋 — 세계를 깨울 수 있어요.</b>'
+      : hasW?'당신이 읽은 별로 깨어난 세계입니다. 읽을수록 땅이 늘고, 쓴 만큼 이야기가 자랍니다.'
+      : `읽은 별이 셋이 되면 당신의 세계가 깨어납니다. <b style="color:var(--gold)">지금 ${Math.min(n,3)} / 3</b> — 왼쪽 위에 읽은 책을 적어 보세요. 그동안은 예시 세계를 둘러볼 수 있어요.`; }
+  if(wake) new MutationObserver(refreshW).observe(wake,{attributes:true,attributeFilter:['hidden']});
+  setInterval(refreshW,2000);
+
+  let OPEN=null;
+  function shut(){ if(!OPEN) return; OPEN.hidden=true; OPEN=null; document.body.classList.remove('dz-u'); nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-expanded','false')); }
+  function show(k){ const s=k==='u'?SU:SW; if(OPEN===s){ shut(); return; } shut(); if(k==='w') refreshW();
+    s.hidden=false; OPEN=s; if(k==='u') document.body.classList.add('dz-u');
+    nav.querySelector(`[data-d=${k}]`).setAttribute('aria-expanded','true');
+    // 휴대폰: 내 별 칸은 접어 둔다(겹치지 않게)
+    if(matchMedia('(max-width:760px)').matches){ const me=document.getElementById('me'), f=document.getElementById('meFold'); if(me&&f&&!me.classList.contains('fold')) f.click(); } }
+  nav.addEventListener('click',e=>{ const b=e.target.closest('button[data-d]'); if(!b) return; const k=b.dataset.d;
+    ev(({u:'우주',c:'내 카드',w:'내 세계',o:'천문대'})[k]);
+    if(k==='c'||k==='o'){ shut(); const h=HOLD[k]; if(h) h.click(); return; }
+    show(k); });
+  // 문 안의 단추를 누르면 시트 닫기(시간 이동 줄은 남겨 둠)
+  [SU,SW].forEach(s=>s.addEventListener('click',e=>{ if(e.target.closest('.dlist button')) setTimeout(shut,0); }));
+  document.getElementById('gl').addEventListener('pointerdown',()=>{ if(OPEN) shut(); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape') shut(); });
+  // 처음 온 사람 안내에 맞춰 문장 고치기
+  const hl=document.querySelector('#hello ol li:nth-child(2)'); if(hl) hl.innerHTML=hl.innerHTML.replace('왼쪽 위에','왼쪽 위 칸에');
+  const hol=document.querySelector('#hello ol'); if(hol){ const li=document.createElement('li'); li.innerHTML='둘러보기·카드·세계·천문대는 '+(matchMedia('(max-width:760px)').matches?'화면 아래':'화면 위 가운데')+'의 <b>네 문</b>에서.'; hol.appendChild(li); }
+})();
+/*}DOORS*/
+
 
 // 공개판: 처음 온 사람에게 한 번만 안내
 (function(){ const h=document.getElementById('hello'); let seen=false; try{ seen=!!localStorage.getItem('chaekmisa-hello'); }catch(e){}
