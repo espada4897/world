@@ -221,6 +221,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #binPop .bx{position:absolute;top:6px;right:6px;background:none;border:0;color:var(--ink-faint);font-size:14px;padding:4px 8px;cursor:pointer}
 #binPop .bq{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:12px}
 @media (max-width:760px){ #binPop{left:12px;right:12px;width:auto;top:calc(env(safe-area-inset-top,0px) + 44px)} }
+#binPop .brow2{margin-top:10px} #binPop .bgo{font-size:15px;padding:9px 26px;border-radius:999px;color:#1a1408;background:linear-gradient(#f3dc9c,#c9a35a);border:0;font-weight:600;cursor:pointer}
 #binPop .bq img{width:112px;height:112px;background:#fff;padding:5px;border-radius:8px;flex:none;image-rendering:pixelated}
 </style>
 
@@ -3599,27 +3600,34 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
 // 책미사 바인더 설치(11/21 에스파다): "너머 들어가서 바로 어디야 → 설치 누르고 → 설치 끝"
 // 첫 화면 오른쪽 위 '책미사 독서모임 ↗' 옆 글자 버튼 하나. 지금 쓰는 기기에 바로 설치 창(크롬·엣지·삼성 인터넷).
 // 이 페이지에 바인더 manifest(범위 '/')가 걸려 있어서 너머 화면에서 곧장 '책미사 바인더'가 설치된다. 만들기.py가 붙인다.
+// 11/21 고침: 카톡 링크로 열면 카톡 안 브라우저라 설치가 막혀 있음 → 누르면 크롬(아이폰은 사파리)으로 넘겨서
+//   ?install=1 로 열고, 거기서 [설치] 한 번 더. (카톡: kakaotalk://web/openExternal, 다른 앱 안드로이드: intent → 크롬)
 (function(){
 const sget=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const sset=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
 const ev=(n,o)=>{ if(window.__ev) __ev(n,o); };
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ua=navigator.userAgent, IOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const PHONE=IOS||/android|mobile/i.test(ua), APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-const BURL='https://world.chaekmisa.com/binder/', GOT='chaekmisa-binder-got';
+const ANDROID=/android/i.test(ua), PHONE=IOS||ANDROID||/mobile/i.test(ua), APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const KAKAO=/KAKAOTALK/i.test(ua);
+const INAPP=KAKAO||/NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|BAND\/|DaumApps|everytimeApp|; wv\)/i.test(ua);
+const HOME='https://world.chaekmisa.com/', BURL=HOME+'binder/', GOT='chaekmisa-binder-got';
 const a=document.getElementById('binTop'); if(!a) return;
 let BIP=null;
-const vis=()=>{ a.hidden=APP; };   // 11/21: 설치한 기기에서도 보임(누르면 '이미 설치했다면…'), 바인더 앱 안에서만 숨김
-vis();
-addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); BIP=e; try{ localStorage.removeItem(GOT); }catch(x){} vis(); });
-addEventListener('appinstalled',()=>{ sset(GOT,'1'); ev('바인더/설치됨',1); });
+a.hidden=APP;   // 설치한 기기에서도 보임(누르면 '이미 설치했다면…'), 바인더 앱 안에서만 숨김
+const who=()=>sget('chaekmisa-who')||'';
+
+// 카톡에서 넘어온 경우: ?install=1&who=닉네임 — 닉네임은 이 브라우저(=설치될 앱)에 맞춰 두고 주소는 깨끗하게
+const QS=new URLSearchParams(location.search), FROM=QS.get('install')==='1';
+if(FROM){ const w=QS.get('who'); if(w&&window.MEMBERS&&window.MEMBERS[w]&&!sget('chaekmisa-who')) sset('chaekmisa-who',w);
+  history.replaceState(null,'',location.pathname+location.hash); }
 
 const pop=document.createElement('div'); pop.id='binPop'; pop.hidden=true; document.body.appendChild(pop);
 const close=()=>{ pop.hidden=true; };
-const who=()=>sget('chaekmisa-who')||'';
 function show(html,qr){
   pop.innerHTML=`<button type="button" class="bx" aria-label="닫기">✕</button><div class="bm">${html}</div>${qr?`<div class="bq"><span id="binQr">QR 준비 중…</span><span>핸드폰에도 두려면 카메라로 찍으세요.<br>${who()?`<b>${esc(who())}</b>님의 `:''}카드첩이 열리고, 아래 <b>홈 화면에 두기</b>를 누르면 끝.</span></div>`:''}`;
   pop.hidden=false; pop.querySelector('.bx').onclick=close;
+  const g=pop.querySelector('#binGo'); if(g) g.onclick=install;
   if(qr) drawQr(BURL+'?who='+encodeURIComponent(who())+'&inst=1');
 }
 function drawQr(url){
@@ -3629,15 +3637,41 @@ function drawQr(url){
   sc.onload=put; sc.onerror=()=>{ const c=document.getElementById('binQr'); if(c) c.textContent=url; }; document.head.appendChild(sc);
 }
 const where=PHONE?'홈 화면':'바탕화면·시작 메뉴';
-a.onclick=e=>{ e.preventDefault(); ev('바인더/설치 누름 '+(PHONE?'핸드폰':'PC'));
-  if(BIP){ const p=BIP; BIP=null; p.prompt();
-    p.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset(GOT,'1'); ev('바인더/설치됨',1); vis();
+const IOSTXT='사파리 아래 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>';
+const GO='<button type="button" id="binGo" class="bgo">설치</button>';
+
+// 카톡 등 앱 안 브라우저 → 바깥 브라우저로
+function openOut(){
+  const q='?install=1&who='+encodeURIComponent(who());
+  const target=IOS?BURL+'?who='+encodeURIComponent(who())+'&inst=1':HOME+q;   // 아이폰은 바인더 화면에서 홈 화면에 추가해야 그 주소가 아이콘이 됨
+  ev('바인더/앱 안에서 바깥으로 '+(KAKAO?'카톡':'기타'));
+  if(KAKAO){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(target);
+    return show(`카톡 안에서는 설치가 막혀 있어서 <b>${IOS?'사파리로':'크롬으로'}</b> 열었어요.<br>열린 화면에서 ${IOS?IOSTXT:'<b>설치</b>를 한 번 더 누르면 끝'}.<br><small>안 열리면 카톡 메뉴(${IOS?'오른쪽 아래 <b>⋯</b>':'오른쪽 위 <b>⋮</b>'}) → <b>${IOS?'Safari로 열기':'다른 브라우저로 열기'}</b></small>`); }
+  if(ANDROID){ location.href='intent://world.chaekmisa.com/'+q+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(HOME+q)+';end';
+    return show(`이 앱 안에서는 설치가 막혀 있어서 <b>크롬</b>으로 열었어요. 열린 화면에서 <b>설치</b>를 한 번 더 누르면 끝.<br><small>안 열리면 메뉴 <b>⋮</b> → <b>다른 브라우저로 열기</b></small>`); }
+  show(`이 앱 안에서는 설치가 막혀 있어요. 메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, ${IOSTXT}.`);
+}
+function install(){ ev('바인더/설치 누름 '+(PHONE?'핸드폰':'PC'));
+  if(INAPP&&!APP) return openOut();
+  if(BIP){ const p=BIP; BIP=null; close(); p.prompt();
+    p.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset(GOT,'1'); ev('바인더/설치됨',1);
       show(`<b>설치 끝!</b> ${where}의 <b>책미사 바인더</b> 아이콘을 누르면 내 카드첩이 바로 열려요.`,!PHONE); } }).catch(()=>{});
     return; }
-  if(IOS) return show(`아이폰은 애플 규칙상 버튼으로 바로 설치가 안 돼요.<br>① <a href="${BURL}?who=${encodeURIComponent(who())}&inst=1" target="_blank" rel="noopener">바인더 열기 ↗</a> ② 사파리 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>`);
+  if(IOS) return show(`아이폰은 애플 규칙상 버튼으로 바로 설치가 안 돼요.<br>① <a href="${BURL}?who=${encodeURIComponent(who())}&inst=1">바인더 열기</a> ② ${IOSTXT}`);
   if('onbeforeinstallprompt' in window) return show(`이미 설치했다면 ${where}의 <b>책미사 바인더</b>를 눌러 주세요.<br>아직이면 ${PHONE?'브라우저 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)':'주소창 오른쪽 <b>설치 아이콘</b>(또는 메뉴 <b>⋯</b> → <b>앱 → 설치</b>)'}.`,!PHONE);
   show(`이 브라우저는 바로 설치를 못 해요. <b>${PHONE?'크롬':'크롬이나 엣지'}</b>로 world.chaekmisa.com을 열고 다시 눌러 주세요.`,!PHONE);
-};
+}
+a.onclick=e=>{ e.preventDefault(); install(); };
+
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); BIP=e;
+  const g=document.getElementById('binGo'); if(g){ g.disabled=false; g.textContent='설치'; } });
+addEventListener('appinstalled',()=>{ sset(GOT,'1'); ev('바인더/설치됨',1); });
+
+// 바깥 브라우저로 넘어온 직후: [설치] 한 번이면 끝(브라우저 규칙상 설치 창은 누를 때만 뜸)
+if(FROM&&!APP&&!INAPP){ ev('바인더/바깥 브라우저로 옴',1);
+  show(`<b>책미사 바인더</b> · 여기서 <b>설치</b>를 누르면 끝.<div class="brow2">${GO}</div>`);
+  setTimeout(()=>{ if(!BIP&&!pop.hidden&&document.getElementById('binGo')) show(`이미 설치했다면 ${where}의 <b>책미사 바인더</b>를 눌러 주세요.<br>아직이면 ${PHONE?'브라우저 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)':'주소창 오른쪽 <b>설치 아이콘</b>'}.`); },6000);
+}
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
 })();
 
