@@ -1697,6 +1697,11 @@ const MT={
   '수요독서':{c:'#b99cff',d:'#22163d',p:'<path d="M26 6a14 14 0 100 28A11 11 0 0126 6z" fill="currentColor"/><circle cx="31" cy="12" r="1.8" fill="currentColor"/><circle cx="34" cy="20" r="1.2" fill="currentColor"/>',w:'400쪽이 넘는 책을 수요일 두 번에 나눠 읽는 모임'},
   '한책읽기':{c:'#4fd0d8',d:'#0b2a2e',p:'<path d="M20 9c-4-3-9-3-14-1v23c5-2 10-2 14 1 4-3 9-3 14-1V8c-5-2-10-2-14 1z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 9v23" stroke="currentColor" stroke-width="2.4"/>',w:'500쪽이 넘는 벽돌책을 정한 날 정한 만큼 읽고 기록하는 모임'},
   '지원독서':{c:'#d5dbe6',d:'#1c2230',p:'<path d="M20 6l3.5 8.5L32 16l-6.5 6 2 9L20 26.5 12.5 31l2-9L8 16l8.5-1.5z" fill="currentColor"/>',w:'출판사에서 책을 지원받아 함께 읽는 모임'}};
+// 견본 17(11/20 에스파다: 새로 온 사람은 지나간 카드를 절대 채울 수 없다): 내 카드첩엔 못 채울 빈칸을 두지 않는다.
+//   지정 칸 = 도감(읽으면 누구나) / 자유 칸 = 모임·증표(받은 순서대로, 빈칸은 다가오는 모임만) / 지나간 카드는 '책미사 카드첩' 한 권(모두의 것, 1·2기는 숫자만)
+const GEN=d=>d<'2022-01-01'?1:d<'2025-09-16'?2:3;
+const GTX={1:'1기 · 2019.10 – 2021.12',2:'2기 · 2022.01 – 2025.09',3:'3기 · 2025.09 – 지금'};
+let HALL=false;
 const mtOf=m=>MT[m]||{c:'#f0c674',d:'#2a2112',p:'<circle cx="20" cy="20" r="9" fill="currentColor"/>',w:''};
 const mtSvg=m=>`<svg viewBox="0 0 40 40" aria-hidden="true">${mtOf(m).p}</svg>`;
 // 견본 12(11/20): 증표 카드(받으면 영원히 남음: 챌린지 도전(신청)·완수·완독증) + 주문 카드(쓰면 도장: 커피(완수자만)·책 선물·책 교환). 자료 = 증표카드.csv(방장이 적음)
@@ -1885,10 +1890,11 @@ const frontHTML=b=>{ if(b.joker) return `<div class="face front joker"><div clas
   const r=rar(n);
   return `<div class="face front ${b.k==='land'?'land':'law'} r${r.lv}"><span class="rr l${r.lv}">${r.g} ${r.nm}</span>${picHTML(n,b)}<div class="txt"><div class="kind">No.${noTx(n)} · ${b.k==='land'?'땅 · 이야기':'법칙 · 생각'}<span class="su">${qOf(b).map(q=>`<i style="color:${COL[q]}" title="${CQ[q]}">${svg(q)}</i>`).join('')}</span></div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a||'')}</div><div class="s">${esc(b.s||'')}</div></div></div>`; };
 const top=(extra)=>`<div class="ctop"><span class="ceb">책미사 너머 · 내 카드</span>${extra||''}<button class="cclose" data-a="close">닫기 ✕</button></div>`;
-function bindTop(){ const c=box.querySelector('[data-a="close"]'); if(c) c.onclick=close; const w=box.querySelector('[data-a="who"]'); if(w) w.onclick=()=>{ SEL=[]; whoView(); }; const al=box.querySelector('[data-a="album"]'); if(al) al.onclick=()=>albumView(); }
+function bindTop(){ const c=box.querySelector('[data-a="close"]'); if(c) c.onclick=close; const w=box.querySelector('[data-a="who"]'); if(w) w.onclick=()=>{ SEL=[]; whoView(); }; const al=box.querySelector('[data-a="album"]'); if(al) al.onclick=()=>albumView();
+  box.querySelectorAll('.ctop [data-a="hall"],.ctop [data-a="mine"],.trow.hrow').forEach(a=>a.onclick=()=>openHall(a.dataset.a==='hall')); }
 
 // ① 누구세요
-function whoView(){ bar.hidden=true;
+function whoView(){ bar.hidden=true; HALL=false;
   const names=Object.keys(MEM);
   box.innerHTML=top()+`<h3>책미사에서 함께 읽으셨나요?</h3>
     <p class="clead">닉네임을 고르면 책미사 홈페이지 별자리에 남은 기록으로, 함께 읽은 책이 모두 카드가 되어 기다리고 있습니다.</p>
@@ -1904,7 +1910,7 @@ function listView(){
   const bySuit=CQ.map((_,i)=>OUR.map((b,k)=>({b,k})).filter(x=>qOf(x.b)[0]===i));
     const mini=({k})=>slotCard(k,own.has(k));
   const who=WHO?`${esc(WHO)}님의`:'나의';
-  box.innerHTML=top((WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="tobook">📖 앨범으로 보기</button>`)+
+  box.innerHTML=top((WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="hall">📚 책미사 카드첩</button><button type="button" class="lnk" data-a="tobook">📖 앨범으로 보기</button>`)+
     `<h3>${who} 카드 <em>${n}</em> / ${OUR.length}</h3>
     <p class="clead">${n?`${WHO?'책미사에서 함께 읽은 책':'읽은 책'}이 카드가 되었습니다. 빈칸은 아직 읽지 않은 책입니다. 누르면 무슨 책인지 보이고, 읽으면 열립니다.`:'아직 카드가 없어요. 빈칸을 눌러 책을 보고, 읽은 책은 [읽었어요]를 누르면 카드가 됩니다.'}</p>
     <div class="tally">${CQ.map((q,i)=>`<span title="${q}"><i style="color:${COL[i]};display:flex">${svg(i)}</i>${q} <b>${bySuit[i].filter(x=>own.has(x.k)).length}</b>/${bySuit[i].length}</span>`).join('')}</div>
@@ -1935,11 +1941,11 @@ function listView(){
 function slotCard(k,has){ const b=OUR[k], i=qOf(b)[0];
     if(has){ const si=SEL.indexOf(k); const r=rar(k); return `<button type="button" class="mc own ${b.k==='land'?'land':'law'} r${r.lv}${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} style="--c:${COL[i]}" data-k="${k}" title="${esc(b.t)} · ${rarTxt(k,true)}"><span class="rr l${r.lv}">${r.g}</span><span class="no">${noTx(k)}</span>${picHTML(k,b)}<span class="mt">${esc(b.t)}</span></button>`; }
     return `<button type="button" class="mc not" style="--c:${COL[i]}" data-k="${k}" aria-label="아직 없는 카드 No.${noTx(k)}: ${esc(b.t)}">${svg(i)}<span class="no">${noTx(k)}</span></button>`; };
-function meetCard(k){ const [d,m]=MEETS.m[k], h=holders(k), me=h.indexOf(WHO)+1;
-    const T=mtOf(m); return `<button type="button" class="mc mt0" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}"><span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">세상에 ${h.length}장</span></button>`; }
+function meetCard(k,o){ o=o||{}; const [d,m]=MEETS.m[k], h=holders(k), got=o.hall&&WHO&&h.includes(WHO);
+    const T=mtOf(m); return `<button type="button" class="mc mt0${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">세상에 ${h.length}장</span></button>`; }
 function upCard(x,i){ return `<button type="button" class="mc mtg" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">이날 온 사람만</span></button>`; }
-function tokCard(t){ const T=ktOf(t.kind), spell=T.g==='주문';
-    return `<button type="button" class="mc mt0 tk${spell?' spell':' badge'}${t.used?' used':''}" data-tk="${t.i}" style="--mc:${T.c};--md:${T.d}" title="${esc(t.name)}">
+function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall&&WHO&&tokSame(t).some(x=>x.who===WHO);
+    return `<button type="button" class="mc mt0 tk${spell?' spell':' badge'}${t.used?' used':''}${got?' got':''}" data-tk="${t.i}" style="--mc:${T.c};--md:${T.d}" title="${esc(t.name)}">${got?'<span class="gotm">★ 받음</span>':''}
       <span class="mi">${ktSvg(t.kind)}</span><span class="md">${T.g} 카드${T.r?' '+'★'.repeat(T.r):''}</span><span class="mm">${TNAME[t.kind]||esc(t.name)}</span>
       <span class="mb">${t.kind==='커피'?esc(t.name.replace(/^메가커피 /,'')):(t.kind==='책선물'||t.kind==='책교환')?`『${esc(t.name)}』`:t.kind==='완독증'?`『${esc(t.name)}』`:esc(t.name)}</span>
       <span class="ms">${spell?(t.used?`${mdTx(t.used)} 사용함`:'아직 쓰지 않음'):`세상에 ${tokSame(t).length}장`}</span>${t.used?'<span class="stamp">사용함</span>':''}${t.ex?'<span class="exr">예시</span>':''}</button>`; }
@@ -1947,7 +1953,8 @@ function tokCard(t){ const T=ktOf(t.kind), spell=T.g==='주문';
 // ── 카드첩 앨범(11/20 에스파다): 불러내면 별빛이 모여 책이 나타나고, 표지가 열리고, 쪽마다 번호 붙은 비닐 칸 9개. 종이를 넘겨 본다 ──
 const TMUL=()=>window.__TMUL||1;   // 시험용: 느린 시험 브라우저에서 마무리 타이머를 늘림(평소 1)
 const BKEY='chaekmisa-albummode'; let BMODE=sget(BKEY)||'book', BP=0, BSEEN=false, TURNING=false;
-function albumView(){ return BMODE==='list'?listView():bookView(); }
+function albumView(){ return BMODE==='list'&&!HALL?listView():bookView(); }
+function openHall(on){ if(TURNING) return; HALL=on; BP=0; BSEEN=false; X.scrollTop=0; if(window.__ev) __ev(on?'카드/책미사 카드첩 펼침':'카드/책미사 카드첩 → 내 카드첩'); albumView(); }
 function jokerSlot(j){ const si=SEL.indexOf(j.id); return `<button type="button" class="mc own joker${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} data-j="${esc(j.id)}" title="${esc(j.t)} · 조커"><div class="art jk">${jsvg()}</div><span class="mt">${esc(j.t)}</span></button>`; }
 function zeroSlot(own){ const full=own.size>=OUR.length; return `<button type="button" class="mc zero${full?' open':''}" data-a="zero" aria-label="No.000"><span class="no">000</span><span class="zs">✦</span><span class="zt">${full?'책미사의 별':'170칸을 모두<br>채우면 열림'}</span></button>`; }
 function bindSlots(root){
@@ -1957,31 +1964,51 @@ function bindSlots(root){
   root.querySelectorAll('[data-a="zero"]').forEach(z=>z.onclick=()=>showCard({t:'zero'},z));
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
+  root.querySelectorAll('[data-a="hall"]').forEach(a=>a.onclick=()=>openHall(true));
+  root.querySelectorAll('[data-a="mine"]').forEach(a=>a.onclick=()=>openHall(false));
   root.querySelectorAll('[data-a="shuffle"]').forEach(a=>a.onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false));
   root.querySelectorAll('.mc:not(.add):not(.mt0):not(.mtg):not(.zero):not(.tk)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
     showCard(el.classList.contains('not')?{t:'not',k}:{t:'own',k},el); }); }
 const chunk=(a,n)=>{ const r=[]; for(let i=0;i<a.length;i+=n) r.push(a.slice(i,i+n)); return r.length?r:[[]]; };
-function bookPages(){ const own=owned(), P=[{t:'toc'}];
+function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc'}];
   const dex=['z',...OUR.map((_,k)=>k).sort((a,b)=>NO[a]-NO[b])];
-  chunk(dex,9).forEach((xs,i)=>P.push({t:'dex',xs,tab:i?null:'도감',h:`도감 · No.${String(i*9).padStart(3,'0')} – ${String(Math.min(i*9+8,OUR.length)).padStart(3,'0')}`}));
-  const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
-  const ms=[...upcoming().map((x,i)=>({u:i})),...mine.map(k=>({m:k}))];
-  if(ms.length) chunk(ms,9).forEach((xs,i)=>P.push({t:'meet',xs,tab:i?null:'모임',h:i?'모임 카드 · 이어서':'모임 카드 · 그날 온 사람만'}));
-  const tk=WHO?TOK.filter(t=>t.who===WHO).sort((a,b)=>b.date.localeCompare(a.date)):[];
-  if(tk.length) chunk(tk.map(t=>({tk:t})),9).forEach((xs,i)=>P.push({t:'tok',xs,tab:i?null:'증표·주문',h:'증표 · 주문 카드'}));
+  chunk(dex,9).forEach((xs,i)=>P.push({t:'dex',xs,tab:i?null:'도감',h:`도감 · 지정 칸 · No.${String(i*9).padStart(3,'0')} – ${String(Math.min(i*9+8,OUR.length)).padStart(3,'0')}`}));
+  // 자유 칸: 처음 온 날부터 받은 순서대로 꽂히고, 맨 뒤 빈칸은 다가오는 모임뿐
+  const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])):[];
+  const ms=[...(mine.length?[]:[{note:'meet'}]),...mine.map((k,i)=>({m:k,first:i===0})),...upcoming().map((x,i)=>({u:i}))];
+  const mp=chunk(ms,9), upAt=mp.findIndex(xs=>xs.some(o=>o.u!=null));
+  mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':i===upAt?'다음 칸':null,h:i?'모임 카드 · 자유 칸 · 이어서':'모임 카드 · 자유 칸 · 받은 순서대로'}));
+  const tk=WHO?TOK.filter(t=>t.who===WHO).sort((a,b)=>a.date.localeCompare(b.date)):[];
+  chunk(tk.length?tk.map(t=>({tk:t})):[{note:'tok'}],9).forEach((xs,i)=>P.push({t:'tok',xs,tab:i?null:'증표·주문',h:'증표 · 주문 카드 · 자유 칸'}));
   chunk([...jokers().map(j=>({j})),{add:1}],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:i?null:'조커',h:'조커 · 책미사 밖에서 읽은 책'}));
   return P; }
+// 책미사 카드첩: 모두의 것. 지나간 모임 카드와 증표가 날짜순으로 한 권에
+function hallTok(){ const seen=new Set(); return TOK.filter(t=>!t.ex&&ktOf(t.kind).g==='증표').sort((a,b)=>a.date.localeCompare(b.date)).filter(t=>{ const key=t.kind+'|'+t.name+'|'+t.term; if(seen.has(key)) return false; seen.add(key); return true; }); }
+const hallAll=()=>Object.keys(MEETS.m).map(Number).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])||a-b);
+function hallPages(){ const P=[{t:'toc',hall:1}], all=hallAll();
+  [1,2,3].forEach(g=>{ const xs=all.filter(k=>GEN(MEETS.m[k][0])===g); if(xs.length) chunk(xs.map(k=>({m:k,hall:1})),9).forEach((c,i)=>P.push({t:'meet',xs:c,tab:i?null:g+'기',h:GTX[g]+(i?' · 이어서':'')})); });
+  const tk=hallTok(); if(tk.length) chunk(tk.map(t=>({tk:t,hall:1})),9).forEach((c,i)=>P.push({t:'tok',xs:c,tab:i?null:'증표',h:'지나간 증표 · 받은 사람만'}));
+  return P; }
+function noteSlot(w){ return `<button type="button" class="mc note" data-a="hall"><span class="nt1">${w==='meet'?'첫 장':'증표 칸'}</span><span class="nt2">${w==='meet'?'처음 모임에 온 날의<br>카드가 여기 꽂혀요':'챌린지를 마치거나<br>완독하면 여기 꽂혀요'}</span><span class="nt3">지나간 카드 보기 ›</span></button>`; }
 function slotOf(o,own){ if(o==='z') return zeroSlot(own); if(typeof o==='number') return slotCard(o,own.has(o));
-  if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.m!=null) return meetCard(o.m); if(o.tk) return tokCard(o.tk); if(o.j) return jokerSlot(o.j);
+  if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.note) return noteSlot(o.note); if(o.m!=null) return meetCard(o.m,o); if(o.tk) return tokCard(o.tk,o); if(o.j) return jokerSlot(o.j);
   return `<button type="button" class="mc add" data-a="jadd"><span><b>+</b>밖에서 읽은 책으로<br>조커 만들기</span></button>`; }
 function pageHTML(P,i,own){ const pg=P[i];
   if(!pg) return `<div class="pg end"><div class="pend">✦<br><small>책미사 너머</small></div></div>`;
+  if(pg.t==='toc'&&pg.hall){ const all=hallAll(), row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
+    const gotN=WHO?all.filter(k=>holders(k).includes(WHO)).length:0;
+    return `<div class="pg toc hall"><div class="tc1">책미사 너머 · 모두의 카드첩</div><div class="tc2">책미사 카드첩</div>
+      <div class="tc3"><b>${all.length}</b><small>지나간 모임 카드</small></div>
+      <p class="hnote">지나간 모임과 증표는 다시 만들어지지 않아요. 그래서 내 카드첩엔 빈칸으로 두지 않고, 여기 한 권에 모두 남겨 둡니다.${gotN?`<br><b>★ 받음</b> · ${esc(WHO)}님이 받은 카드 ${gotN}장`:''}</p>
+      <div class="tcl">${[1,2,3].map(g=>row(GTX[g],all.filter(k=>GEN(MEETS.m[k][0])===g).length+'장',g+'기')).join('')}${row('지나간 증표',hallTok().length+'종','증표')}</div>
+      <button type="button" class="go tsh" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩으로</button>
+      <div class="pgf">1</div></div>`; }
   if(pg.t==='toc'){ const n=own.size, JK=jokers(), mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).length:0, tk=WHO?TOK.filter(t=>t.who===WHO).length:0;
     const row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
     return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${row('조커',JK.length+'장','조커')}</div>
+      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
@@ -1991,15 +2018,15 @@ function cvSym(){ const r=15.5; return '<svg viewBox="0 0 100 100" aria-hidden="
   SYM.map((p,i)=>{ const a=i/8*Math.PI*2-Math.PI/2, x=50+35.5*Math.cos(a)-5, y=50+35.5*Math.sin(a)-5; return `<svg x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="10" height="10" viewBox="0 0 40 40" style="color:${COL[i]}">${p}</svg>`; }).join('')+
   '<path d="M50 30l4 16 16 4-16 4-4 16-4-16-16-4 16-4z" fill="currentColor"/><path d="M50 8v6M50 86v6M8 50h6M86 50h6" stroke="currentColor" stroke-width="1.2"/></svg>'; }
 function bookView(){ bar.hidden=true; const own=owned(), P=bookPages(), dbl=two(); if(dbl) BP-=BP%2; BP=Math.max(0,Math.min(BP,P.length-1));
-  box.innerHTML=top((WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="tolist">☰ 한눈에 보기</button>`)+
+  box.innerHTML=top(HALL?`<button type="button" class="lnk" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩</button>`:(WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="hall">📚 책미사 카드첩</button><button type="button" class="lnk" data-a="tolist">☰ 한눈에 보기</button>`)+
     `<div class="bkw"><div class="book${dbl?' two':' one'}">
       <div class="bkb"></div>${dbl?'<div class="pgL ps"></div><div class="pgR ps"></div>':'<div class="pgS ps"></div>'}
-      <div class="cover"><div class="cvf"><div class="cvt">책미사 너머</div><div class="cve">${cvSym()}</div><div class="cvn">카 드 첩</div><div class="cvp">${WHO?esc(WHO):'나의 카드'}</div></div><div class="cvi"><div>이 카드첩은<br><b>${WHO?esc(WHO)+'님':'당신'}</b>의 것입니다.</div></div></div>
+      <div class="cover"><div class="cvf"><div class="cvt">책미사 너머</div><div class="cve">${cvSym()}</div><div class="cvn">카 드 첩</div><div class="cvp">${HALL?'모두의 것':WHO?esc(WHO):'나의 카드'}</div></div><div class="cvi"><div>${HALL?'이 카드첩은<br><b>책미사 모두</b>의 것입니다.':`이 카드첩은<br><b>${WHO?esc(WHO)+'님':'당신'}</b>의 것입니다.`}</div></div></div>
     </div></div>
     <div class="bnav"><button type="button" data-a="prev" aria-label="앞 쪽">◀</button><span class="bpn"></span><button type="button" data-a="next" aria-label="다음 쪽">▶</button></div>
     <div class="btabs">${P.map((x,i)=>x.t==='toc'?`<button type="button" data-p="${i}">처음</button>`:x.tab?`<button type="button" data-p="${i}">${x.tab}</button>`:'').join('')}</div>`;
   bindTop();
-  box.querySelector('[data-a="tolist"]').onclick=()=>{ BMODE='list'; sset(BKEY,'list'); if(window.__ev) __ev('카드/한눈에 보기'); X.scrollTop=0; SEEN=true; albumView(); };
+  const tl=box.querySelector('[data-a="tolist"]'); if(tl) tl.onclick=()=>{ BMODE='list'; sset(BKEY,'list'); if(window.__ev) __ev('카드/한눈에 보기'); X.scrollTop=0; SEEN=true; albumView(); };
   box.querySelector('[data-a="prev"]').onclick=()=>turn(BP-(dbl?2:1));
   box.querySelector('[data-a="next"]').onclick=()=>turn(BP+(dbl?2:1));
   box.querySelectorAll('.btabs button').forEach(b=>b.onclick=()=>turn(+b.dataset.p));
@@ -2009,7 +2036,7 @@ function bookView(){ bar.hidden=true; const own=owned(), P=bookPages(), dbl=two(
   drawSpread(P,own);
   const cv=box.querySelector('.cover');
   if(BSEEN||matchMedia('(prefers-reduced-motion:reduce)').matches){ cv.remove(); BSEEN=true; return; }
-  BSEEN=true; summon(bk,cv,dbl); if(window.__ev) __ev('카드/카드첩 펼침',1); }
+  BSEEN=true; if(HALL) cv.classList.add('hallc'); summon(bk,cv,dbl); if(window.__ev&&!HALL) __ev('카드/카드첩 펼침',1); }
 function drawSpread(P,own){ P=P||bookPages(); own=own||owned(); const dbl=two();
   if(dbl){ box.querySelector('.pgL').innerHTML=pageHTML(P,BP,own); box.querySelector('.pgR').innerHTML=pageHTML(P,BP+1,own); }
   else box.querySelector('.pgS').innerHTML=pageHTML(P,BP,own);
@@ -2047,7 +2074,7 @@ function turn(to){ const P=bookPages(), own=owned(), dbl=two(); if(TURNING) retu
   const an=lf.animate(kf,{duration:760,easing:'cubic-bezier(.35,.1,.25,1)'});
   let fin=false; const done=()=>{ if(fin) return; fin=true; TURNING=false; lf.remove(); BP=to; drawSpread(P,own); };
   an.onfinish=done; setTimeout(done,1000*TMUL()); if(window.__ev) __ev('카드/쪽 넘김'); }
-addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||BMODE!=='book'||!box.querySelector('.book')||e.target.tagName==='INPUT') return;
+addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)||!box.querySelector('.book')||e.target.tagName==='INPUT') return;
   if(e.key==='ArrowRight') turn(BP+(two()?2:1)); else if(e.key==='ArrowLeft') turn(BP-(two()?2:1)); });
 { const st3=document.createElement('style'); st3.textContent=`
 #cx .bkw{position:relative;display:grid;place-items:center;margin:14px auto 0;--s:min(120px,calc((50vw - 84px)/3),calc((100dvh - 300px)/4.2));--pw:calc(var(--s)*3 + 44px);--ph:calc(var(--s)*4.2 + 96px)}
@@ -2075,6 +2102,16 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||BMODE!=='book'||!box.qu
 #cx .trow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);text-align:left}
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
 #cx .tsh{margin-top:6px;border-radius:9px;padding:8px 16px}
+#cx .trow.hrow{margin-top:4px;border:1px dashed rgba(240,198,116,.4);background:rgba(240,198,116,.05)}
+#cx .hnote{margin:0;font-size:11.5px;line-height:1.6;color:var(--ink-dim);max-width:30em} #cx .hnote b{color:var(--gold);font-weight:600}
+#cx .pg.toc.hall{background:radial-gradient(90% 60% at 50% 20%,rgba(160,190,255,.09),transparent 70%),linear-gradient(180deg,#151a2c,#0f1326)}
+#cx .pg.toc.hall .tc3 b{color:#cfdcff}
+#cx .cover.hallc .cvf{filter:hue-rotate(-20deg) saturate(.7) brightness(1.05)}
+#cx .mc .fst{position:absolute;right:4px;top:4px;z-index:2;font-size:8.5px;letter-spacing:.06em;padding:0 6px;border-radius:999px;background:var(--gold);color:#241a06;text-shadow:none;font-weight:700}
+#cx .mc .gotm{position:absolute;right:4px;top:4px;z-index:2;font-size:8.5px;padding:0 5px;border-radius:999px;background:rgba(240,198,116,.92);color:#241a06;text-shadow:none;font-weight:700}
+#cx .mc.got{box-shadow:inset 0 0 0 3px #0c0e18,inset 0 0 0 4px color-mix(in srgb,var(--mc) 40%,transparent),0 0 0 1.5px rgba(240,198,116,.85),0 6px 18px rgba(0,0,0,.5)}
+#cx .mc.note{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;text-align:center;padding:8px 6px;border:1.2px dashed rgba(240,198,116,.55);background:radial-gradient(80% 60% at 50% 40%,rgba(240,198,116,.10),transparent 70%),#0c0e18;color:var(--ink-dim)}
+#cx .mc.note .nt1{font-family:var(--f-display);color:var(--gold);font-size:13px} #cx .mc.note .nt2{font-size:9.5px;line-height:1.45} #cx .mc.note .nt3{font-size:9px;color:var(--ink-faint);margin-top:2px}
 #cx .pg.end{display:grid;place-items:center} #cx .pend{text-align:center;color:var(--gold);opacity:.35;font-size:30px} #cx .pend small{font-size:11px;letter-spacing:.3em}
 #cx .leaf{position:absolute;top:0;height:100%;width:var(--pw);transform-style:preserve-3d;z-index:5}
 #cx .leaf.R,#cx .leaf.S{left:var(--pw);transform-origin:left center} #cx .leaf.S{left:0} #cx .leaf.L{left:0;transform-origin:right center}
@@ -2211,7 +2248,8 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts='';
     if(o.t==='own'){ const on=SEL.includes(o.k); acts=`<button type="button" class="go" data-s="sel">${on?'패에서 빼기':`패에 넣기 (${SEL.length}/3)`}</button>`; }
     else acts=`<button type="button" data-s="wish">읽고 싶어요</button><button type="button" class="go" data-s="read">읽었어요 · 카드 받기</button>`;
   } else if(o.t==='meet'){ const [d,m]=MEETS.m[o.k], h=holders(o.k), b=OUR[o.k];
-    front=bigMeet(d,m,b.t,o.k,`세상에 <b>${h.length}장</b>. 그날이 지나 다시는 생기지 않는 카드.<br><small>함께 받은 사람 · ${h.filter(n=>n!==WHO).map(esc).join(' · ')||'혼자'}</small>`);
+    const who=HALL&&GEN(d)<3?(h.includes(WHO)?`${esc(WHO)}님도 받은 카드`:''):HALL?`받은 사람 · ${h.map(esc).join(' · ')||'—'}`:`함께 받은 사람 · ${h.filter(n=>n!==WHO).map(esc).join(' · ')||'혼자'}`;
+    front=bigMeet(d,m,b.t,o.k,`세상에 <b>${h.length}장</b>. 그날이 지나 다시는 생기지 않는 카드.${who?`<br><small>${who}</small>`:''}`);
     back=bigBack(mtOf(m).c,mtSvg(m),esc(m)); if(window.__ev) __ev('카드/모임 카드 봄');
   } else if(o.t==='up'){ const x=upcoming()[o.i]; if(!x) return;
     front=bigMeet(x.d,x.m,x.t,null,`이날 모임에 온 사람만 받는 카드. 모임이 끝나고 홈페이지 별자리에 기록되면 카드첩에 들어오고, 그 뒤로는 다시 만들어지지 않아요.<br><small>처음 오시는 분은 무료로 함께할 수 있어요.</small>`,true);
