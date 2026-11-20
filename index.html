@@ -2161,7 +2161,7 @@ function bigTok(t){ const T=ktOf(t.kind), same=tokSame(t), others=same.filter(x=
     <div class="smd">${TNAME[t.kind]||esc(t.kind)}</div>
     <div class="stt">${(t.kind==='책선물'||t.kind==='책교환')?`『${esc(t.name)}』`:t.kind==='커피'?'한 잔':esc(t.name)}</div>
     ${t.term?`<div class="smw">${termTx(t.term)}</div>`:''}
-    <div class="sln">${esc(t.note||'')}<br><small>${dTx(t.date,true)}에 받음${spell?'':` · 세상에 ${same.length}장`}${others.length&&!spell?` · 함께 받은 사람 ${others.join(' · ')}`:''}${t.kind==='참가'?'<br>챌린지를 끝까지 마치면 ★★ 완수 증표와 커피 주문 카드가 따라와요.':''}</small>
+    <div class="sln">${esc(t.note||'')}<br><small>${esc(t.who)}님이 ${dTx(t.date,true)}에 받음${spell?'':` · 세상에 ${same.length}장`}${others.length&&!spell?` · 함께 받은 사람 ${others.join(' · ')}`:''}${t.kind==='참가'?'<br>챌린지를 끝까지 마치면 ★★ 완수 증표와 커피 주문 카드가 따라와요.':''}</small>
       ${spell?(t.used?'':`<small class="sleft">아직 쓰지 않은 카드예요. ${T.u||'쓰고 나면'} 이 카드에 도장이 찍혀요.</small>`):''}</div>
     ${t.used?`<div class="sstamp">사용함<small>${mdTx(t.used)}</small></div>`:''}</div>`; }
 
