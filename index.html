@@ -214,13 +214,21 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #hello .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #hello .go{border-radius:8px;color:var(--mine);border-color:rgba(244,246,255,.5);padding:8px 16px;font-size:14px}
 #hello a{color:var(--gold);font-size:12px}
+/* 11/21 바인더 설치: 오른쪽 위 글자 버튼(휴대폰은 독서모임 링크와 한 줄) + 작은 안내 */
+@media (max-width:760px){ .tr{flex-direction:row!important;gap:12px!important;align-items:center!important} }
+#binPop{position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 56px);right:max(12px,env(safe-area-inset-right,0px));width:min(340px,calc(100vw - 24px));background:rgba(12,19,48,.97);border:1px solid rgba(201,163,90,.55);border-radius:12px;padding:12px 34px 12px 14px;font-size:13px;line-height:1.6;color:var(--ink-dim);box-shadow:0 10px 30px rgba(0,0,0,.55)}
+#binPop b{color:var(--ink)} #binPop a{color:var(--gold)}
+#binPop .bx{position:absolute;top:6px;right:6px;background:none;border:0;color:var(--ink-faint);font-size:14px;padding:4px 8px;cursor:pointer}
+#binPop .bq{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:12px}
+@media (max-width:760px){ #binPop{left:12px;right:12px;width:auto;top:calc(env(safe-area-inset-top,0px) + 44px)} }
+#binPop .bq img{width:112px;height:112px;background:#fff;padding:5px;border-radius:8px;flex:none;image-rendering:pixelated}
 </style>
 
 <canvas id="gl" aria-label="책의 우주: 한가운데 책미사, 바깥으로 갈수록 오래된 책"></canvas>
 <div id="labels"></div>
 <div class="top">
   <div class="name">책미사 너머</div>
-  <div class="tr" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="clock">지금 보이는 시간<b id="clock">지난 60년</b></div><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a></div>
+  <div class="tr" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="clock">지금 보이는 시간<b id="clock">지난 60년</b></div><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a><a class="root-link" id="binTop" href="https://world.chaekmisa.com/binder/" hidden>📲 바인더 설치</a></div>
 </div>
 <section id="me" aria-label="내 별 띄우기">
   <h2 id="meH">당신이 읽은 책 한 권은?</h2>
@@ -1973,7 +1981,6 @@ function bindSlots(root){
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
   root.querySelectorAll('[data-a="hall"]').forEach(a=>a.onclick=()=>openHall(true));
-  root.querySelectorAll('[data-inst]').forEach(a=>a.onclick=()=>binderInstall(a.dataset.inst));
   root.querySelectorAll('[data-a="mine"]').forEach(a=>a.onclick=()=>openHall(false));
   root.querySelectorAll('[data-a="shuffle"]').forEach(a=>a.onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false));
   root.querySelectorAll('.mc:not(.add):not(.mt0):not(.mtg):not(.zero):not(.tk)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
@@ -2018,7 +2025,7 @@ function pageHTML(P,i,own){ const pg=P[i];
     return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button>${window.BINDER?'':'<div class="trow brow"><span>📚 <em>책미사 </em>바인더</span><button type="button" data-inst="pc">💻 내 PC 설치</button><button type="button" data-inst="ph">📱 내 핸드폰 설치</button></div>'}</div>
+      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
@@ -2113,12 +2120,6 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
 #cx .tsh{margin-top:6px;border-radius:9px;padding:8px 16px}
 #cx .book.one .pg.toc:not(.hall) .trow{padding-top:7px;padding-bottom:7px}
-#cx .trow.brow{margin-top:4px;border:1px solid rgba(169,210,242,.3);background:rgba(169,210,242,.05);gap:6px} #cx .trow.brow em{font-style:normal}
-#cx .book.one .trow.brow em{display:none} #cx .book.one .trow.brow button{padding:3px 8px;font-size:11.5px}
-#cx .trow.brow span{margin-right:auto}
-#cx .trow.brow button{padding:4px 10px;font-size:12px;white-space:nowrap;color:#cfe6f8;border-color:rgba(169,210,242,.45)}
-#cx a.bopen{color:var(--gold);text-decoration:none;border:1px solid rgba(240,198,116,.5);border-radius:999px;padding:6px 12px;font-size:12px;white-space:nowrap;background:none}
-#cx .bqr{display:flex;gap:12px;align-items:center} #cx .bqr img,#cx .bqr canvas{width:132px;height:132px;background:#fff;padding:6px;border-radius:8px;flex:none;image-rendering:pixelated}
 #cx .trow.hrow{margin-top:4px;border:1px dashed rgba(240,198,116,.4);background:rgba(240,198,116,.05)}
 #cx .hnote{margin:0;font-size:11.5px;line-height:1.6;color:var(--ink-dim);max-width:30em} #cx .hnote b{color:var(--gold);font-weight:600}
 #cx .pg.toc.hall{background:radial-gradient(90% 60% at 50% 20%,rgba(160,190,255,.09),transparent 70%),linear-gradient(180deg,#151a2c,#0f1326)}
@@ -2169,38 +2170,6 @@ function selBar(note){
   barIn.querySelector('[data-a="clr"]').onclick=()=>{ SEL=[]; albumView(); };
   barIn.querySelector('[data-a="use"]').onclick=()=>{ if(SEL.length===3) dealFrom(SEL.map(cardOf),true); };
 }
-// ── 책미사 바인더 설치(11/21 에스파다): 너머 '내 카드'에서 바로 PC·핸드폰에 설치. 바인더 화면을 먼저 열지 않는다 ──
-// 크롬·엣지·삼성 인터넷은 이 페이지에서 바로 설치 창이 뜬다(바인더 manifest가 너머 페이지에도 걸려 있음, 범위 '/').
-// 아이폰 사파리는 설치 창을 띄울 수 없어 안내만. PC에서 '내 핸드폰'은 QR(닉네임까지 실어 보냄).
-let BIP=null;
-if(!window.BINDER){
-  addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); BIP=e; });
-  addEventListener('appinstalled',()=>{ sset('chaekmisa-binder-got','1'); if(window.__ev) __ev('카드/바인더 설치됨',1); });
-}
-const BURL='https://world.chaekmisa.com/binder/';
-function binderInstall(kind){
-  const ua=navigator.userAgent, IOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  const PHONE=IOS||/android|mobile/i.test(ua), here=(kind==='ph')===PHONE;
-  if(window.__ev) __ev('카드/바인더 설치 누름 '+(kind==='ph'?'핸드폰':'PC'));
-  const msg=(h,extra='')=>{ selBar(`<div class="bt">${h}</div>${extra}<button type="button" data-a="x">확인</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); };
-  if(here&&BIP){ const e=BIP; BIP=null; e.prompt();
-    e.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset('chaekmisa-binder-got','1'); if(window.__ev) __ev('카드/바인더 설치됨',1);
-      msg(`<b>책미사 바인더</b>를 설치했어요. ${PHONE?'홈 화면':'바탕화면·시작 메뉴'}의 <b>책미사 바인더</b> 아이콘을 누르면 내 카드첩이 바로 열립니다.`); } }).catch(()=>{});
-    return; }
-  if(here&&IOS) return msg(`아이폰은 사파리 규칙상 버튼으로 바로 설치가 안 돼요.<br>① 아래 <b>바인더 열기</b> ② 사파리 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>`,
-    `<a class="bopen" href="${BURL}?who=${encodeURIComponent(WHO||'')}" target="_blank" rel="noopener">바인더 열기</a>`);
-  if(here){ const got=sget('chaekmisa-binder-got')||matchMedia('(display-mode: standalone)').matches;
-    return msg(got||'onbeforeinstallprompt' in window
-      ? `이미 설치돼 있는 것 같아요. ${PHONE?'홈 화면':'바탕화면·시작 메뉴'}에서 <b>책미사 바인더</b>를 찾아 주세요. (없으면 주소창 오른쪽 <b>설치</b> 아이콘)`
-      : `이 브라우저는 바로 설치를 못 해요. <b>${PHONE?'크롬':'크롬이나 엣지'}</b>로 world.chaekmisa.com을 열고 다시 눌러 주세요.`); }
-  if(kind==='pc') return msg(`PC에서 <b>world.chaekmisa.com</b>을 열고 <b>내 카드</b> → <b>💻 내 PC 설치</b>를 눌러 주세요.`);
-  // PC에서 '내 핸드폰': QR을 찍으면 핸드폰에 내 카드첩이 열리고, 거기서 홈 화면에 두기
-  const url=BURL+'?who='+encodeURIComponent(WHO||'')+'&inst=1';
-  msg(`<div class="bqr"><span id="bqrc">QR 준비 중…</span><span>핸드폰 카메라로 찍으면 ${WHO?`<b>${esc(WHO)}</b>님의 `:''}카드첩이 열려요.<br>열린 화면 아래 <b>홈 화면에 두기</b>를 누르면 설치 끝.<br><small>${url.replace(/\?.*/,'')}</small></span></div>`);
-  const draw=()=>{ const c=document.getElementById('bqrc'); if(!c) return; try{ const q=qrcode(0,'M'); q.addData(unescape(encodeURIComponent(url))); q.make(); c.outerHTML=q.createImgTag(4,0).replace('<img','<img alt="책미사 바인더 QR"'); }catch(e){ c.textContent=url; } };
-  if(window.qrcode) draw(); else { const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; sc.onload=draw; sc.onerror=()=>{ const c=document.getElementById('bqrc'); if(c) c.textContent=url; }; document.head.appendChild(sc); }
-}
-
 function peek(k){ const b=OUR[k];
   const r=rar(k); const info=`<div class="bt">아직 없는 카드 · No.${noTx(k)} · <b>${esc(b.t)}</b> ${esc(b.a||'')} · <span style="color:var(--gold)">${r.g} ${r.nm}</span><br>${esc(b.s||'')}<br><small>${rarTxt(k,false)}</small></div>`;
   // 바인더 앱(11/20 견본 18): 카드는 책미사가 발행 — 여기서는 받는 길만 알려 준다
@@ -3626,4 +3595,52 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
   else if(b.id==='wake') __ev('세계 깨우기');
   else if(b.id==='gopill') __ev('행성 버튼 누름',1); },true);
 </script>
+<script>
+// 책미사 바인더 설치(11/21 에스파다): "너머 들어가서 바로 어디야 → 설치 누르고 → 설치 끝"
+// 첫 화면 오른쪽 위 '책미사 독서모임 ↗' 옆 글자 버튼 하나. 지금 쓰는 기기에 바로 설치 창(크롬·엣지·삼성 인터넷).
+// 이 페이지에 바인더 manifest(범위 '/')가 걸려 있어서 너머 화면에서 곧장 '책미사 바인더'가 설치된다. 만들기.py가 붙인다.
+(function(){
+const sget=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const sset=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
+const ev=(n,o)=>{ if(window.__ev) __ev(n,o); };
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ua=navigator.userAgent, IOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const PHONE=IOS||/android|mobile/i.test(ua), APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const BURL='https://world.chaekmisa.com/binder/', GOT='chaekmisa-binder-got';
+const a=document.getElementById('binTop'); if(!a) return;
+let BIP=null;
+const vis=()=>{ a.hidden=APP; };   // 11/21: 설치한 기기에서도 보임(누르면 '이미 설치했다면…'), 바인더 앱 안에서만 숨김
+vis();
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); BIP=e; try{ localStorage.removeItem(GOT); }catch(x){} vis(); });
+addEventListener('appinstalled',()=>{ sset(GOT,'1'); ev('바인더/설치됨',1); });
+
+const pop=document.createElement('div'); pop.id='binPop'; pop.hidden=true; document.body.appendChild(pop);
+const close=()=>{ pop.hidden=true; };
+const who=()=>sget('chaekmisa-who')||'';
+function show(html,qr){
+  pop.innerHTML=`<button type="button" class="bx" aria-label="닫기">✕</button><div class="bm">${html}</div>${qr?`<div class="bq"><span id="binQr">QR 준비 중…</span><span>핸드폰에도 두려면 카메라로 찍으세요.<br>${who()?`<b>${esc(who())}</b>님의 `:''}카드첩이 열리고, 아래 <b>홈 화면에 두기</b>를 누르면 끝.</span></div>`:''}`;
+  pop.hidden=false; pop.querySelector('.bx').onclick=close;
+  if(qr) drawQr(BURL+'?who='+encodeURIComponent(who())+'&inst=1');
+}
+function drawQr(url){
+  const put=()=>{ const c=document.getElementById('binQr'); if(!c) return; try{ const q=qrcode(0,'M'); q.addData(url); q.make(); c.outerHTML=q.createImgTag(4,0).replace('<img','<img alt="책미사 바인더 QR"'); }catch(e){ c.textContent=url; } };
+  if(window.qrcode) return put();
+  const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+  sc.onload=put; sc.onerror=()=>{ const c=document.getElementById('binQr'); if(c) c.textContent=url; }; document.head.appendChild(sc);
+}
+const where=PHONE?'홈 화면':'바탕화면·시작 메뉴';
+a.onclick=e=>{ e.preventDefault(); ev('바인더/설치 누름 '+(PHONE?'핸드폰':'PC'));
+  if(BIP){ const p=BIP; BIP=null; p.prompt();
+    p.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset(GOT,'1'); ev('바인더/설치됨',1); vis();
+      show(`<b>설치 끝!</b> ${where}의 <b>책미사 바인더</b> 아이콘을 누르면 내 카드첩이 바로 열려요.`,!PHONE); } }).catch(()=>{});
+    return; }
+  if(IOS) return show(`아이폰은 애플 규칙상 버튼으로 바로 설치가 안 돼요.<br>① <a href="${BURL}?who=${encodeURIComponent(who())}&inst=1" target="_blank" rel="noopener">바인더 열기 ↗</a> ② 사파리 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>`);
+  if('onbeforeinstallprompt' in window) return show(`이미 설치했다면 ${where}의 <b>책미사 바인더</b>를 눌러 주세요.<br>아직이면 ${PHONE?'브라우저 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)':'주소창 오른쪽 <b>설치 아이콘</b>(또는 메뉴 <b>⋯</b> → <b>앱 → 설치</b>)'}.`,!PHONE);
+  show(`이 브라우저는 바로 설치를 못 해요. <b>${PHONE?'크롬':'크롬이나 엣지'}</b>로 world.chaekmisa.com을 열고 다시 눌러 주세요.`,!PHONE);
+};
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+})();
+
+</script>
+
 </body></html>

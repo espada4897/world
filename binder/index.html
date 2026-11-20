@@ -392,7 +392,6 @@ function bindSlots(root){
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
   root.querySelectorAll('[data-a="hall"]').forEach(a=>a.onclick=()=>openHall(true));
-  root.querySelectorAll('[data-inst]').forEach(a=>a.onclick=()=>binderInstall(a.dataset.inst));
   root.querySelectorAll('[data-a="mine"]').forEach(a=>a.onclick=()=>openHall(false));
   root.querySelectorAll('[data-a="shuffle"]').forEach(a=>a.onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false));
   root.querySelectorAll('.mc:not(.add):not(.mt0):not(.mtg):not(.zero):not(.tk)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
@@ -437,7 +436,7 @@ function pageHTML(P,i,own){ const pg=P[i];
     return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button>${window.BINDER?'':'<div class="trow brow"><span>📚 <em>책미사 </em>바인더</span><button type="button" data-inst="pc">💻 내 PC 설치</button><button type="button" data-inst="ph">📱 내 핸드폰 설치</button></div>'}</div>
+      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
@@ -532,12 +531,6 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
 #cx .tsh{margin-top:6px;border-radius:9px;padding:8px 16px}
 #cx .book.one .pg.toc:not(.hall) .trow{padding-top:7px;padding-bottom:7px}
-#cx .trow.brow{margin-top:4px;border:1px solid rgba(169,210,242,.3);background:rgba(169,210,242,.05);gap:6px} #cx .trow.brow em{font-style:normal}
-#cx .book.one .trow.brow em{display:none} #cx .book.one .trow.brow button{padding:3px 8px;font-size:11.5px}
-#cx .trow.brow span{margin-right:auto}
-#cx .trow.brow button{padding:4px 10px;font-size:12px;white-space:nowrap;color:#cfe6f8;border-color:rgba(169,210,242,.45)}
-#cx a.bopen{color:var(--gold);text-decoration:none;border:1px solid rgba(240,198,116,.5);border-radius:999px;padding:6px 12px;font-size:12px;white-space:nowrap;background:none}
-#cx .bqr{display:flex;gap:12px;align-items:center} #cx .bqr img,#cx .bqr canvas{width:132px;height:132px;background:#fff;padding:6px;border-radius:8px;flex:none;image-rendering:pixelated}
 #cx .trow.hrow{margin-top:4px;border:1px dashed rgba(240,198,116,.4);background:rgba(240,198,116,.05)}
 #cx .hnote{margin:0;font-size:11.5px;line-height:1.6;color:var(--ink-dim);max-width:30em} #cx .hnote b{color:var(--gold);font-weight:600}
 #cx .pg.toc.hall{background:radial-gradient(90% 60% at 50% 20%,rgba(160,190,255,.09),transparent 70%),linear-gradient(180deg,#151a2c,#0f1326)}
@@ -588,38 +581,6 @@ function selBar(note){
   barIn.querySelector('[data-a="clr"]').onclick=()=>{ SEL=[]; albumView(); };
   barIn.querySelector('[data-a="use"]').onclick=()=>{ if(SEL.length===3) dealFrom(SEL.map(cardOf),true); };
 }
-// ── 책미사 바인더 설치(11/21 에스파다): 너머 '내 카드'에서 바로 PC·핸드폰에 설치. 바인더 화면을 먼저 열지 않는다 ──
-// 크롬·엣지·삼성 인터넷은 이 페이지에서 바로 설치 창이 뜬다(바인더 manifest가 너머 페이지에도 걸려 있음, 범위 '/').
-// 아이폰 사파리는 설치 창을 띄울 수 없어 안내만. PC에서 '내 핸드폰'은 QR(닉네임까지 실어 보냄).
-let BIP=null;
-if(!window.BINDER){
-  addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); BIP=e; });
-  addEventListener('appinstalled',()=>{ sset('chaekmisa-binder-got','1'); if(window.__ev) __ev('카드/바인더 설치됨',1); });
-}
-const BURL='https://world.chaekmisa.com/binder/';
-function binderInstall(kind){
-  const ua=navigator.userAgent, IOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  const PHONE=IOS||/android|mobile/i.test(ua), here=(kind==='ph')===PHONE;
-  if(window.__ev) __ev('카드/바인더 설치 누름 '+(kind==='ph'?'핸드폰':'PC'));
-  const msg=(h,extra='')=>{ selBar(`<div class="bt">${h}</div>${extra}<button type="button" data-a="x">확인</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); };
-  if(here&&BIP){ const e=BIP; BIP=null; e.prompt();
-    e.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset('chaekmisa-binder-got','1'); if(window.__ev) __ev('카드/바인더 설치됨',1);
-      msg(`<b>책미사 바인더</b>를 설치했어요. ${PHONE?'홈 화면':'바탕화면·시작 메뉴'}의 <b>책미사 바인더</b> 아이콘을 누르면 내 카드첩이 바로 열립니다.`); } }).catch(()=>{});
-    return; }
-  if(here&&IOS) return msg(`아이폰은 사파리 규칙상 버튼으로 바로 설치가 안 돼요.<br>① 아래 <b>바인더 열기</b> ② 사파리 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>`,
-    `<a class="bopen" href="${BURL}?who=${encodeURIComponent(WHO||'')}" target="_blank" rel="noopener">바인더 열기</a>`);
-  if(here){ const got=sget('chaekmisa-binder-got')||matchMedia('(display-mode: standalone)').matches;
-    return msg(got||'onbeforeinstallprompt' in window
-      ? `이미 설치돼 있는 것 같아요. ${PHONE?'홈 화면':'바탕화면·시작 메뉴'}에서 <b>책미사 바인더</b>를 찾아 주세요. (없으면 주소창 오른쪽 <b>설치</b> 아이콘)`
-      : `이 브라우저는 바로 설치를 못 해요. <b>${PHONE?'크롬':'크롬이나 엣지'}</b>로 world.chaekmisa.com을 열고 다시 눌러 주세요.`); }
-  if(kind==='pc') return msg(`PC에서 <b>world.chaekmisa.com</b>을 열고 <b>내 카드</b> → <b>💻 내 PC 설치</b>를 눌러 주세요.`);
-  // PC에서 '내 핸드폰': QR을 찍으면 핸드폰에 내 카드첩이 열리고, 거기서 홈 화면에 두기
-  const url=BURL+'?who='+encodeURIComponent(WHO||'')+'&inst=1';
-  msg(`<div class="bqr"><span id="bqrc">QR 준비 중…</span><span>핸드폰 카메라로 찍으면 ${WHO?`<b>${esc(WHO)}</b>님의 `:''}카드첩이 열려요.<br>열린 화면 아래 <b>홈 화면에 두기</b>를 누르면 설치 끝.<br><small>${url.replace(/\?.*/,'')}</small></span></div>`);
-  const draw=()=>{ const c=document.getElementById('bqrc'); if(!c) return; try{ const q=qrcode(0,'M'); q.addData(unescape(encodeURIComponent(url))); q.make(); c.outerHTML=q.createImgTag(4,0).replace('<img','<img alt="책미사 바인더 QR"'); }catch(e){ c.textContent=url; } };
-  if(window.qrcode) draw(); else { const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; sc.onload=draw; sc.onerror=()=>{ const c=document.getElementById('bqrc'); if(c) c.textContent=url; }; document.head.appendChild(sc); }
-}
-
 function peek(k){ const b=OUR[k];
   const r=rar(k); const info=`<div class="bt">아직 없는 카드 · No.${noTx(k)} · <b>${esc(b.t)}</b> ${esc(b.a||'')} · <span style="color:var(--gold)">${r.g} ${r.nm}</span><br>${esc(b.s||'')}<br><small>${rarTxt(k,false)}</small></div>`;
   // 바인더 앱(11/20 견본 18): 카드는 책미사가 발행 — 여기서는 받는 길만 알려 준다
