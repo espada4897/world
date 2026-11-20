@@ -1971,6 +1971,7 @@ function bindSlots(root){
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
   root.querySelectorAll('[data-a="hall"]').forEach(a=>a.onclick=()=>openHall(true));
+  root.querySelectorAll('a.brow').forEach(a=>a.onclick=()=>{ if(window.__ev) __ev('카드/바인더로 감'); });
   root.querySelectorAll('[data-a="mine"]').forEach(a=>a.onclick=()=>openHall(false));
   root.querySelectorAll('[data-a="shuffle"]').forEach(a=>a.onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false));
   root.querySelectorAll('.mc:not(.add):not(.mt0):not(.mtg):not(.zero):not(.tk)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
@@ -2015,7 +2016,7 @@ function pageHTML(P,i,own){ const pg=P[i];
     return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
+      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button>${window.BINDER?'':'<a class="trow brow" href="https://world.chaekmisa.com/binder/" target="_blank" rel="noopener"><span>📱 핸드폰에 카드첩만 · 책미사 바인더</span><i>열기 ↗</i></a>'}</div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
@@ -2109,6 +2110,8 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .trow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);text-align:left}
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
 #cx .tsh{margin-top:6px;border-radius:9px;padding:8px 16px}
+#cx .book.one .pg.toc:not(.hall) .trow{padding-top:7px;padding-bottom:7px}
+#cx a.trow.brow{margin-top:4px;text-decoration:none;border:1px solid rgba(169,210,242,.3);background:rgba(169,210,242,.05)} #cx a.trow.brow i{margin-left:auto}
 #cx .trow.hrow{margin-top:4px;border:1px dashed rgba(240,198,116,.4);background:rgba(240,198,116,.05)}
 #cx .hnote{margin:0;font-size:11.5px;line-height:1.6;color:var(--ink-dim);max-width:30em} #cx .hnote b{color:var(--gold);font-weight:600}
 #cx .pg.toc.hall{background:radial-gradient(90% 60% at 50% 20%,rgba(160,190,255,.09),transparent 70%),linear-gradient(180deg,#151a2c,#0f1326)}
