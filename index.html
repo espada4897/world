@@ -1986,7 +1986,8 @@ function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc
   mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':i===upAt?'다음 칸':null,h:i?'모임 카드 · 자유 칸 · 이어서':'모임 카드 · 자유 칸 · 받은 순서대로'}));
   const tk=WHO?TOK.filter(t=>t.who===WHO).sort((a,b)=>a.date.localeCompare(b.date)):[];
   chunk(tk.length?tk.map(t=>({tk:t})):[{note:'tok'}],9).forEach((xs,i)=>P.push({t:'tok',xs,tab:i?null:'증표·주문',h:'증표 · 주문 카드 · 자유 칸'}));
-  chunk([...jokers().map(j=>({j})),{add:1}],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:i?null:'조커',h:'조커 · 책미사 밖에서 읽은 책'}));
+  // 바인더 앱에서는 조커를 만들지 않는다(너머 우주에서) — 가진 조커가 있을 때만 쪽을 둔다
+  if(!window.BINDER||jokers().length) chunk([...jokers().map(j=>({j})),...(window.BINDER?[]:[{add:1}])],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:i?null:'조커',h:'조커 · 책미사 밖에서 읽은 책'}));
   return P; }
 // 책미사 카드첩: 모두의 것. 지나간 모임 카드와 증표가 날짜순으로 한 권에
 function hallTok(){ const seen=new Set(); return TOK.filter(t=>!t.ex&&ktOf(t.kind).g==='증표').sort((a,b)=>a.date.localeCompare(b.date)).filter(t=>{ const key=t.kind+'|'+t.name+'|'+t.term; if(seen.has(key)) return false; seen.add(key); return true; }); }
@@ -2014,7 +2015,7 @@ function pageHTML(P,i,own){ const pg=P[i];
     return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
+      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
@@ -2159,7 +2160,10 @@ function selBar(note){
   barIn.querySelector('[data-a="use"]').onclick=()=>{ if(SEL.length===3) dealFrom(SEL.map(cardOf),true); };
 }
 function peek(k){ const b=OUR[k];
-  const r=rar(k); selBar(`<div class="bt">아직 없는 카드 · No.${noTx(k)} · <b>${esc(b.t)}</b> ${esc(b.a||'')} · <span style="color:var(--gold)">${r.g} ${r.nm}</span><br>${esc(b.s||'')}<br><small>${rarTxt(k,false)}</small></div>
+  const r=rar(k); const info=`<div class="bt">아직 없는 카드 · No.${noTx(k)} · <b>${esc(b.t)}</b> ${esc(b.a||'')} · <span style="color:var(--gold)">${r.g} ${r.nm}</span><br>${esc(b.s||'')}<br><small>${rarTxt(k,false)}</small></div>`;
+  // 바인더 앱(11/20 견본 18): 카드는 책미사가 발행 — 여기서는 받는 길만 알려 준다
+  if(window.BINDER){ selBar(info.replace('</small></div>','</small><br><small>책미사 모임에서 함께 읽으면, 모임 기록이 올라올 때 이 칸에 카드가 들어옵니다.</small></div>')+`<a class="go blink" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 모임 보기</a><button type="button" data-a="x">✕</button>`); barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); return; }
+  selBar(info+`
     <button type="button" data-a="wish">읽고 싶어요</button><button type="button" class="go" data-a="read">읽었어요 · 카드 받기</button><button type="button" data-a="x">✕</button>`);
   barIn.querySelector('[data-a="x"]').onclick=()=>selBar();
   const addStar=(read)=>{ const q=document.getElementById('q'); if(!q) return; q.value=b.t; document.getElementById(read?'bRead':'bWish').click(); };
@@ -2253,6 +2257,7 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts='';
     else { const b=OUR[o.k], i=qOf(b)[0]; front=bigBook(b,o.k,o.t==='own'); back=bigBack(COL[i],svg(i),CQ[i]); }
     if(o.t==='own'){ const on=SEL.includes(o.k); acts=`<button type="button" class="go" data-s="sel">${on?'패에서 빼기':`패에 넣기 (${SEL.length}/3)`}</button>`; }
     else acts=`<button type="button" data-s="wish">읽고 싶어요</button><button type="button" class="go" data-s="read">읽었어요 · 카드 받기</button>`;
+    if(window.BINDER) acts=o.t==='own'?'':`<span class="snote">책미사 모임에서 함께 읽으면, 모임 기록이 올라올 때 이 칸에 카드가 들어옵니다.</span><a class="go" href="https://chaekmisa.com" target="_blank" rel="noopener" data-s="go">책미사 모임 보기 ↗</a>`;
   } else if(o.t==='meet'){ const [d,m]=MEETS.m[o.k], h=holders(o.k), b=OUR[o.k];
     const who=HALL&&GEN(d)<3?(h.includes(WHO)?`${esc(WHO)}님도 받은 카드`:''):HALL?`받은 사람 · ${h.map(esc).join(' · ')||'—'}`:`함께 받은 사람 · ${h.filter(n=>n!==WHO).map(esc).join(' · ')||'혼자'}`;
     front=bigMeet(d,m,b.t,o.k,`${cntLine(o.k)}${who?`<br><small>${who}</small>`:''}`);
@@ -2459,7 +2464,7 @@ JSON 하나만 답한다:
   finally{ busy=false; } }
 
 function open(){ card.hidden=true; X.hidden=false; document.body.classList.add('cxo'); SEEN=false; BSEEN=false; try{ stopJourney(); }catch(e){} X.scrollTop=0; SEL=[]; if(WHO===null) whoView(); else albumView(); if(window.__ev) __ev('카드/시작',1); }
-function close(){ X.hidden=true; bar.hidden=true; document.body.classList.remove('cxo'); try{ card.hidden=true; }catch(e){} }
+function close(){ if(window.BINDER) return; X.hidden=true; bar.hidden=true; document.body.classList.remove('cxo'); try{ card.hidden=true; }catch(e){} }
 window.openCards=open;
 addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stopImmediatePropagation(); } },true);
 { const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='cBtn'; b.type='button'; b.textContent='🂠 내 카드';
