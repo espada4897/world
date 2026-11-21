@@ -458,9 +458,7 @@ function bookView(){ bar.hidden=true; const own=owned(), P=bookPages(), dbl=two(
   box.querySelector('[data-a="prev"]').onclick=()=>turn(BP-(dbl?2:1));
   box.querySelector('[data-a="next"]').onclick=()=>turn(BP+(dbl?2:1));
   box.querySelectorAll('.btabs button').forEach(b=>b.onclick=()=>turn(+b.dataset.p));
-  const bk=box.querySelector('.book'); let sx=null;
-  bk.addEventListener('pointerdown',e=>{ sx=e.clientX; });
-  bk.addEventListener('pointerup',e=>{ if(sx==null) return; const dx=e.clientX-sx; sx=null; if(Math.abs(dx)>50) turn(BP+(dx<0?1:-1)*(dbl?2:1)); });
+  const bk=box.querySelector('.book'); swipeBook(bk,dbl);
   drawSpread(P,own);
   const cv=box.querySelector('.cover');
   if(BSEEN||matchMedia('(prefers-reduced-motion:reduce)').matches){ cv.remove(); BSEEN=true; return; }
@@ -483,6 +481,32 @@ function summon(bk,cv,dbl){ const w=box.querySelector('.bkw'), N=30;
   setTimeout(()=>{ bk.style.transform=''; bk.animate([{transform:sh},{transform:'none'}],{duration:1000,easing:'cubic-bezier(.3,.6,.3,1)'});
     const a=cv.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-180deg)'}],{duration:1000,easing:'cubic-bezier(.3,.6,.3,1)'});
     a.onfinish=()=>cv.remove(); setTimeout(()=>cv.isConnected&&cv.remove(),1300*TMUL()); },1500*TMUL()); }
+// 손으로 넘기기(11/21 에스파다: "핸드폰에서는 손으로 넘겨야지, 아래 버튼을 눌러서 하는 건 아닌 것 같다")
+// 가로로 밀면 종이가 손가락을 따라 살짝 들리고, 놓으면 넘어간다. 세로로 밀면 화면 스크롤 그대로(touch-action: pan-y).
+// 밀고 난 뒤에는 그 손짓으로 카드가 눌리지 않게 한 번 막는다. 마우스로 끌어도 같다.
+let SWM=null;   // 마우스로 끌기: 창 전체에서 받되 지금 펼친 책 하나에만(다시 그릴 때마다 붙이지 않게 한 번만 건다)
+addEventListener('mousemove',e=>{ if(SWM) SWM.move(e); }); addEventListener('mouseup',()=>{ if(SWM) SWM.end(); });
+function swipeBook(bk,dbl){ let sx=null, sy=null, st=0, dx=0, horiz=null, eat=false, el=null;
+  const step=dbl?2:1, P=()=>bookPages();
+  const reset=()=>{ if(el){ el.style.transition='transform .22s ease'; el.style.transform=''; const e2=el; setTimeout(()=>{ e2.style.transition=''; },240); } el=null; };
+  const start=(x,y)=>{ if(TURNING) return; sx=x; sy=y; st=performance.now(); dx=0; horiz=null; };
+  const move=(x,y,ev)=>{ if(sx==null) return; dx=x-sx; const dy=y-sy;
+    if(horiz==null&&(Math.abs(dx)>8||Math.abs(dy)>8)) horiz=Math.abs(dx)>Math.abs(dy);
+    if(!horiz) return; if(ev&&ev.cancelable) ev.preventDefault();
+    const can=dx<0?BP+step<P().length:BP>0;
+    el=el||(dbl?box.querySelector(dx<0?'.pgR':'.pgL'):box.querySelector('.pgS')); if(!el) return;
+    const k=Math.max(-1,Math.min(1,dx/(bk.clientWidth||300)))*(can?1:.25);
+    el.style.transition=''; el.style.transformOrigin=dbl?(dx<0?'left center':'right center'):(dx<0?'left center':'right center');
+    el.style.transform=`perspective(1200px) rotateY(${k*28}deg)`; };
+  const end=()=>{ if(sx==null) return; const t=performance.now()-st, fast=Math.abs(dx)>25&&t<280; sx=null; reset();
+    if(horiz&&(Math.abs(dx)>55||fast)){ eat=true; setTimeout(()=>{ eat=false; },400); turn(BP+(dx<0?1:-1)*step); if(window.__ev) __ev('카드/손으로 넘김'); } horiz=null; };
+  bk.addEventListener('touchstart',e=>{ if(e.touches.length===1) start(e.touches[0].clientX,e.touches[0].clientY); else sx=null; },{passive:true});
+  bk.addEventListener('touchmove',e=>{ if(e.touches.length===1) move(e.touches[0].clientX,e.touches[0].clientY,e); },{passive:false});
+  bk.addEventListener('touchend',end); bk.addEventListener('touchcancel',()=>{ sx=null; reset(); });
+  bk.addEventListener('mousedown',e=>{ if(e.button===0) start(e.clientX,e.clientY); });
+  SWM={move:(e)=>{ if(sx!=null&&bk.isConnected) move(e.clientX,e.clientY,null); }, end:()=>{ if(bk.isConnected) end(); }};
+  bk.addEventListener('click',e=>{ if(eat){ e.stopPropagation(); e.preventDefault(); eat=false; } },true);
+  bk.addEventListener('dragstart',e=>e.preventDefault()); }
 // 넘기기: 종이 한 장이 등(가운데)을 축으로 넘어간다
 function turn(to){ const P=bookPages(), own=owned(), dbl=two(); if(TURNING) return;
   if(dbl) to-=((to%2)+2)%2; if(to<0||to>=P.length||to===BP) return;
@@ -527,6 +551,7 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .tc3{font-family:var(--f-display);font-size:30px;color:var(--ink-dim)} #cx .tc3 b{color:var(--gold);font-size:40px} #cx .tc3 small{display:block;font-family:var(--f-body);font-size:11px;color:var(--ink-faint)}
 #cx .tcr{display:flex;gap:10px;font-size:11.5px;color:var(--ink-dim)} #cx .tcr b{color:var(--ink)}
 #cx .tcl{width:100%;display:grid;gap:6px;margin-top:8px}
+#cx .book{touch-action:pan-y;user-select:none;-webkit-user-select:none}
 #cx .trow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);text-align:left}
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
 #cx .tsh{margin-top:6px;border-radius:9px;padding:8px 16px}
