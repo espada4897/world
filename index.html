@@ -2288,7 +2288,7 @@ function bigMeet(d,m,t,img,foot,up){ const T=mtOf(m);
     ${img!=null&&CIMG.has(img)?`<div class="smp"><img src="cardimg/b${img}.jpg" alt=""></div>`:''}
     <div class="stt">『${esc(t)}』</div><div class="sln">${foot}</div></div>`; }
 function bigZero(own){ const full=own.size>=OUR.length; return `<div class="sf szero${full?' open':''}"><div class="shd"><span class="sno">No.000</span>${stars(3)}<span class="srn">${full?'열림':'잠김'}</span></div><div class="szs">✦</div><div class="stt">책미사의 별</div><div class="sln">No.001부터 No.${OUR.length}까지, 책미사가 함께 읽은 모든 책을 모은 사람에게만 열리는 카드.</div></div>`; }
-function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askTilt();
+function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askTilt(); OB=null;   // 크게 열 때 지금 쥔 각도가 가운데
   if(o.t==='own'||o.t==='not'){
     if(typeof o.k==='string'){ const j=cardOf(o.k); if(!j) return; front=bigJoker(j); back=bigBack('#c9b6ff',jsvg(),'조커'); }
     else { const b=OUR[o.k], i=qOf(b)[0]; front=bigBook(b,o.k,o.t==='own'); back=bigBack(COL[i],svg(i),CQ[i]); }
@@ -2334,11 +2334,11 @@ sCard.addEventListener('pointerleave',()=>{ sCard.style.transform=''; sCard.styl
 let ORI=0, OB=null, ORAF=0, OXY=[0,0];
 function tiltTo(x,y){ OXY=[x,y]; if(ORAF) return; ORAF=requestAnimationFrame(()=>{ ORAF=0; const [a,b]=OXY, R=document.documentElement;
   R.style.setProperty('--hx',(50+a*160)+'%'); R.style.setProperty('--hy',(50+b*160)+'%');
-  if(!SV.hidden){ if(!matchMedia('(prefers-reduced-motion:reduce)').matches) sCard.style.transform=`rotateY(${a*18}deg) rotateX(${-b*14}deg)`;
+  if(!SV.hidden){ if(!matchMedia('(prefers-reduced-motion:reduce)').matches) { if(ORI) sCard.style.transition='transform .12s linear'; sCard.style.transform=`rotateY(${a*40}deg) rotateX(${-b*30}deg)`; }
     sCard.style.setProperty('--gx',(a+.5)*100+'%'); sCard.style.setProperty('--gy',(b+.5)*100+'%'); } }); }
 function onOri(e){ if(e.gamma==null||e.beta==null) return; if(!ORI){ ORI=1; document.documentElement.classList.add('tilting'); if(window.__ev) __ev('카드/기울여 봄'); }
-  if(!OB) OB={b:e.beta,g:e.gamma}; OB.b+=(e.beta-OB.b)*.015; OB.g+=(e.gamma-OB.g)*.015;   // 쥔 각도가 천천히 '가운데'가 됨
-  const c=v=>Math.max(-.5,Math.min(.5,v)); tiltTo(c((e.gamma-OB.g)/36),c((e.beta-OB.b)/36)); }
+  if(!OB) OB={b:e.beta,g:e.gamma}; OB.b+=(e.beta-OB.b)*.002; OB.g+=(e.gamma-OB.g)*.002;   // 쥔 각도가 아주 천천히(10초쯤) '가운데'가 됨 — 11/21 고침: 1초면 기울이자마자 평평해져서 기운 느낌이 없었음
+  const c=v=>Math.max(-.5,Math.min(.5,v)); tiltTo(c((e.gamma-OB.g)/28),c((e.beta-OB.b)/28)); }
 let OASK=false;
 function askTilt(){ if(OASK) return; OASK=true; const D=window.DeviceOrientationEvent;
   if(D&&typeof D.requestPermission==='function') D.requestPermission().then(r=>{ if(r==='granted') addEventListener('deviceorientation',onOri); }).catch(()=>{});
@@ -2356,7 +2356,7 @@ addEventListener('pointermove',e=>{ if(ORI||e.pointerType!=='mouse'||!SV.hidden)
 #cxs .scard{width:min(340px,80vw,calc((100dvh - 150px)*5/7));aspect-ratio:5/7;transition:transform .25s ease-out;transform-style:preserve-3d;--gx:30%;--gy:20%;container-type:inline-size}
 #cxs .sin{position:absolute;inset:0;transform-style:preserve-3d}
 #cxs .sf{position:absolute;inset:0;border-radius:4.5cqw;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-sizing:border-box;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);text-align:left;color:var(--ink);text-shadow:none}
-#cxs .sf::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 45% at var(--gx) var(--gy),rgba(255,255,255,.2),transparent 60%);mix-blend-mode:screen}
+#cxs .sf::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 45% at var(--gx) var(--gy),rgba(255,255,255,.3),transparent 60%);mix-blend-mode:screen}
 #cxs .sback{transform:rotateY(180deg);background:radial-gradient(120% 90% at 50% 40%,color-mix(in srgb,var(--c) 26%,#0b1020),#0a0e1b 70%);border:1.5px solid color-mix(in srgb,var(--c) 75%,transparent);display:grid;grid-template-rows:auto 1fr auto;padding:9cqw 8cqw;box-shadow:inset 0 0 0 2.5cqw #0a0e1b,inset 0 0 0 3cqw color-mix(in srgb,var(--c) 40%,transparent),0 30px 80px rgba(0,0,0,.7)}
 #cxs .sback.dash{border-style:dashed}
 #cxs .sbt{font-size:3cqw;letter-spacing:.32em;text-align:center;color:color-mix(in srgb,var(--c) 80%,#fff)}
