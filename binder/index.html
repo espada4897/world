@@ -698,7 +698,7 @@ function bigMeet(d,m,t,img,foot,up){ const T=mtOf(m);
     ${img!=null&&CIMG.has(img)?`<div class="smp"><img src="../cardimg/b${img}.jpg" alt=""></div>`:''}
     <div class="stt">『${esc(t)}』</div><div class="sln">${foot}</div></div>`; }
 function bigZero(own){ const full=own.size>=OUR.length; return `<div class="sf szero${full?' open':''}"><div class="shd"><span class="sno">No.000</span>${stars(3)}<span class="srn">${full?'열림':'잠김'}</span></div><div class="szs">✦</div><div class="stt">책미사의 별</div><div class="sln">No.001부터 No.${OUR.length}까지, 책미사가 함께 읽은 모든 책을 모은 사람에게만 열리는 카드.</div></div>`; }
-function showCard(o,el){ const own=owned(); let front='', back='', acts='';
+function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askTilt();
   if(o.t==='own'||o.t==='not'){
     if(typeof o.k==='string'){ const j=cardOf(o.k); if(!j) return; front=bigJoker(j); back=bigBack('#c9b6ff',jsvg(),'조커'); }
     else { const b=OUR[o.k], i=qOf(b)[0]; front=bigBook(b,o.k,o.t==='own'); back=bigBack(COL[i],svg(i),CQ[i]); }
@@ -739,6 +739,23 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!SV.hidden){ e.stopImmediat
 sCard.addEventListener('pointermove',e=>{ if(e.pointerType==='touch'&&e.buttons===0) return; const r=sCard.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
   sCard.style.transform=`rotateY(${x*18}deg) rotateX(${-y*14}deg)`; sCard.style.setProperty('--gx',(x+.5)*100+'%'); sCard.style.setProperty('--gy',(y+.5)*100+'%'); });
 sCard.addEventListener('pointerleave',()=>{ sCard.style.transform=''; sCard.style.setProperty('--gx','30%'); sCard.style.setProperty('--gy','20%'); });
+// 11/21 홀로그램(아이디어 ②): 폰을 기울이면 희귀 ✦✦✦·완독증 위로 무지개가 흐른다(PC는 마우스). 카드첩 안 작은 희귀 카드도 같이.
+// 아이폰은 애플 규칙상 처음 카드를 크게 열 때(누름) 한 번 '동작 허용'을 묻는다. 거절하면 손가락으로 끌어도 흐름.
+let ORI=0, OB=null, ORAF=0, OXY=[0,0];
+function tiltTo(x,y){ OXY=[x,y]; if(ORAF) return; ORAF=requestAnimationFrame(()=>{ ORAF=0; const [a,b]=OXY, R=document.documentElement;
+  R.style.setProperty('--hx',(50+a*160)+'%'); R.style.setProperty('--hy',(50+b*160)+'%');
+  if(!SV.hidden){ if(!matchMedia('(prefers-reduced-motion:reduce)').matches) sCard.style.transform=`rotateY(${a*18}deg) rotateX(${-b*14}deg)`;
+    sCard.style.setProperty('--gx',(a+.5)*100+'%'); sCard.style.setProperty('--gy',(b+.5)*100+'%'); } }); }
+function onOri(e){ if(e.gamma==null||e.beta==null) return; if(!ORI){ ORI=1; document.documentElement.classList.add('tilting'); if(window.__ev) __ev('카드/기울여 봄'); }
+  if(!OB) OB={b:e.beta,g:e.gamma}; OB.b+=(e.beta-OB.b)*.015; OB.g+=(e.gamma-OB.g)*.015;   // 쥔 각도가 천천히 '가운데'가 됨
+  const c=v=>Math.max(-.5,Math.min(.5,v)); tiltTo(c((e.gamma-OB.g)/36),c((e.beta-OB.b)/36)); }
+let OASK=false;
+function askTilt(){ if(OASK) return; OASK=true; const D=window.DeviceOrientationEvent;
+  if(D&&typeof D.requestPermission==='function') D.requestPermission().then(r=>{ if(r==='granted') addEventListener('deviceorientation',onOri); }).catch(()=>{});
+  else if(D) addEventListener('deviceorientation',onOri); }
+const TIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(window.DeviceOrientationEvent&&!TIOS){ OASK=true; addEventListener('deviceorientation',onOri); }   // 안드로이드·PC: 묻지 않고 바로(크롬에도 requestPermission이 있지만 묻지 않아도 됨)
+addEventListener('pointermove',e=>{ if(ORI||e.pointerType!=='mouse'||!SV.hidden) return; document.documentElement.classList.add('tilting'); tiltTo(e.clientX/innerWidth-.5,e.clientY/innerHeight-.5); },{passive:true});
 { const st2=document.createElement('style'); st2.textContent=`
 #cxs{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:16px}
 #cxs[hidden]{display:none}
@@ -759,6 +776,11 @@ sCard.addEventListener('pointerleave',()=>{ sCard.style.transform=''; sCard.styl
 #cxs .sfront.land{--fr:#f0c674} #cxs .sfront.law{--fr:#b9c3d6} #cxs .sfront.joker{--fr:#c9b6ff}
 #cxs .sfront.r3{box-shadow:inset 0 0 0 1.6cqw #11162a,inset 0 0 0 2cqw rgba(240,198,116,.5),0 0 0 1px #f0c674,0 0 60px rgba(240,198,116,.45),0 30px 80px rgba(0,0,0,.7)}
 #cxs .sfront.r3::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,240,200,.35) 45%,rgba(160,220,255,.25) 52%,transparent 66%);background-size:250% 100%;animation:holo 3.2s linear infinite;mix-blend-mode:screen}
+#cxs .sfront.r3::before,#cxs .scert::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;animation:none;background:repeating-linear-gradient(115deg,hsla(330,95%,72%,0) 0%,hsla(330,95%,72%,.9) 5%,hsla(45,100%,68%,.9) 10%,hsla(140,90%,62%,.9) 15%,hsla(195,100%,66%,.9) 20%,hsla(265,95%,74%,.9) 25%,hsla(330,95%,72%,0) 31%,hsla(330,95%,72%,0) 40%);background-size:260% 260%;background-position:var(--gx) var(--gy);mix-blend-mode:color-dodge;opacity:.42;transition:background-position .25s ease-out}
+#cxs .scert::before{mix-blend-mode:multiply;opacity:.28}
+#cxs .sfront.r3 .spic::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(1.2px 1.2px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#fff,transparent),radial-gradient(1.4px 1.4px at 45% 80%,#fff,transparent),radial-gradient(1px 1px at 85% 20%,#fff,transparent);background-size:37px 41px,53px 47px,61px 59px,43px 67px;background-position:calc(var(--gx) * -.3) calc(var(--gy) * -.3);opacity:.55;mix-blend-mode:screen}
+#cxs .sfront.r3 .spic{position:relative}
+.tilting #cx .mc.r3::before,.tilting #cx .front.r3::before{animation:none;background:repeating-linear-gradient(115deg,hsla(330,95%,72%,0) 0%,hsla(330,95%,72%,.9) 5%,hsla(45,100%,68%,.9) 10%,hsla(140,90%,62%,.9) 15%,hsla(195,100%,66%,.9) 20%,hsla(265,95%,74%,.9) 25%,hsla(330,95%,72%,0) 31%,hsla(330,95%,72%,0) 40%);background-size:260% 260%;background-position:var(--hx,50%) var(--hy,50%);mix-blend-mode:color-dodge;opacity:.22;transition:background-position .3s ease-out}
 #cxs .sfront.ghost{filter:saturate(.35) brightness(.8)} #cxs .sfront.ghost .spic{opacity:.55}
 #cxs .shd{position:absolute;z-index:3;top:4cqw;left:4.5cqw;right:4.5cqw;display:flex;align-items:center;gap:2cqw;font-size:3.4cqw}
 #cxs .sno{font-weight:700;letter-spacing:.06em;background:rgba(8,10,20,.78);padding:.6cqw 2cqw;border-radius:2cqw;font-variant-numeric:tabular-nums}
