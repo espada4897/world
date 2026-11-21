@@ -370,7 +370,8 @@ function slotCard(k,has){ const b=OUR[k], i=qOf(b)[0];
     return `<button type="button" class="mc not" style="--c:${COL[i]}" data-k="${k}" aria-label="아직 없는 카드 No.${noTx(k)}: ${esc(b.t)}">${svg(i)}<span class="no">${noTx(k)}</span></button>`; };
 function meetCard(k,o){ o=o||{}; const [d,m]=MEETS.m[k], h=holders(k), got=o.hall&&WHO&&h.includes(WHO);
     const T=mtOf(m); return `<button type="button" class="mc mt0${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">${msTx(k)}</span></button>`; }
-function upCard(x,i){ return `<button type="button" class="mc mtg" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">이날 온 사람만</span></button>`; }
+function upCard(x,i){ if(x.seal) return `<button type="button" class="mc mtg sealed" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="봉인된 카드 · ${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="wx">${waxSvg()}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">봉인됨</span></button>`;
+  return `<button type="button" class="mc mtg" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">이날 온 사람만</span></button>`; }
 function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall&&WHO&&tokSame(t).some(x=>x.who===WHO);
     return `<button type="button" class="mc mt0 tk${spell?' spell':' badge'}${t.used?' used':''}${got?' got':''}" data-tk="${t.i}" style="--mc:${T.c};--md:${T.d}" title="${esc(t.name)}">${got?'<span class="gotm">★ 받음</span>':''}
       <span class="mi">${ktSvg(t.kind)}</span><span class="md">${T.g} 카드${T.r?' '+'★'.repeat(T.r):''}</span><span class="mm">${TNAME[t.kind]||esc(t.name)}</span>
@@ -380,7 +381,7 @@ function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall
 // ── 카드첩 앨범(11/20 에스파다): 불러내면 별빛이 모여 책이 나타나고, 표지가 열리고, 쪽마다 번호 붙은 비닐 칸 9개. 종이를 넘겨 본다 ──
 const TMUL=()=>window.__TMUL||1;   // 시험용: 느린 시험 브라우저에서 마무리 타이머를 늘림(평소 1)
 const BKEY='chaekmisa-albummode'; let BMODE=sget(BKEY)||'book', BP=0, BSEEN=false, TURNING=false;
-function albumView(){ return BMODE==='list'&&!HALL?listView():bookView(); }
+function albumView(){ const r=BMODE==='list'&&!HALL?listView():bookView(); sealSoon(); return r; }
 function openHall(on){ if(TURNING) return; HALL=on; BP=0; BSEEN=false; X.scrollTop=0; if(window.__ev) __ev(on?'카드/책미사 카드첩 펼침':'카드/책미사 카드첩 → 내 카드첩'); albumView(); }
 function jokerSlot(j){ const si=SEL.indexOf(j.id); return `<button type="button" class="mc own joker${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} data-j="${esc(j.id)}" title="${esc(j.t)} · 조커"><div class="art jk">${jsvg()}</div><span class="mt">${esc(j.t)}</span></button>`; }
 function zeroSlot(own){ const full=own.size>=OUR.length; return `<button type="button" class="mc zero${full?' open':''}" data-a="zero" aria-label="No.000"><span class="no">000</span><span class="zs">✦</span><span class="zt">${full?'책미사의 별':'170칸을 모두<br>채우면 열림'}</span></button>`; }
@@ -619,7 +620,11 @@ function peek(k){ const b=OUR[k];
 }
 
 // ── 모임 카드 ──
-function upcoming(){ const t=new Date(); t.setHours(0,0,0,0); return (MEETS.u||[]).filter(x=>new Date(x.d+'T00:00:00')>=t).slice(0,2); }
+function upcoming(){ const t=new Date(); t.setHours(0,0,0,0); const S=sealAll(), live=s=>s&&!s.open&&sealK(s)==null;
+  const fut=(MEETS.u||[]).filter(x=>new Date(x.d+'T00:00:00')>=t).slice(0,2);
+  // 봉인된 카드(QR로 받고 아직 별자리 기록 전)는 모임 날이 지나도 '다음 칸'에 봉인된 채 남는다
+  const pend=Object.values(S).filter(s=>live(s)&&!fut.some(x=>x.d===s.d)).sort((a,b)=>a.d.localeCompare(b.d)).map(s=>({t:s.t,m:s.m,d:s.d}));
+  return [...pend,...fut].map(x=>live(S[x.d])?Object.assign({},x,{seal:S[x.d]}):x); }
 function meetHTML(){
   const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
   const up=upcoming();
@@ -709,6 +714,13 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askT
     const who=HALL&&GEN(d)<3?(h.includes(WHO)?`${esc(WHO)}님도 받은 카드`:''):HALL?`받은 사람 · ${h.map(esc).join(' · ')||'—'}`:`함께 받은 사람 · ${h.filter(n=>n!==WHO).map(esc).join(' · ')||'혼자'}`;
     front=bigMeet(d,m,b.t,o.k,`${cntLine(o.k)}${who?`<br><small>${who}</small>`:''}`);
     back=bigBack(mtOf(m).c,mtSvg(m),esc(m)); if(window.__ev) __ev('카드/모임 카드 봄');
+  } else if(o.t==='seal'){ const k=o.k, b=OUR[k], m=MEETS.m[k][1];
+    front=withVeil(bigMeet(o.d,m,b.t,k,`${cntLine(k)}<br><small>모임이 끝나는 순간 QR로 받아, 봉인을 깨고 연 카드</small>`),{d:o.d,t:b.t,m});
+    back=bigBack(mtOf(m).c,mtSvg(m),esc(m)); acts=`<span class="snote">봉인이 깨졌어요 · 『${esc(b.t)}』 모임 카드가 카드첩에 들어왔어요</span>`;
+    if(window.__ev) __ev('카드/봉인 깨짐',1); setTimeout(sealBreak,0);
+  } else if(o.t==='up'&&upcoming()[o.i]&&upcoming()[o.i].seal){ const x=upcoming()[o.i];
+    front=withVeil(bigMeet(x.d,x.m,x.t,null,''),x); back=bigBack(mtOf(x.m).c,mtSvg(x.m),esc(x.m));
+    acts=`<span class="snote">${new Date(x.seal.at).getMonth()+1}월 ${new Date(x.seal.at).getDate()}일 QR로 받은 봉인 카드 · 방장이 홈페이지 별자리에 기록하면 봉인이 깨지고 열려요</span>`; if(window.__ev) __ev('카드/봉인 카드 봄');
   } else if(o.t==='up'){ const x=upcoming()[o.i]; if(!x) return;
     front=bigMeet(x.d,x.m,x.t,null,`이날 모임에 온 사람만 받는 카드. 모임이 끝나고 홈페이지 별자리에 기록되면 카드첩에 들어오고, 그 뒤로는 다시 만들어지지 않아요.<br><small>처음 오시는 분은 무료로 함께할 수 있어요.</small>`,true);
     back=bigBack(mtOf(x.m).c,mtSvg(x.m),esc(x.m),true);
@@ -931,6 +943,100 @@ JSON 하나만 답한다:
     saveW(); refreshWake(); render(WORLD); if(window.__ev) __ev('카드/세계 깨움');
   }catch(e){ const m=errCopy(e)||(e&&e.code==='cancelled'?'':'세계를 쓰다가 멈췄어요. 잠시 뒤 다시 눌러 주세요.'+(e&&(e.code||e.message)?` (${esc(String(e.code||e.message))})`:'')); if(m){ wrap.innerHTML=`<div class="wait"><p class="err">${m}</p><div class="acts" style="justify-content:center"><button id="cBack">돌아가기</button></div></div>`; const b=document.getElementById('cBack'); if(b) b.onclick=closeWorld; } else closeWorld(); }
   finally{ busy=false; } }
+
+// ── 봉인된 카드(11/21 견본, 아이디어 ①): 모임이 끝나는 순간 QR로 받는 카드 ──
+// 방장: 바인더 주소 뒤에 ?qr → 오늘 모임 QR을 크게(줌 화면 공유·오프 모임 화면). ?qr=2026-12-05 처럼 날짜도 됨.
+// 회원: 찍으면 ?seal=날짜 → 그 모임 카드가 '밀랍 봉인'된 채 카드첩에 들어옴(이 기기에 저장, 서버 없음).
+// 방장이 홈페이지 별자리에 그날 온 사람을 기록하면(회원카드.py → 공개판) 다음에 열 때 봉인이 깨지고 카드가 열린다.
+// 찍은 것만으로는 카드가 생기지 않음 — 열리는 건 별자리 기록뿐이라 가짜로 찍어도 소용없음. 받을 수 있는 때: 모임 날 ~ 3일 뒤.
+// 숫자: GoatCounter 카드/봉인 QR 띄움 · 카드/봉인 받음 · 카드/봉인 깨짐 · 카드/봉인 기간 밖
+var SKEY='chaekmisa-seals', SEAL_BUSY=false, WXN=0, ARR=null;
+function sealAll(){ try{ return JSON.parse(sget(SKEY)||'{}')||{}; }catch(e){ return {}; } }
+function sealPut(S){ sset(SKEY,JSON.stringify(S)); }
+function sealK(s){ if(!WHO||!MEM[WHO]) return null; const k=MEM[WHO].find(k=>MEETS.m[k]&&MEETS.m[k][0]===s.d); return k==null?null:k; }
+function meetOn(d){ const u=(MEETS.u||[]).find(x=>x.d===d); if(u) return {d,t:u.t,m:u.m};
+  const k=Object.keys(MEETS.m).find(k=>MEETS.m[k][0]===d); return k!=null?{d,t:OUR[k].t,m:MEETS.m[k][1]}:null; }
+function D0(d){ return new Date(d+'T00:00:00').getTime(); }
+function waxSvg(){ const id='wxg'+(++WXN); return `<svg viewBox="0 0 60 60" aria-hidden="true"><defs><radialGradient id="${id}" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#f28a78"/><stop offset=".45" stop-color="#b8342c"/><stop offset="1" stop-color="#5a110d"/></radialGradient></defs><path d="M30 2.5c6 0 9 3.5 14 5.5 5.5 2.2 8 6.8 10.5 12 2.6 5.4 3 9.6 1.4 15.4-1.5 5.6-4.4 9.6-9.4 13.2-5 3.6-9.4 6.4-16 6.6-6.8.2-11.2-2.4-16.2-6.4C9.6 45 6 41.4 4.2 35.8 2.4 30 2 25.4 4.6 19.8 7 14.6 10.6 10 16 7.2 21 4.6 24.4 2.5 30 2.5z" fill="url(#${id})"/><circle cx="30" cy="30" r="17.5" fill="none" stroke="rgba(55,6,4,.55)" stroke-width="2.2"/><circle cx="30.6" cy="30.6" r="15.6" fill="none" stroke="rgba(255,190,170,.22)" stroke-width="1"/><path d="M30.7 17.7l3 10 10 3-10 3-3 10-3-10-10-3 10-3z" fill="rgba(255,200,180,.28)"/><path d="M30 17l3 10 10 3-10 3-3 10-3-10-10-3 10-3z" fill="rgba(55,6,4,.62)"/><ellipse cx="21" cy="15" rx="6" ry="2.6" transform="rotate(-30 21 15)" fill="rgba(255,255,255,.28)"/></svg>`; }
+function veilHTML(x){ return `<div class="sveil"><div class="fl l"></div><div class="fl r"></div><div class="svt"><span>봉인된 카드</span><b>『${esc(x.t)}』</b><small>${esc(x.m)} · ${dTx(x.d,true)}</small></div><div class="svb">홈페이지 별자리에 기록되면 봉인이 깨져요</div><div class="wax a">${waxSvg()}</div><div class="wax b">${waxSvg()}</div></div>`; }
+function withVeil(front,x){ const i=front.lastIndexOf('</div>'); return front.slice(0,i)+veilHTML(x)+front.slice(i); }
+// 앨범을 그릴 때마다: 기록된 봉인이 있으면 하나씩 깨뜨린다
+function sealSoon(){ if(SEAL_BUSY) return; SEAL_BUSY=true; setTimeout(()=>{ SEAL_BUSY=false; if(X.hidden||!SV.hidden||ARR||HALL||TURNING) return;
+  const S=sealAll(), s=Object.values(S).sort((a,b)=>a.d.localeCompare(b.d)).find(s=>!s.open&&sealK(s)!=null); if(!s) return;
+  S[s.d].open=Date.now(); sealPut(S); const k=sealK(s); showCard({t:'seal',d:s.d,k},X.querySelector(`[data-m="${k}"]`)); },1300*TMUL()); }
+function sealBreak(){ const v=sIn.querySelector('.sveil'); if(!v) return; setTimeout(()=>{ v.classList.add('brk'); if(navigator.vibrate) try{ navigator.vibrate([30,60,40]); }catch(e){} },1100); }
+// 받는 순간: 봉인된 카드가 떨어지고 밀랍 도장이 쾅
+function arrive(x,again){ if(ARR) ARR.remove(); const T=mtOf(x.m); ARR=document.createElement('div'); ARR.id='sealin';
+  ARR.innerHTML=`<div class="sdim2"></div><div class="sbox"><div class="scd" style="--mc:${T.c};--md:${T.d}"><span class="sct">${esc(x.m)}</span><span class="scb">『${esc(x.t)}』</span><span class="scd2">${dTx(x.d,true)}</span><div class="swx">${waxSvg()}</div></div><div class="stx"><b>${again?'이미 받은 봉인 카드예요':'봉인된 카드가 들어왔어요'}</b><span>『${esc(x.t)}』 · ${esc(x.m)} · ${dTx(x.d,true)}</span><small>${WHO?`<b>${esc(WHO)}</b>님 카드첩에 들어갔어요. `:''}방장이 홈페이지 별자리에 오늘 함께한 사람을 기록하면, 봉인이 깨지고 카드가 열려요.</small><button type="button" class="go">카드첩에서 보기</button></div></div>`;
+  document.body.appendChild(ARR);
+  ARR.querySelector('.go').onclick=()=>{ ARR.remove(); ARR=null; if(X.hidden) open(); else albumView(); }; }
+function sealMsg(html){ if(ARR) ARR.remove(); ARR=document.createElement('div'); ARR.id='sealin';
+  ARR.innerHTML=`<div class="sdim2"></div><div class="sbox"><div class="stx" style="animation:none">${html}<button type="button" class="go">확인</button></div></div>`; document.body.appendChild(ARR);
+  ARR.querySelector('.go').onclick=()=>{ ARR.remove(); ARR=null; if(X.hidden&&window.BINDER) open(); }; }
+// 방장 화면: 크게 띄우는 QR
+function sealQR(d){ const now=Date.now(), today=new Date(); today.setHours(0,0,0,0);
+  let x=d&&meetOn(d); if(!x){ const u=(MEETS.u||[]).filter(y=>D0(y.d)>=today.getTime()-2*864e5).sort((a,b)=>a.d.localeCompare(b.d)); x=u[0]&&{d:u[0].d,t:u[0].t,m:u[0].m}; }
+  if(!x) return; const pre=now<D0(x.d), T=mtOf(x.m), url=location.origin+'/binder/?seal='+x.d;
+  const q=document.createElement('div'); q.id='sealqr'; q.style.cssText=`--mc:${T.c};--md:${T.d}`;
+  q.innerHTML=`<button type="button" class="qx" aria-label="닫기">✕</button><div class="qin"><div class="qk">책미사 · 오늘의 카드${pre?' <em>미리보기 · 아직 모임 전이라 찍어도 안 들어가요</em>':''}</div><div class="qt">『${esc(x.t)}』</div><div class="qm">${esc(x.m)} · ${dTx(x.d,true)}</div><div class="qbox"><span id="sealQrImg">QR 준비 중…</span><div class="qwx">${waxSvg()}</div></div><div class="qh">핸드폰 카메라로 찍으세요<br><b>오늘의 카드가 봉인된 채 카드첩에 들어갑니다</b><br><small>오늘 함께한 사람이 홈페이지 별자리에 기록되면 봉인이 깨져요 · 모임 뒤 3일까지</small></div></div>`;
+  document.body.appendChild(q); q.querySelector('.qx').onclick=()=>q.remove();
+  const put=()=>{ const c=document.getElementById('sealQrImg'); if(!c) return; try{ const g=qrcode(0,'M'); g.addData(url); g.make(); c.outerHTML=g.createSvgTag({cellSize:8,margin:0,scalable:true}); }catch(e){ c.textContent=url; } };
+  if(window.qrcode) put(); else { const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; sc.onload=put; sc.onerror=()=>{ const c=document.getElementById('sealQrImg'); if(c) c.textContent=url; }; document.head.appendChild(sc); }
+  if(window.__ev) __ev('카드/봉인 QR 띄움'); }
+// 주소 꼬리 읽기(?seal= / ?qr)
+(function(){ const QP=new URLSearchParams(location.search), sd=QP.get('seal'), demo=QP.get('demo')==='1';
+  if(!QP.has('seal')&&!QP.has('qr')) return;
+  const qd=QP.get('qr'); ['seal','demo','qr'].forEach(k=>QP.delete(k)); const rest=QP.toString();
+  history.replaceState(null,'',location.pathname+(rest?'?'+rest:'')+location.hash);
+  setTimeout(()=>{
+    if(qd!==null) return sealQR(qd);
+    const x=sd&&meetOn(sd); if(!x) return sealMsg('<b>이 QR은 알 수 없는 모임이에요</b><small>방장에게 다시 띄워 달라고 해 주세요.</small>');
+    const now=Date.now();
+    if(!demo&&(now<D0(x.d)||now>=D0(x.d)+3*864e5)){ if(window.__ev) __ev('카드/봉인 기간 밖');
+      return sealMsg(now<D0(x.d)?`<b>아직 모임 전이에요</b><span>『${esc(x.t)}』 · ${dTx(x.d,true)}</span><small>모임이 끝날 때 다시 찍어 주세요.</small>`:`<b>봉인 카드를 받는 기간이 지났어요</b><span>『${esc(x.t)}』 · ${dTx(x.d,true)}</span><small>모임 날부터 3일까지 받을 수 있어요. 그날 오셨다면 별자리에 기록될 때 카드는 그대로 들어와요.</small>`); }
+    const S=sealAll(), again=!!S[x.d]; if(!again){ S[x.d]={d:x.d,t:x.t,m:x.m,at:now,who:WHO||'',demo:demo?1:0}; sealPut(S); if(window.__ev) __ev('카드/봉인 받음'+(demo?' (견본)':''),1); }
+    arrive(x,again); },700*TMUL()); })();
+{ const st3=document.createElement('style'); st3.textContent=`
+#cx .mc.mtg.sealed{background:linear-gradient(160deg,color-mix(in srgb,var(--mc) 22%,#16101a),#0b0910 80%);border-style:solid;animation:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--mc) 30%,transparent),0 6px 18px rgba(0,0,0,.5)}
+#cx .mc.sealed .mi{opacity:.12} #cx .mc.sealed .wx{position:absolute;left:50%;top:46%;width:52%;transform:translate(-50%,-50%) rotate(-10deg);z-index:2;filter:drop-shadow(0 3px 5px rgba(0,0,0,.65))} #cx .mc.sealed .wx svg{display:block;width:100%}
+#cx .mc.sealed .ms{color:#f28a78}
+#cxs .sveil{position:absolute;inset:0;z-index:6;pointer-events:none;container-type:inline-size}
+#cxs .sveil .fl{position:absolute;top:0;bottom:0;width:50.4%;background:linear-gradient(180deg,transparent 47%,color-mix(in srgb,var(--mc) 55%,#3a0d0a) 47% 53%,transparent 53%),repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 2px,transparent 2px 7px),linear-gradient(165deg,color-mix(in srgb,var(--mc) 24%,#18111c),#0a0810 85%);transition:transform 1.1s cubic-bezier(.55,0,.2,1) .75s,opacity .5s ease 1.5s}
+#cxs .sveil .fl.l{left:0;transform-origin:0 50%;box-shadow:inset -1px 0 0 color-mix(in srgb,var(--mc) 45%,transparent)} #cxs .sveil .fl.r{right:0;transform-origin:100% 50%;box-shadow:inset 1px 0 0 color-mix(in srgb,var(--mc) 45%,transparent)}
+#cxs .svt{position:absolute;top:11%;left:0;right:0;text-align:center;display:grid;gap:1.6cqw;transition:opacity .4s .3s} #cxs .svt span{font-size:3.2cqw;letter-spacing:.4em;color:#f28a78}
+#cxs .svt b{font-family:var(--f-display);font-size:7cqw;color:#f3ead6;padding:0 6cqw;text-wrap:balance} #cxs .svt small{font-size:3.4cqw;color:color-mix(in srgb,var(--mc) 70%,#fff)}
+#cxs .svb{position:absolute;bottom:9%;left:0;right:0;text-align:center;font-size:3.3cqw;color:#cdbfae;transition:opacity .4s .3s}
+#cxs .wax{position:absolute;left:50%;top:50%;width:34cqw;margin:-17cqw 0 0 -17cqw;filter:drop-shadow(0 1.4cqw 2cqw rgba(0,0,0,.7))} #cxs .wax svg{display:block;width:100%}
+#cxs .wax.a{clip-path:polygon(0 0,53% 0,46% 21%,56% 39%,44% 58%,55% 77%,47% 100%,0 100%)} #cxs .wax.b{clip-path:polygon(53% 0,100% 0,100% 100%,47% 100%,55% 77%,44% 58%,56% 39%,46% 21%)}
+#cxs .sveil.brk .svt,#cxs .sveil.brk .svb{opacity:0}
+#cxs .sveil.brk .wax.a{animation:wshk .42s ease-in-out,wfl 1s cubic-bezier(.5,0,.8,.6) .42s forwards} #cxs .sveil.brk .wax.b{animation:wshk .42s ease-in-out,wfr 1s cubic-bezier(.5,0,.8,.6) .42s forwards}
+#cxs .sveil.brk .fl.l{transform:perspective(700px) rotateY(-105deg);opacity:0} #cxs .sveil.brk .fl.r{transform:perspective(700px) rotateY(105deg);opacity:0}
+#cxs .sveil::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(40% 30% at 50% 50%,rgba(255,236,180,.95),rgba(255,200,120,.25) 50%,transparent 75%);mix-blend-mode:screen}
+#cxs .sveil.brk::after{animation:wflash 1.2s ease-out .45s}
+@keyframes wshk{0%,100%{transform:none}20%{transform:rotate(-6deg) scale(1.04)}40%{transform:rotate(5deg)}60%{transform:rotate(-4deg) scale(1.06)}80%{transform:rotate(3deg)}}
+@keyframes wfl{to{transform:translate(-26cqw,70cqw) rotate(-38deg);opacity:0}} @keyframes wfr{to{transform:translate(24cqw,78cqw) rotate(34deg);opacity:0}}
+@keyframes wflash{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+#sealin{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;font-family:var(--f-body);color:var(--ink)}
+#sealin .sdim2{position:absolute;inset:0;background:radial-gradient(70% 60% at 50% 45%,rgba(30,14,18,.8),rgba(3,4,10,.95));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:sfade .4s}
+#sealin .sbox{position:relative;display:grid;justify-items:center;gap:22px;max-width:360px;text-align:center}
+#sealin .scd{position:relative;width:min(220px,58vw);aspect-ratio:5/7;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 14px 16px;box-sizing:border-box;border:1.5px solid var(--mc);background:linear-gradient(180deg,transparent 47%,color-mix(in srgb,var(--mc) 55%,#3a0d0a) 47% 53%,transparent 53%),linear-gradient(165deg,color-mix(in srgb,var(--mc) 24%,#18111c),#0a0810 85%);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 50px color-mix(in srgb,var(--mc) 30%,transparent),0 30px 70px rgba(0,0,0,.75);animation:sdrop 1s cubic-bezier(.2,.9,.25,1.15) both}
+#sealin .sct{font-size:11px;letter-spacing:.3em;color:var(--mc)} #sealin .scb{margin-top:auto;font-family:var(--f-display);font-size:17px;font-weight:700;color:#f3ead6;text-wrap:balance} #sealin .scd2{margin-top:6px;font-size:11px;color:#cdbfae}
+#sealin .swx{position:absolute;left:50%;top:50%;width:46%;transform:translate(-50%,-50%) rotate(-10deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,.7));animation:sstamp .55s cubic-bezier(.3,1.6,.5,1) .85s both} #sealin .swx svg{display:block;width:100%}
+#sealin .stx{display:grid;gap:8px;animation:sfade .5s 1.3s both} #sealin .stx>b{font-family:var(--f-display);font-size:21px;color:#f3ead6} #sealin .stx>span{color:var(--gold);font-size:14px} #sealin .stx small{color:var(--ink-dim);font-size:13px;line-height:1.65;word-break:keep-all}
+#sealin .go{margin-top:8px;justify-self:center;padding:11px 22px;border-radius:999px;border:0;font:700 14px var(--f-body);color:#1a1206;background:linear-gradient(180deg,#ffe2a0,#e0b04f);cursor:pointer}
+@keyframes sdrop{0%{transform:translateY(-70vh) rotate(-14deg);opacity:0}60%{opacity:1}100%{transform:none}}
+@keyframes sstamp{0%{transform:translate(-50%,-50%) rotate(-10deg) scale(2.6);opacity:0}100%{transform:translate(-50%,-50%) rotate(-10deg) scale(1);opacity:1}}
+@keyframes sfade{from{opacity:0}to{opacity:1}}
+#sealqr{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:20px;background:radial-gradient(90% 70% at 50% 40%,color-mix(in srgb,var(--mc) 18%,#120c16),#05060c 80%);font-family:var(--f-body);color:var(--ink);overflow:auto}
+#sealqr .qx{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.4);color:#fff;font-size:16px;cursor:pointer}
+#sealqr .qin{display:grid;justify-items:center;gap:10px;text-align:center}
+#sealqr .qk{font-size:13px;letter-spacing:.3em;color:var(--mc)} #sealqr .qk em{display:block;margin-top:6px;letter-spacing:0;font-style:normal;color:#f28a78}
+#sealqr .qt{font-family:var(--f-display);font-size:clamp(26px,4.4vw,46px);font-weight:700;color:#f3ead6} #sealqr .qm{color:var(--gold);font-size:clamp(14px,1.8vw,19px)}
+#sealqr .qbox{position:relative;margin:14px 0 8px;background:#fff;padding:18px;border-radius:18px;width:min(46vh,78vw);box-shadow:0 0 0 6px color-mix(in srgb,var(--mc) 50%,transparent),0 30px 80px rgba(0,0,0,.6)}
+#sealqr .qbox>svg,#sealqr .qbox>span{display:block;width:100%;height:auto;color:#111;word-break:break-all}
+#sealqr .qwx{position:absolute;right:-7%;bottom:-7%;width:24%;transform:rotate(-12deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))} #sealqr .qwx svg{display:block;width:100%}
+#sealqr .qh{font-size:clamp(14px,1.7vw,18px);line-height:1.7;color:#d9d2c4} #sealqr .qh b{color:#f3ead6} #sealqr .qh small{color:var(--ink-dim);font-size:.8em}
+`; document.head.appendChild(st3); }
 
 function open(){ card.hidden=true; X.hidden=false; document.body.classList.add('cxo'); SEEN=false; BSEEN=false; try{ stopJourney(); }catch(e){} X.scrollTop=0; SEL=[]; if(WHO===null) whoView(); else albumView(); if(window.__ev) __ev('카드/시작',1); }
 function close(){ if(window.BINDER) return; X.hidden=true; bar.hidden=true; document.body.classList.remove('cxo'); try{ card.hidden=true; }catch(e){} }
