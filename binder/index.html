@@ -990,8 +990,14 @@ function sealQR(d){ const now=Date.now(), today=new Date(); today.setHours(0,0,0
   let x=d&&meetOn(d); if(!x){ const u=(MEETS.u||[]).filter(y=>D0(y.d)>=today.getTime()-2*864e5).sort((a,b)=>a.d.localeCompare(b.d)); x=u[0]&&{d:u[0].d,t:u[0].t,m:u[0].m}; }
   if(!x) return; const pre=now<D0(x.d), T=mtOf(x.m), url=location.origin+'/binder/?seal='+x.d;
   const q=document.createElement('div'); q.id='sealqr'; q.style.cssText=`--mc:${T.c};--md:${T.d}`;
-  q.innerHTML=`<button type="button" class="qx" aria-label="닫기">✕</button><div class="qin"><div class="qk">책미사 · 오늘의 카드${pre?' <em>미리보기 · 아직 모임 전이라 찍어도 안 들어가요</em>':''}</div><div class="qt">『${esc(x.t)}』</div><div class="qm">${esc(x.m)} · ${dTx(x.d,true)}</div><div class="qbox"><span id="sealQrImg">QR 준비 중…</span><div class="qwx">${waxSvg()}</div></div><div class="qh">핸드폰 카메라로 찍으세요<br><b>오늘의 카드가 봉인된 채 카드첩에 들어갑니다</b><br><small>오늘 함께한 사람이 홈페이지 별자리에 기록되면 봉인이 깨져요 · 모임 뒤 3일까지</small></div></div>`;
+  q.innerHTML=`<button type="button" class="qx" aria-label="닫기">✕</button><div class="qin"><div class="qk">책미사 · 오늘의 카드${pre?' <em>미리보기 · 아직 모임 전이라 찍어도 안 들어가요</em>':''}</div><div class="qt">『${esc(x.t)}』</div><div class="qm">${esc(x.m)} · ${dTx(x.d,true)}</div><div class="qbox"><span id="sealQrImg">QR 준비 중…</span><div class="qwx">${waxSvg()}</div></div><div class="qh">핸드폰 카메라로 찍으세요<br><b>오늘의 카드가 봉인된 채 카드첩에 들어갑니다</b><br><small>오늘 함께한 사람이 홈페이지 별자리에 기록되면 봉인이 깨져요 · 모임 뒤 3일까지</small></div><button type="button" class="qcp">🔗 링크 복사 · 줌 채팅·톡방에 붙이기</button><div class="qcm" aria-live="polite"></div></div>`;
   document.body.appendChild(q); q.querySelector('.qx').onclick=()=>q.remove();
+  // 11/21 에스파다: 줌을 핸드폰으로 듣는 분은 자기 화면의 QR을 못 찍음 → 같은 링크를 줌 채팅·톡방에
+  const end=new Date(D0(x.d)+2*864e5), txt=`🃏 오늘 『${x.t}』 모임 카드 받기 (${end.getMonth()+1}/${end.getDate()}까지)
+${url}`;
+  q.querySelector('.qcp').onclick=()=>{ const m=q.querySelector('.qcm'), ok=()=>{ m.textContent='복사했어요 · 줌 채팅이나 톡방에 붙여 넣으세요'; if(window.__ev) __ev('카드/봉인 링크 복사'); };
+    const old=()=>{ const t=document.createElement('textarea'); t.value=txt; t.style.cssText='position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); ok(); }catch(e){ m.textContent=txt; } t.remove(); };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok,old); else old(); };
   const put=()=>{ const c=document.getElementById('sealQrImg'); if(!c) return; try{ const g=qrcode(0,'M'); g.addData(url); g.make(); c.outerHTML=g.createSvgTag({cellSize:8,margin:0,scalable:true}); }catch(e){ c.textContent=url; } };
   if(window.qrcode) put(); else { const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; sc.onload=put; sc.onerror=()=>{ const c=document.getElementById('sealQrImg'); if(c) c.textContent=url; }; document.head.appendChild(sc); }
   if(window.__ev) __ev('카드/봉인 QR 띄움'); }
@@ -1050,6 +1056,7 @@ function sealQR(d){ const now=Date.now(), today=new Date(); today.setHours(0,0,0
 #sealqr .qbox{position:relative;margin:14px 0 8px;background:#fff;padding:18px;border-radius:18px;width:min(46vh,78vw);box-shadow:0 0 0 6px color-mix(in srgb,var(--mc) 50%,transparent),0 30px 80px rgba(0,0,0,.6)}
 #sealqr .qbox>svg,#sealqr .qbox>span{display:block;width:100%;height:auto;color:#111;word-break:break-all}
 #sealqr .qwx{position:absolute;right:-7%;bottom:-7%;width:24%;transform:rotate(-12deg);filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))} #sealqr .qwx svg{display:block;width:100%}
+#sealqr .qcp{margin-top:6px;padding:10px 18px;border-radius:999px;border:1px solid color-mix(in srgb,var(--mc) 60%,transparent);background:rgba(0,0,0,.35);color:#f3ead6;font:600 14px var(--f-body);cursor:pointer} #sealqr .qcp:hover{background:rgba(255,255,255,.08)} #sealqr .qcm{min-height:1.4em;font-size:13px;color:var(--gold);white-space:pre-line;word-break:break-all}
 #sealqr .qh{font-size:clamp(14px,1.7vw,18px);line-height:1.7;color:#d9d2c4} #sealqr .qh b{color:#f3ead6} #sealqr .qh small{color:var(--ink-dim);font-size:.8em}
 `; document.head.appendChild(st3); }
 
