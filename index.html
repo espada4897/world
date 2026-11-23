@@ -1721,6 +1721,10 @@ const cntLine=k=>{ const n=cntOf(k), old=GEN(MEETS.m[k][0])<3;
   return n==null?'이날 몇 명이 왔는지는 기록이 남아 있지 않아요. 그날이 지나 다시는 생기지 않는 카드.':`세상에 <b>${n}장</b>. 그날이 지나 다시는 생기지 않는 카드.${old?'<br><small>장수는 그날 출석부에 적힌 인원</small>':''}`; };
 const mtOf=m=>MT[m]||{c:'#f0c674',d:'#2a2112',p:'<circle cx="20" cy="20" r="9" fill="currentColor"/>',w:''};
 const mtSvg=m=>`<svg viewBox="0 0 40 40" aria-hidden="true">${mtOf(m).p}</svg>`;
+// 모임 원화(11/23 도스 협업): 모임마다 따로 그린 1:1 원화가 있으면 그 모임 카드의 얼굴로 쓴다.
+//   모임 ID = 모임 날짜(YYYY-MM-DD). 그림 = cardimg/m{날짜}.jpg(크게 볼 때 1080) · m{날짜}s.jpg(칸 400). 원화는 정사각형 그대로(잘림 없음), 제목·날짜는 코드로 조판.
+//   bg = 원화 아래 글자 칸 바탕(원화의 어두운 색). 받는 사람·봉인은 지금과 같음(별자리 기록으로만 열림).
+const MART={'2026-11-21':{bg:'#1b0b0d'}};
 // 견본 12(11/20): 증표 카드(받으면 영원히 남음: 챌린지 도전(신청)·완수·완독증) + 주문 카드(쓰면 도장: 커피(완수자만)·책 선물·책 교환). 자료 = 증표카드.csv(방장이 적음)
 const TOK=(window.TOKENS||[]).map((t,i)=>({...t,i}));
 const KT={
@@ -1961,7 +1965,9 @@ function slotCard(k,has){ const b=OUR[k], i=qOf(b)[0];
     if(has){ const si=SEL.indexOf(k); const r=rar(k); return `<button type="button" class="mc own ${b.k==='land'?'land':'law'} r${r.lv}${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} style="--c:${COL[i]}" data-k="${k}" title="${esc(b.t)} · ${rarTxt(k,true)}"><span class="rr l${r.lv}">${r.g}</span><span class="no">${noTx(k)}</span>${picHTML(k,b)}<span class="mt">${esc(b.t)}</span></button>`; }
     return `<button type="button" class="mc not" style="--c:${COL[i]}" data-k="${k}" aria-label="아직 없는 카드 No.${noTx(k)}: ${esc(b.t)}">${svg(i)}<span class="no">${noTx(k)}</span></button>`; };
 function meetCard(k,o){ o=o||{}; const [d,m]=MEETS.m[k], h=holders(k), got=o.hall&&WHO&&h.includes(WHO);
-    const T=mtOf(m); return `<button type="button" class="mc mt0${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">${msTx(k)}</span></button>`; }
+    const T=mtOf(m), A=MART[d];
+    if(A) return `<button type="button" class="mc mt0 mart${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d};--ab:${A.bg}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<img class="mai" src="cardimg/m${d}s.jpg" alt="" loading="lazy"><span class="mad">${dTx(d,true)}</span><span class="mab">『${esc(OUR[k].t)}』</span></button>`;
+    return `<button type="button" class="mc mt0${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">${msTx(k)}</span></button>`; }
 function upCard(x,i){ if(x.seal) return `<button type="button" class="mc mtg sealed" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="봉인된 카드 · ${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="wx">${waxSvg()}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">봉인됨</span></button>`;
   return `<button type="button" class="mc mtg" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">이날 온 사람만</span></button>`; }
 function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall&&WHO&&tokSame(t).some(x=>x.who===WHO);
@@ -2154,6 +2160,10 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .pg.toc.hall{background:radial-gradient(90% 60% at 50% 20%,rgba(160,190,255,.09),transparent 70%),linear-gradient(180deg,#151a2c,#0f1326)}
 #cx .pg.toc.hall .tc3 b{color:#cfdcff}
 #cx .cover.hallc .cvf{filter:hue-rotate(-20deg) saturate(.7) brightness(1.05)}
+#cx .mc.mt0.mart{padding:0;justify-content:flex-start;align-items:stretch;text-align:center;background:var(--ab);border:1.3px solid #c9a24f;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.5)}
+#cx .mc.mart .mai{width:100%;aspect-ratio:1;object-fit:cover;display:block;flex:none;border-bottom:1px solid rgba(201,162,79,.6)}
+#cx .mc.mart .mad{position:relative;margin-top:auto;font:600 8.5px/1.2 var(--f-body);letter-spacing:.04em;color:#d9b866;font-variant-numeric:tabular-nums;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cx .mc.mart .mab{position:relative;font-family:var(--f-display);font-weight:700;font-size:10px;line-height:1.25;color:#f3e3c0;padding:2px 4px 0;margin-bottom:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #cx .mc .fst{position:absolute;right:4px;top:4px;z-index:2;font-size:8.5px;letter-spacing:.06em;padding:0 6px;border-radius:999px;background:var(--gold);color:#241a06;text-shadow:none;font-weight:700}
 #cx .mc .gotm{position:absolute;right:4px;top:4px;z-index:2;font-size:8.5px;padding:0 5px;border-radius:999px;background:rgba(240,198,116,.92);color:#241a06;text-shadow:none;font-weight:700}
 #cx .mc.got{box-shadow:inset 0 0 0 3px #0c0e18,inset 0 0 0 4px color-mix(in srgb,var(--mc) 40%,transparent),0 0 0 1.5px rgba(240,198,116,.85),0 6px 18px rgba(0,0,0,.5)}
@@ -2287,7 +2297,9 @@ function bigBook(b,k,own){ const r=rar(k), i=qOf(b)[0], land=b.k==='land';
       <div class="sft"><span>${qOf(b).map(q=>CQ[q]).join(' · ')}</span><span>${own?rarTxt(k,true):'아직 없는 카드'}</span></div></div></div>`; }
 function bigJoker(j){ return `<div class="sf sfront joker" style="--c:#c9b6ff"><div class="shd"><span class="sno">조커</span><span class="srn">밖에서 읽은 책</span></div>
     <div class="spic"><div class="sart jk">${jsvg()}</div></div><div class="sbody"><div class="skd">조커 · 빈자리를 채우는 카드</div><div class="stt">${esc(j.t)}</div><div class="sau">${esc(j.a||'')}</div><div class="sln">${esc(j.s)}</div></div></div>`; }
-function bigMeet(d,m,t,img,foot,up){ const T=mtOf(m);
+function bigMeet(d,m,t,img,foot,up){ const T=mtOf(m), A=!up&&MART[d];
+  if(A) return `<div class="sf smeet sart2" style="--mc:${T.c};--md:${T.d};--ab:${A.bg}"><img class="sai" src="cardimg/m${d}.jpg" alt="『${esc(t)}』 모임 원화">
+    <div class="sab"><div class="sak">책미사 · ${esc(m)} 모임 카드</div><div class="stt">『${esc(t)}』</div><div class="sad">${dTx(d,true)}</div><div class="sln">${foot}</div></div></div>`;
   return `<div class="sf smeet${up?' up':''}" style="--mc:${T.c};--md:${T.d}"><div class="smi">${mtSvg(m)}</div>
     <div class="shd"><span class="sno">${esc(m)}</span><span class="srn">${up?'다가오는 모임':'모임 카드'}</span></div>
     <div class="smd">${dTx(d,true)}</div>
@@ -2402,6 +2414,14 @@ addEventListener('pointermove',e=>{ if(ORI||e.pointerType!=='mouse'||!SV.hidden)
 #cxs .sln small{display:block;margin-top:1.6cqw;font-family:var(--f-body);font-size:3.1cqw;color:var(--ink-dim)} #cxs .sln b{color:var(--mc,var(--gold))}
 #cxs .sft{margin-top:auto;display:flex;justify-content:space-between;gap:2cqw;font-size:2.8cqw;color:var(--ink-faint);border-top:1px solid var(--line);padding-top:2cqw}
 #cxs .smeet{padding:16cqw 7cqw 7cqw;display:flex;flex-direction:column;gap:2.4cqw;background:radial-gradient(120% 70% at 100% 0,color-mix(in srgb,var(--mc) 30%,transparent),transparent 60%),linear-gradient(165deg,var(--md),#0c0e18 75%);border:1.5px solid var(--mc);box-shadow:inset 0 0 0 1.6cqw #0c0e18,inset 0 0 0 2cqw color-mix(in srgb,var(--mc) 45%,transparent),0 0 50px color-mix(in srgb,var(--mc) 25%,transparent),0 30px 80px rgba(0,0,0,.7)}
+#cxs .smeet.sart2{padding:0;gap:0;background:var(--ab);border:1.5px solid #c9a24f;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 50px rgba(201,162,79,.18),0 30px 80px rgba(0,0,0,.7)}
+#cxs .sart2 .sai{width:100%;aspect-ratio:1;object-fit:cover;display:block;flex:none}
+#cxs .sart2 .sab{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.9cqw;padding:2cqw 6cqw 3cqw;border-top:1px solid rgba(201,162,79,.55)}
+#cxs .sart2 .sak{font-size:2.8cqw;letter-spacing:.18em;color:#c9a24f}
+#cxs .smeet.sart2 .stt{font-family:var(--f-display);font-weight:700;font-size:6.2cqw;line-height:1.2;color:#f3e3c0;position:relative}
+#cxs .sart2 .sad{font-size:3.2cqw;letter-spacing:.14em;color:#d9b866;font-variant-numeric:tabular-nums}
+#cxs .smeet.sart2 .sln{border:0;padding:0;margin-top:.4cqw;font-size:2.8cqw;line-height:1.45;color:#d8ccb4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#cxs .smeet.sart2 .sln small{font-size:2.6cqw;margin-top:.4cqw}
 #cxs .smeet.up{border-style:dashed;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--mc) 9%,transparent) 0 3cqw,transparent 3cqw 6cqw),#0c0e18}
 #cxs .smeet .sno{color:var(--mc)} #cxs .smi{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:62%;color:var(--mc);opacity:.13} #cxs .smi svg{width:100%;display:block}
 #cxs .smd{font-size:7.4cqw;font-weight:700;color:var(--mc);font-variant-numeric:tabular-nums;position:relative}
