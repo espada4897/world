@@ -430,6 +430,13 @@ function noteSlot(w){ return `<button type="button" class="mc note" data-a="hall
 function slotOf(o,own){ if(o==='z') return zeroSlot(own); if(typeof o==='number') return slotCard(o,own.has(o));
   if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.note) return noteSlot(o.note); if(o.m!=null) return meetCard(o.m,o); if(o.tk) return tokCard(o.tk,o); if(o.j) return jokerSlot(o.j);
   return `<button type="button" class="mc add" data-a="jadd"><span><b>+</b>밖에서 읽은 책으로<br>조커 만들기</span></button>`; }
+// 첫 쪽 '지금' 칸(11/23 에스파다): 다음 모임 · 가장 최근 모임 카드 · 가장 새 책 카드를 첫 쪽에서 바로. 뒤쪽 카드첩 순서(날짜순·번호순)는 그대로
+function nowRow(own){ const it=[], up=upcoming();
+  if(up.length) it.push(['다음 모임',upCard(up[0],0)]);
+  const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
+  if(mine.length) it.push(['최근 모임 카드',meetCard(mine[0])]);
+  const nb=[...own].sort((a,b)=>NO[b]-NO[a])[0]; if(nb!=null) it.push(['새 책 카드',slotCard(nb,true)]);
+  return it.length?`<div class="tnow"><div class="tnh">지금</div><div class="tng">${it.map(([l,h])=>`<figure><figcaption>${l}</figcaption><div class="sl">${h}</div></figure>`).join('')}</div></div>`:''; }
 function pageHTML(P,i,own){ const pg=P[i];
   if(!pg) return `<div class="pg end"><div class="pend">✦<br><small>책미사 너머</small></div></div>`;
   if(pg.t==='toc'&&pg.hall){ const all=hallAll(), row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
@@ -442,9 +449,11 @@ function pageHTML(P,i,own){ const pg=P[i];
       <div class="pgf">1</div></div>`; }
   if(pg.t==='toc'){ const n=own.size, JK=jokers(), mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).length:0, tk=WHO?TOK.filter(t=>t.who===WHO).length:0;
     const row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
-    return `<div class="pg toc"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
+    const NOW=nowRow(own);
+    return `<div class="pg toc${NOW?' now':''}"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
       <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
       <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
+      ${NOW}
       <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
       <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
       <div class="pgf">1</div></div>`; }
@@ -560,6 +569,12 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .tc3{font-family:var(--f-display);font-size:30px;color:var(--ink-dim)} #cx .tc3 b{color:var(--gold);font-size:40px} #cx .tc3 small{display:block;font-family:var(--f-body);font-size:11px;color:var(--ink-faint)}
 #cx .tcr{display:flex;gap:10px;font-size:11.5px;color:var(--ink-dim)} #cx .tcr b{color:var(--ink)}
 #cx .tcl{width:100%;display:grid;gap:6px;margin-top:8px}
+#cx .tnow{width:100%;margin-top:4px} #cx .tnh{font-size:10.5px;letter-spacing:.3em;color:var(--gold);margin-bottom:5px}
+#cx .tng{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px} #cx .tng figure{margin:0;display:grid;gap:4px;min-width:0}
+#cx .pg.toc.now{gap:5px;padding-top:16px} #cx .pg.toc.now .tc2{font-size:19px} #cx .pg.toc.now .tc3{font-size:22px;line-height:1.1} #cx .pg.toc.now .tc3 b{font-size:30px} #cx .pg.toc.now .tc3 small{display:inline;margin-left:6px}
+#cx .pg.toc.now .tcl{gap:5px;margin-top:4px} #cx .pg.toc.now .trow{padding:6px 12px} #cx .pg.toc.now .tsh{margin-top:2px;padding:6px 14px}
+@media (max-height:720px){ #cx .pg.toc.now .tc1,#cx .pg.toc.now .tcr{display:none} #cx .pg.toc.now{padding-top:10px} }
+#cx .tng figcaption{font-size:10.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #cx .tng .sl{aspect-ratio:5/7}
 #cx .book{touch-action:pan-y;user-select:none;-webkit-user-select:none}
 #cx .trow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);text-align:left}
 #cx .trow b{margin-left:auto;color:var(--gold);font-weight:600} #cx .trow i{font-style:normal;color:var(--ink-faint);font-size:11px;min-width:44px;text-align:right}
