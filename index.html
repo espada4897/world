@@ -2022,18 +2022,21 @@ function slotOf(o,own){ if(o==='z') return zeroSlot(own); if(typeof o==='number'
   if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.note) return noteSlot(o.note); if(o.m!=null) return meetCard(o.m,o); if(o.tk) return tokCard(o.tk,o); if(o.j) return jokerSlot(o.j);
   return `<button type="button" class="mc add" data-a="jadd"><span><b>+</b>밖에서 읽은 책으로<br>조커 만들기</span></button>`; }
 // 첫 쪽 '지금' 칸(11/23 에스파다): 다음 모임 · 가장 최근 모임 카드 · 가장 새 책 카드를 첫 쪽에서 바로. 뒤쪽 카드첩 순서(날짜순·번호순)는 그대로
-function nowRow(own){ const it=[], up=upcoming();
+// 책미사 카드첩(모두의 것)에서는 '모두의 지금': 다음 모임 · 책미사의 가장 최근 모임 카드 · 책미사가 가장 최근에 함께 읽은 책
+function nowRow(own,hall){ const it=[], up=upcoming();
   if(up.length) it.push(['다음 모임',upCard(up[0],0)]);
-  const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
-  if(mine.length) it.push(['최근 모임 카드',meetCard(mine[0])]);
-  const nb=[...own].sort((a,b)=>NO[b]-NO[a])[0]; if(nb!=null) it.push(['새 책 카드',slotCard(nb,true)]);
+  const mine=hall?hallAll().reverse():WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
+  if(mine.length) it.push([hall?'최근 모임':'최근 모임 카드',meetCard(mine[0],hall?{hall:1}:{})]);
+  const nb=(hall?OUR.map((_,k)=>k).filter(k=>MEETS.m[k]):[...own]).sort((a,b)=>NO[b]-NO[a])[0]; if(nb!=null) it.push([hall?'새 책':'새 책 카드',slotCard(nb,own.has(nb))]);
   return it.length?`<div class="tnow"><div class="tnh">지금</div><div class="tng">${it.map(([l,h])=>`<figure><figcaption>${l}</figcaption><div class="sl">${h}</div></figure>`).join('')}</div></div>`:''; }
 function pageHTML(P,i,own){ const pg=P[i];
   if(!pg) return `<div class="pg end"><div class="pend">✦<br><small>책미사 너머</small></div></div>`;
   if(pg.t==='toc'&&pg.hall){ const all=hallAll(), row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
     const gotN=WHO?all.filter(k=>holders(k).includes(WHO)).length:0;
-    return `<div class="pg toc hall"><div class="tc1">책미사 너머 · 모두의 카드첩</div><div class="tc2">책미사 카드첩</div>
+    const NOW=nowRow(own,true);
+    return `<div class="pg toc hall${NOW?' now':''}"><div class="tc1">책미사 너머 · 모두의 카드첩</div><div class="tc2">책미사 카드첩</div>
       <div class="tc3"><b>${all.length}</b><small>지나간 모임 카드</small></div>
+      ${NOW}
       <p class="hnote">지나간 모임과 증표는 다시 만들어지지 않아요. 그래서 내 카드첩엔 빈칸으로 두지 않고, 여기 한 권에 모두 남겨 둡니다.${gotN?`<br><b>★ 받음</b> · ${esc(WHO)}님이 받은 카드 ${gotN}장`:''}</p>
       <div class="tcl">${[1,2,3].map(g=>row(GTX[g],all.filter(k=>GEN(MEETS.m[k][0])===g).length+'장',g+'기')).join('')}${row('지나간 증표',hallTok().length+'종','증표')}</div>
       <button type="button" class="go tsh" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩으로</button>
@@ -2165,6 +2168,8 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .pg.toc.now{gap:5px;padding-top:16px} #cx .pg.toc.now .tc2{font-size:19px} #cx .pg.toc.now .tc3{font-size:22px;line-height:1.1} #cx .pg.toc.now .tc3 b{font-size:30px} #cx .pg.toc.now .tc3 small{display:inline;margin-left:6px}
 #cx .pg.toc.now .tcl{gap:5px;margin-top:4px} #cx .pg.toc.now .trow{padding:6px 12px} #cx .pg.toc.now .tsh{margin-top:2px;padding:6px 14px}
 @media (max-height:720px){ #cx .pg.toc.now .tc1,#cx .pg.toc.now .tcr{display:none} #cx .pg.toc.now{padding-top:10px} }
+#cx .pg.toc.hall.now .hnote{font-size:11px;line-height:1.45;margin:0}
+#cx .pg.toc.hall.now .tsh{display:none} @media (max-height:720px){ #cx .pg.toc.hall.now .hnote{display:none} }
 #cx .lnow{max-width:440px;margin:4px 0 12px}
 #cx .tng figcaption{font-size:10.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #cx .tng .sl{aspect-ratio:5/7}
 #cx .book{touch-action:pan-y;user-select:none;-webkit-user-select:none}
