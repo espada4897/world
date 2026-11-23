@@ -1935,6 +1935,7 @@ function listView(){
   const who=WHO?`${esc(WHO)}님의`:'나의';
   box.innerHTML=top((WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="hall">📚 책미사 카드첩</button><button type="button" class="lnk" data-a="tobook">📖 앨범으로 보기</button>`)+
     `<h3>${who} 카드 <em>${n}</em> / ${OUR.length}</h3>
+    <div class="lnow">${nowRow(own)}</div>
     <p class="clead">${n?`${WHO?'책미사에서 함께 읽은 책':'읽은 책'}이 카드가 되었습니다. 빈칸은 아직 읽지 않은 책입니다. 누르면 무슨 책인지 보이고, 읽으면 열립니다.`:'아직 카드가 없어요. 빈칸을 눌러 책을 보고, 읽은 책은 [읽었어요]를 누르면 카드가 됩니다.'}</p>
     <div class="tally">${CQ.map((q,i)=>`<span title="${q}"><i style="color:${COL[i]};display:flex">${svg(i)}</i>${q} <b>${bySuit[i].filter(x=>own.has(x.k)).length}</b>/${bySuit[i].length}</span>`).join('')}</div>
     ${n?`<div class="rtally">${[3,2,1].map(l=>{ const c=[...own].filter(k=>rar(k).lv===l).length; return `<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${c}</b>장</span>`; }).join('<span>·</span>')}</div>`:''}
@@ -2164,6 +2165,7 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .pg.toc.now{gap:5px;padding-top:16px} #cx .pg.toc.now .tc2{font-size:19px} #cx .pg.toc.now .tc3{font-size:22px;line-height:1.1} #cx .pg.toc.now .tc3 b{font-size:30px} #cx .pg.toc.now .tc3 small{display:inline;margin-left:6px}
 #cx .pg.toc.now .tcl{gap:5px;margin-top:4px} #cx .pg.toc.now .trow{padding:6px 12px} #cx .pg.toc.now .tsh{margin-top:2px;padding:6px 14px}
 @media (max-height:720px){ #cx .pg.toc.now .tc1,#cx .pg.toc.now .tcr{display:none} #cx .pg.toc.now{padding-top:10px} }
+#cx .lnow{max-width:440px;margin:4px 0 12px}
 #cx .tng figcaption{font-size:10.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #cx .tng .sl{aspect-ratio:5/7}
 #cx .book{touch-action:pan-y;user-select:none;-webkit-user-select:none}
 #cx .trow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:9px 12px;font-size:13px;color:var(--ink);text-align:left}
