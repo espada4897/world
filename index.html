@@ -1716,7 +1716,7 @@ const dTx=(d,yr)=>{ const t=new Date(d+'T00:00:00'); return `${yr?t.getFullYear(
 // 모임 카드를 가진 사람 = 그 책의 모임에 와서 홈페이지 별자리에 기록된 회원(몇 번째인지는 근거가 없어 매기지 않음)
 // 인장(11/25 에스파다): 장르마다 하나, 1회 1단계 · 5회 2단계(단계는 둘만, 방장도 같음). 지원독서는 1단계만. 모임 카드 앞면에는 넣지 않고 '인장' 쪽에만
 const STP={'문학산책':'literature','지정독서':'curated','수요독서':'wednesday','경제독서':'economics','오프모임':'offline','한책읽기':'onebook','지원독서':'supported'};
-const STO=['문학산책','지정독서','경제독서','오프모임','수요독서','한책읽기','지원독서'], STOLD={'지원독서':1}, ST2={literature:1,curated:1};   // ST2 = 2단계 그림이 있는 장르(도스 그림이 오면 더함)
+const STO=['문학산책','지정독서','경제독서','오프모임','수요독서','한책읽기','지원독서'], STOLD={'지원독서':1}, ST2={literature:1,curated:1,economics:1,wednesday:1,offline:1};   // ST2 = 2단계 그림이 있는 장르(도스 그림이 오면 더함)
 function stampsOf(who){ const r={}; if(!who||!MEM[who]) return r;
   MEM[who].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])).forEach(k=>{ const [d,g]=MEETS.m[k]; if(!STP[g]) return;
     const x=r[g]||(r[g]={n:0,first:d,five:null,ks:[]}); x.n++; x.ks.push(k); if(x.n===5) x.five=d; }); return r; }
