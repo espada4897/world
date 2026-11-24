@@ -2019,7 +2019,7 @@ function bindSlots(root){
   root.querySelectorAll('[data-tk]').forEach(el=>el.onclick=()=>showCard({t:'tok',i:+el.dataset.tk},el));
   root.querySelectorAll('[data-m]').forEach(el=>el.onclick=()=>showCard({t:'meet',k:+el.dataset.m},el));
   root.querySelectorAll('[data-u]').forEach(el=>el.onclick=()=>showCard({t:'up',i:+el.dataset.u},el));
-  root.querySelectorAll('[data-st]').forEach(el=>el.onclick=()=>stampPeek(el.dataset.st));
+  root.querySelectorAll('[data-st]').forEach(el=>el.onclick=()=>showCard({t:'stamp',g:el.dataset.st},el));
   root.querySelectorAll('[data-a="zero"]').forEach(z=>z.onclick=()=>showCard({t:'zero'},z));
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
@@ -2102,11 +2102,16 @@ function stampPage(i){ const S=stampsOf(WHO), got=Object.keys(S).length, t2=STO.
     const ct=t===0?(old?'지난 장르':'아직 안 옴'):old||t===2?`${n}회`:`${n}회 · 2단계까지 ${5-n}`;
     return `<div class="sl"><button type="button" class="stc${t?'':' off'}" data-st="${g}" style="--gc:${MT[g].c}" aria-label="${g} 인장 ${t?t+'단계 '+n+'회':'잠김'}">${t?`<span class="sttg${t===1?' t1':''}">${t}단계</span>`:''}<img src="cardimg/stamp/${stFile(g,t)}" alt=""><b>${g}</b>${old?'':`<span class="stb"><i style="width:${Math.min(n,5)*20}%"></i></span>`}<small>${ct}</small>${t===2&&!ST2[STP[g]]?'<em>그림 준비 중</em>':''}</button></div>`; }).join('');
   return `<div class="pg stamp"><div class="pgh">인장 ${got} / 7${t2?` · 2단계 ${t2}`:''}</div><div class="pgg">${cells}<div class="sl stn"><b>인장은 모임에 온 만큼 자라요</b>1회 오면 1단계, 5회 오면 2단계. 지원독서는 지금 열리지 않는 지난 장르예요.</div></div><div class="pgf">${i+1}</div></div>`; }
-function stampPeek(g){ const x=stampsOf(WHO)[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g];
-  const nx=t===0?(old?'지원독서는 지금 열리지 않아요. 지난 모임에 온 분만 가진 인장이에요.':`${g} 모임에 한 번 오면 1단계 인장이 생겨요.`):old?'지원독서는 1단계까지만 있어요.':t===1?`${5-n}번 더 오면 2단계로 자라요.`:`가장 높은 단계예요. ${n}번 함께했어요.`;
-  const stg=(k,on)=>`<span class="sgs${on?' on':''}"><img src="cardimg/stamp/${stFile(g,k)}" alt=""><i>${k}단계</i></span>`;
-  selBar(`<div class="bt stp" style="--gc:${MT[g].c}"><img class="sti${t?'':' off'}" src="cardimg/stamp/${stFile(g,t)}" alt="${g} 인장"><div class="stx"><span style="color:${MT[g].c}">◎ ${g} 인장</span> · ${t?t+'단계':'잠김'}${t===2&&!ST2[STP[g]]?' (그림 준비 중)':''} · ${n}회<br>${x?`<small>처음 받은 날 ${dTx(x.first,true)}${x.five&&!old?` · 2단계 된 날 ${dTx(x.five,true)}`:''}</small><br>`:''}${nx}<span class="sgr">${stg(1,t>=1)}${old?'':stg(2,t>=2)+`<span class="sgs nx"><img src="cardimg/stamp/${STP[g]}_tier1.png" alt=""><i>다음 · 아직 정하지 않음</i></span>`}</span></div></div><button type="button" data-a="x">✕</button>`);
-  barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); if(window.__ev) __ev('카드/인장 봄'); }
+// 인장 크게 보기(11/25 에스파다: 크게 보고 싶다, 1단계·2단계 모습도): 카드 크게 보기와 같은 화면, 아래 단추로 단계를 바꿔 본다
+// 아직 받지 않은 단계도 색 그대로 보여 준다(무엇으로 자라는지 보이게). 2단계 그림이 아직 없으면 1단계 그림 + '그림 준비 중'
+function bigStamp(g,k){ const x=stampsOf(WHO)[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g], art=k===1||ST2[STP[g]];
+  const cap=k<=t?(k===t?'지금 이 모습':'지나온 모습'):k===1?(old?'지난 모임에 온 분만 받은 모습':'한 번 오면 받는 모습'):'5회가 되면 자라는 모습';
+  const line=t===0?`아직 받지 않았어요. ${old?'지원독서는 지금 열리지 않아요.':`${g} 모임에 한 번 오면 생겨요.`}`
+    :`${n}번 함께했어요 · 처음 받은 날 ${dTx(x.first,true)}${x.five&&!old?`<br>2단계 된 날 ${dTx(x.five,true)}`:''}<br><small>${old?'지원독서는 1단계까지만 있어요.':t===1?`${5-n}번 더 오면 2단계로 자라요.`:'가장 높은 단계예요.'}</small>`;
+  return `<div class="sf sgenre" style="--mc:${MT[g].c};--md:${MT[g].d}"><div class="shd"><span class="sno">${g}</span><span class="srn">${k}단계 · ${cap}</span></div>
+    <div class="ssi"><img src="cardimg/stamp/${STP[g]}_tier${art?k:1}_l.webp" alt="${g} 인장 ${k}단계"></div>
+    ${art?'':'<div class="sswip">2단계 그림 준비 중 · 지금은 1단계 그림</div>'}
+    <div class="stt">${g} 인장</div><div class="sln">${line}</div></div>`; }
 const two=()=>innerWidth>760;
 function cvSym(){ const r=15.5; return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width=".8"/>'+
   SYM.map((p,i)=>{ const a=i/8*Math.PI*2-Math.PI/2, x=50+35.5*Math.cos(a)-5, y=50+35.5*Math.sin(a)-5; return `<svg x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="10" height="10" viewBox="0 0 40 40" style="color:${COL[i]}">${p}</svg>`; }).join('')+
@@ -2301,14 +2306,11 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .plk{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px dashed rgba(240,198,116,.35);background:rgba(240,198,116,.03);border-radius:7px;padding:6px;font-size:11px;line-height:1.4;color:var(--ink-dim);text-align:center;cursor:pointer}
 #cx .plk span{font-size:18px} #cx .plk small{font-size:9.5px;color:var(--ink-faint)}
 #cx .pg.toc:not(.hall) .tc2{margin-top:auto}
-#cx .bar .stp{display:flex;gap:12px;align-items:flex-start}
-#cx .bar .sti{width:72px;height:72px;object-fit:contain;flex:none} #cx .bar .sti.off{filter:grayscale(1) brightness(.45);opacity:.6}
-#cx .bar .stx{min-width:0}
-#cx .bar .sgr{display:flex;gap:8px;margin-top:6px}
-#cx .bar .sgs{display:grid;justify-items:center;gap:1px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;font-size:10px;color:var(--ink-faint);min-width:58px}
-#cx .bar .sgs img{width:32px;height:32px;object-fit:contain;filter:grayscale(1) brightness(.45);opacity:.55} #cx .bar .sgs i{font-style:normal}
-#cx .bar .sgs.on{border-color:var(--gc);color:var(--ink)} #cx .bar .sgs.on img{filter:none;opacity:1}
-#cx .bar .sgs.nx{border-style:dashed} #cx .bar .sgs.nx img{filter:grayscale(1) blur(2px) brightness(.4);opacity:.4}
+#cxs .sgenre{display:flex;flex-direction:column;align-items:center;gap:1.6cqw;padding:13cqw 6cqw 6cqw;text-align:center;border:1.5px solid color-mix(in srgb,var(--mc) 55%,transparent);background:radial-gradient(85% 55% at 50% 36%,color-mix(in srgb,var(--mc) 26%,transparent),transparent 72%),linear-gradient(170deg,var(--md),#0a0d1a)}
+#cxs .ssi{width:86cqw;aspect-ratio:1;display:grid;place-items:center} #cxs .ssi img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2cqw 5cqw rgba(0,0,0,.55))}
+#cxs .sgenre .stt{color:var(--mc)} #cxs .sgenre .sln{border:0;padding:0;margin:0;text-align:center;font-size:3.7cqw} #cxs .sgenre .sln small{font-size:3.3cqw;color:var(--ink-dim)}
+#cxs .sswip{font-size:3.1cqw;color:var(--ink-faint);margin-top:-1cqw}
+#cxs .sstg{display:inline-flex;gap:8px} #cxs .sstg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
 #cxs .snote.stn2{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--gold)} #cxs .snote.stn2 img{width:28px;height:28px;object-fit:contain}
 `; document.head.appendChild(st3); }
 
@@ -2454,6 +2456,10 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askT
     front=bigMeet(x.d,x.m,x.t,null,`이날 모임에 온 사람만 받는 카드. 모임이 끝나고 홈페이지 별자리에 기록되면 카드첩에 들어오고, 그 뒤로는 다시 만들어지지 않아요.<br><small>처음 오시는 분은 무료로 함께할 수 있어요.</small>`,true);
     back=bigBack(mtOf(x.m).c,mtSvg(x.m),esc(x.m),true);
     acts=`<a class="go" href="https://chaekmisa.com" target="_blank" rel="noopener" data-s="go">책미사 모임 보기 ↗</a>`; if(window.__ev) __ev('카드/다가오는 모임 카드 봄');
+  } else if(o.t==='stamp'){ const g=o.g, t=stTier(g,stampsOf(WHO)[g]), k=t||1;
+    front=bigStamp(g,k); back=bigBack(MT[g].c,'◎',esc(g)+' 인장');
+    if(!STOLD[g]) acts=`<span class="sstg">${[1,2].map(j=>`<button type="button" data-s="st${j}" aria-pressed="${j===k}">${j}단계${j<=t?' ✓':''}</button>`).join('')}</span>`;
+    if(window.__ev) __ev('카드/인장 봄');
   } else if(o.t==='tok'){ const t=TOK[o.i]; if(!t) return; front=bigTok(t); back=t.kind==='완독증'?bigBack('#e9d3a0',ktSvg(t.kind),'완독증'):bigBack(ktOf(t.kind).c,ktSvg(t.kind),ktOf(t.kind).g+' 카드'); if(window.__ev) __ev('카드/'+t.kind+' 카드 봄');
   } else if(o.t==='zero'){ const [ln,lc]=zeroInfo(own), left=OUR.length-own.size; front=bigZero(own); back=bigBack('#f0c674','✦','No.000');
     acts=`<span class="snote">${left>0?`${WHO!==null?`${WHO?esc(WHO)+'님':'당신'}은 ${left}칸 남았어요 · `:''}지금 가장 가까운 사람 ${esc(ln)} ${lc}/${OUR.length}`:'171칸을 모두 채웠어요'}</span>`; if(window.__ev) __ev('카드/No.000 봄'); }
@@ -2461,6 +2467,7 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askT
   sIn.innerHTML=back+front; sActs.innerHTML=acts+`<button type="button" data-s="x">닫기</button>`;
   sActs.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ const a=b.dataset.s;
     if(a==='x') return hideCard();
+    if(a==='st1'||a==='st2'){ const f=sIn.querySelector('.sgenre'); if(f) f.outerHTML=bigStamp(o.g,+a[2]); sActs.querySelectorAll('[data-s^="st"]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.s===a))); return; }
     if(a==='sel'){ toggleSel(o.k); return hideCard(); }
     if(a==='go'){ if(window.__ev) __ev('카드/다가오는 모임 → 책미사'); return; }
     if(a==='wish'||a==='read'){ hideCard(true); peek(o.k); const t=barIn.querySelector(`[data-a="${a}"]`); if(t) t.click(); } });
