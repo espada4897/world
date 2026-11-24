@@ -1,6 +1,6 @@
 // 책미사 바인더: 인터넷이 끊겨도 마지막으로 본 카드첩이 열리게.
 // 카드첩 자체는 늘 새로 받아 보고(새 카드가 바로 보이게), 안 되면 저장해 둔 것을 연다. 그림은 저장해 둔 것을 먼저.
-const C='binder-1e391fdd20';
+const C='binder-b1e1bd0773';
 self.addEventListener('install',e=>{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c=>c.addAll(['./','./manifest.webmanifest','./icon-192.png']).catch(()=>{}))); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('binder-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
 self.addEventListener('fetch',e=>{ const r=e.request; if(r.method!=='GET') return; const u=new URL(r.url);
