@@ -410,11 +410,9 @@ function meetCard(k,o){ o=o||{}; const [d,m]=MEETS.m[k], h=holders(k), got=o.hal
     if(A&&A.full) return `<button type="button" class="mc mt0 mart mfull${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d};--ab:${A.bg}" title="${esc(OUR[k].t)} · ${d} ${m}" aria-label="『${esc(OUR[k].t)}』 ${d} ${m} 모임 카드">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<img class="maf" src="../cardimg/m${d}fs.jpg" alt="" loading="lazy"></button>`;
     if(A) return `<button type="button" class="mc mt0 mart${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d};--ab:${A.bg}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<img class="mai" src="../cardimg/m${d}s.jpg" alt="" loading="lazy"><span class="mad">${dTx(d,true)}</span><span class="mab">『${esc(OUR[k].t)}』</span></button>`;
     return `<button type="button" class="mc mt0${got?' got':''}" data-m="${k}" style="--mc:${T.c};--md:${T.d}" title="${esc(OUR[k].t)} · ${d} ${m}">${o.first?'<span class="fst">첫 장</span>':''}${got?'<span class="gotm">★ 받음</span>':''}<span class="mi">${mtSvg(m)}</span><span class="md">${dTx(d,true)}</span><span class="mm">${esc(m)}</span><span class="mb">『${esc(OUR[k].t)}』</span><span class="ms">${msTx(k)}</span></button>`; }
-// 11/25 에스파다 C안: 내 모임 카드 = 장르 색 액자 + 아래 가운데 인장 걸쇠. 인장 단계는 그 모임 당시(1~4회째 1단계, 5회째부터 2단계). 카드 그림은 그대로, 액자 위 장르 이름 없음
+// 11/25 에스파다 C안: 모임 카드를 크게 볼 때만 장르 색 액자 + 아래 가운데 인장 걸쇠(칸에서는 카드만 — 모아 볼 때 어수선해서). 인장 단계는 그 모임 당시(1~4회째 1단계, 5회째부터 2단계). 액자 위 장르 이름 없음
 function stAt(k){ if(HALL||!WHO||!MEM[WHO]||!MEM[WHO].includes(k)||!MEETS.m[k]) return null; const g=MEETS.m[k][1]; if(!STP[g]) return null;
   const x=stampsOf(WHO)[g], ix=x?x.ks.indexOf(k):-1; return ix<0?null:{g,ix,t:ix>=4&&!STOLD[g]?2:1}; }
-function meetSlot(k,o){ const c=meetCard(k,o), a=o&&o.hall?null:stAt(k); if(!a) return c; const T=mtOf(a.g);
-  return `<div class="cmt" style="--mc:${T.c};--md:${T.d}">${c}<button type="button" class="cms" data-st="${a.g}" data-sk="${a.t}" aria-label="${a.g} 인장 ${a.t}단계 · ${a.ix+1}회째"><img src="../cardimg/stamp/${stFile(a.g,a.t)}" alt=""></button></div>`; }
 function upCard(x,i){ if(x.seal) return `<button type="button" class="mc mtg sealed" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="봉인된 카드 · ${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="wx">${waxSvg()}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">봉인됨</span></button>`;
   return `<button type="button" class="mc mtg" data-u="${i}" style="--mc:${mtOf(x.m).c};--md:${mtOf(x.m).d}" title="${esc(x.t)} · ${x.d}"><span class="mi">${mtSvg(x.m)}</span><span class="md">${dTx(x.d)}</span><span class="mm">${esc(x.m)}</span><span class="mb">『${esc(x.t)}』</span><span class="ms">이날 온 사람만</span></button>`; }
 function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall&&WHO&&tokSame(t).some(x=>x.who===WHO);
@@ -468,7 +466,7 @@ function hallPages(){ const P=[{t:'toc',hall:1}], all=hallAll();
   return P; }
 function noteSlot(w){ return `<button type="button" class="mc note" data-a="hall"><span class="nt1">${w==='meet'?'첫 장':'증표 칸'}</span><span class="nt2">${w==='meet'?'처음 모임에 온 날의<br>카드가 여기 꽂혀요':'챌린지를 마치거나<br>완독하면 여기 꽂혀요'}</span><span class="nt3">지나간 카드 보기 ›</span></button>`; }
 function slotOf(o,own){ if(o==='z') return zeroSlot(own); if(typeof o==='number') return slotCard(o,own.has(o));
-  if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.note) return noteSlot(o.note); if(o.m!=null) return meetSlot(o.m,o); if(o.tk) return tokCard(o.tk,o); if(o.j) return jokerSlot(o.j);
+  if(o.u!=null){ const x=upcoming()[o.u]; return x?upCard(x,o.u):''; } if(o.note) return noteSlot(o.note); if(o.m!=null) return meetCard(o.m,o); if(o.tk) return tokCard(o.tk,o); if(o.j) return jokerSlot(o.j);
   return `<button type="button" class="mc add" data-a="jadd"><span><b>+</b>밖에서 읽은 책으로<br>조커 만들기</span></button>`; }
 // 첫 쪽 '지금' 칸(11/23 에스파다): 다음 모임 · 가장 최근 모임 카드 · 가장 새 책 카드를 첫 쪽에서 바로. 뒤쪽 카드첩 순서(날짜순·번호순)는 그대로
 // 책미사 카드첩(모두의 것)에서는 '모두의 지금': 다음 모임 · 책미사의 가장 최근 모임 카드 · 책미사가 가장 최근에 함께 읽은 책
@@ -477,7 +475,7 @@ function nowRow(own,hall){ const it=[], up=upcoming();
     const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[], S=stampsOf(WHO);
     let ns=null; Object.entries(S).forEach(([g,x])=>[[x.first,1],[!STOLD[g]&&x.five,2]].forEach(([d,t])=>{ if(d&&(!ns||d>ns.d||(d===ns.d&&t>ns.t))) ns={g,d,t}; }));
     const band=up.length?`<button type="button" class="tnx" data-u="0"><span class="tnd">${up[0].d.slice(5).replace('-','. ')}</span><span><b>다음 모임</b> · ${esc(up[0].m)}<br>『${esc(up[0].t)}』</span></button>`:'';
-    if(mine.length) it.push(['최근 모임 카드',meetSlot(mine[0],{}),1]);
+    if(mine.length) it.push(['최근 모임 카드',meetCard(mine[0],{}),1]);
     const nb=[...own].sort((a,b)=>NO[b]-NO[a])[0]; if(nb!=null) it.push(['새 책 카드',slotCard(nb,true)]);
     if(ns) it.push(['최근 인장',`<button type="button" class="stnow" data-st="${ns.g}" aria-label="${ns.g} 인장 ${ns.t}단계"><img src="../cardimg/stamp/${stFile(ns.g,ns.t)}" alt=""></button>`]);
     const line=ns&&mine.length&&ns.d===MEETS.m[mine[0]][0]?`<div class="tnl">${ns.t===2?`${ns.g} 5회째, 인장이 2단계로 자랐어요.`:`${ns.g} 인장을 처음 받았어요.`}</div>`:'';
@@ -636,12 +634,6 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .sl::after{content:"";position:absolute;inset:0;border-radius:7px;pointer-events:none;z-index:3;background:linear-gradient(118deg,rgba(255,255,255,.13),rgba(255,255,255,0) 32%,rgba(255,255,255,0) 62%,rgba(255,255,255,.06));box-shadow:inset 0 9px 0 -8px rgba(255,255,255,.22)}
 #cx .sl>.mc{width:100%;height:100%;aspect-ratio:auto;box-sizing:border-box}
 #cx .sl>.mc.own:hover,#cx .sl>.mc.mt0:hover{transform:translateY(-2px)}
-#cx .sl>.cmt{position:absolute;inset:0;border-radius:7px;background:radial-gradient(120% 60% at 50% 0,color-mix(in srgb,var(--mc) 22%,transparent),transparent 60%),linear-gradient(170deg,color-mix(in srgb,var(--md) 85%,#000),#07090f);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--mc) 50%,transparent),inset 0 0 0 3px #0a0c16,inset 0 0 0 4px rgba(240,198,116,.4)}
-#cx .cmt>.mc{position:absolute;left:9%;top:3.5%;width:82%;height:auto;aspect-ratio:5/7;border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.6)}
-#cx .cmt>.mc:hover{transform:translateY(-2px)}
-#cx .cms{all:unset;cursor:pointer;position:absolute;z-index:4;left:50%;top:86.5%;transform:translate(-50%,-50%);width:27%;aspect-ratio:1;display:grid;place-items:center}
-#cx .cms img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))} #cx .cms:hover{transform:translate(-50%,-50%) scale(1.08)}
-#cx .cms:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:50%}
 #cx .pg.toc{align-items:center;text-align:center;gap:8px;padding-top:26px;background:radial-gradient(90% 60% at 50% 20%,rgba(240,198,116,.08),transparent 70%),linear-gradient(180deg,#161c31,#10152a)}
 #cx .tc1{font-size:11px;letter-spacing:.3em;color:var(--gold)} #cx .tc2{font-family:var(--f-display);font-size:22px;font-weight:700}
 #cx .tc3{font-family:var(--f-display);font-size:30px;color:var(--ink-dim)} #cx .tc3 b{color:var(--gold);font-size:40px} #cx .tc3 small{display:block;font-family:var(--f-body);font-size:11px;color:var(--ink-faint)}
