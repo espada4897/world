@@ -1714,6 +1714,14 @@ const noTx=k=>String(NO[k]).padStart(3,'0');
 const WD='일월화수목금토';
 const dTx=(d,yr)=>{ const t=new Date(d+'T00:00:00'); return `${yr?t.getFullYear()+'.':''}${t.getMonth()+1}.${t.getDate()}(${WD[t.getDay()]})`; };
 // 모임 카드를 가진 사람 = 그 책의 모임에 와서 홈페이지 별자리에 기록된 회원(몇 번째인지는 근거가 없어 매기지 않음)
+// 인장(11/25 에스파다): 장르마다 하나, 1회 1단계 · 5회 2단계(단계는 둘만, 방장도 같음). 지원독서는 1단계만. 모임 카드 앞면에는 넣지 않고 '인장' 쪽에만
+const STP={'문학산책':'literature','지정독서':'curated','수요독서':'wednesday','경제독서':'economics','오프모임':'offline','한책읽기':'onebook','지원독서':'supported'};
+const STO=['문학산책','지정독서','경제독서','오프모임','수요독서','한책읽기','지원독서'], STOLD={'지원독서':1}, ST2={literature:1};   // ST2 = 2단계 그림이 있는 장르(도스 그림이 오면 더함)
+function stampsOf(who){ const r={}; if(!who||!MEM[who]) return r;
+  MEM[who].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])).forEach(k=>{ const [d,g]=MEETS.m[k]; if(!STP[g]) return;
+    const x=r[g]||(r[g]={n:0,first:d,five:null,ks:[]}); x.n++; x.ks.push(k); if(x.n===5) x.five=d; }); return r; }
+const stTier=(g,x)=>!x?0:(x.n>=5&&!STOLD[g])?2:1;
+const stFile=(g,t)=>`${STP[g]}_${t===2&&ST2[STP[g]]?'tier2':'tier1'}.png`;
 // 11/25 에스파다: 장르 색 = 인장 그림 바탕색 계열(c 밝게, d 어둡게). 출처: 모임카드/장르인장성장시스템패키지v0.1 manifest
 const MT={
   '문학산책':{c:'#d49bc4',d:'#2d1626',p:'<path d="M28 6c-9 2-16 10-17 22l-3 6 5-3c11-1 18-9 19-18-3 1-6 1-8 0 2-2 4-4 4-7z" fill="currentColor"/>',w:'문학과 고전만 함께 걷는 모임'},
@@ -1926,8 +1934,15 @@ const frontHTML=b=>{ if(b.joker) return `<div class="face front joker"><div clas
   const r=rar(n);
   return `<div class="face front ${b.k==='land'?'land':'law'} r${r.lv}"><span class="rr l${r.lv}">${r.g} ${r.nm}</span>${picHTML(n,b)}<div class="txt"><div class="kind">No.${noTx(n)} · ${b.k==='land'?'땅 · 이야기':'법칙 · 생각'}<span class="su">${qOf(b).map(q=>`<i style="color:${COL[q]}" title="${CQ[q]}">${svg(q)}</i>`).join('')}</span></div><div class="t">${esc(b.t)}</div><div class="a">${esc(b.a||'')}</div><div class="s">${esc(b.s||'')}</div></div></div>`; };
 const top=(extra)=>`<div class="ctop"><span class="ceb">책미사 너머 · 내 카드</span>${extra||''}<button class="cclose" data-a="close">닫기 ✕</button></div>`;
+// 11/25 에스파다(카드첩 정리): 위쪽 버튼 셋(다른 사람이에요 · 책미사 카드첩 · 한눈에 보기)을 ⋯ 하나에
+function menuHTML(){ return `<span class="cmw"><button type="button" class="cmb" data-a="menu" aria-label="메뉴" aria-expanded="false">⋯</button><span class="cmenu" hidden>
+  <button type="button" data-a="hall">📚 책미사 카드첩<small>지나간 모임 카드 ${hallAll().length}장 · 모두의 기록</small></button>
+  <button type="button" data-a="tolist">☰ 한눈에 보기<small>쪽 넘김 없이 목록으로</small></button>
+  ${WHO!==null?`<button type="button" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}<small>${WHO?'이름 바꾸기':'이름 고르기'}</small></button>`:''}</span></span>`; }
 function bindTop(){ const c=box.querySelector('[data-a="close"]'); if(c) c.onclick=close; const w=box.querySelector('[data-a="who"]'); if(w) w.onclick=()=>{ SEL=[]; whoView(); }; const al=box.querySelector('[data-a="album"]'); if(al) al.onclick=()=>albumView();
-  box.querySelectorAll('.ctop [data-a="hall"],.ctop [data-a="mine"],.trow.hrow').forEach(a=>a.onclick=()=>openHall(a.dataset.a==='hall')); }
+  box.querySelectorAll('.ctop [data-a="hall"],.ctop [data-a="mine"],.trow.hrow').forEach(a=>a.onclick=()=>openHall(a.dataset.a==='hall'));
+  const mb=box.querySelector('[data-a="menu"]'); if(mb){ const mn=box.querySelector('.cmenu'); mb.onclick=e=>{ e.stopPropagation(); mn.hidden=!mn.hidden; mb.setAttribute('aria-expanded',String(!mn.hidden)); };
+    box.addEventListener('click',e=>{ if(!mn.hidden&&!e.target.closest('.cmw')){ mn.hidden=true; mb.setAttribute('aria-expanded','false'); } }); } }
 
 // ① 누구세요
 function whoView(){ bar.hidden=true; HALL=false;
@@ -2004,6 +2019,7 @@ function bindSlots(root){
   root.querySelectorAll('[data-tk]').forEach(el=>el.onclick=()=>showCard({t:'tok',i:+el.dataset.tk},el));
   root.querySelectorAll('[data-m]').forEach(el=>el.onclick=()=>showCard({t:'meet',k:+el.dataset.m},el));
   root.querySelectorAll('[data-u]').forEach(el=>el.onclick=()=>showCard({t:'up',i:+el.dataset.u},el));
+  root.querySelectorAll('[data-st]').forEach(el=>el.onclick=()=>stampPeek(el.dataset.st));
   root.querySelectorAll('[data-a="zero"]').forEach(z=>z.onclick=()=>showCard({t:'zero'},z));
   root.querySelectorAll('[data-a="jadd"]').forEach(a=>a.onclick=jokerForm);
   root.querySelectorAll('[data-a="go"]').forEach(a=>a.onclick=()=>turn(+a.dataset.p));
@@ -2014,17 +2030,19 @@ function bindSlots(root){
     showCard(el.classList.contains('not')?{t:'not',k}:{t:'own',k},el); }); }
 const chunk=(a,n)=>{ const r=[]; for(let i=0;i<a.length;i+=n) r.push(a.slice(i,i+n)); return r.length?r:[[]]; };
 function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc'}];
-  const dex=['z',...OUR.map((_,k)=>k).sort((a,b)=>NO[a]-NO[b])];
-  chunk(dex,9).forEach((xs,i)=>P.push({t:'dex',xs,tab:i?null:'도감',h:`도감 · 지정 칸 · No.${String(i*9).padStart(3,'0')} – ${String(Math.min(i*9+8,OUR.length)).padStart(3,'0')}`}));
+  // 11/25 에스파다(카드첩 정리): 탭 = 지금 · 모임 · 인장 · 도감 · 증표. '다음 칸' 탭은 없앰(다음 모임은 지금 쪽 위 칸과 모임 쪽 마지막 칸에)
   // 자유 칸: 처음 온 날부터 받은 순서대로 꽂히고, 맨 뒤 빈칸은 다가오는 모임뿐
   const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])):[];
   const ms=[...(mine.length?[]:[{note:'meet'}]),...mine.map((k,i)=>({m:k,first:i===0})),...upcoming().map((x,i)=>({u:i}))];
-  const mp=chunk(ms,9), upAt=mp.findIndex(xs=>xs.some(o=>o.u!=null));
-  mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':i===upAt?'다음 칸':null,h:i?'모임 카드 · 자유 칸 · 이어서':'모임 카드 · 자유 칸 · 받은 순서대로'}));
+  const mp=chunk(ms,9);
+  mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':null,last:i===mp.length-1,h:`모임 카드 ${mine.length}장`}));
+  P.push({t:'stamp',tab:'인장'});
+  const dex=['z',...OUR.map((_,k)=>k).sort((a,b)=>NO[a]-NO[b])];
+  chunk(dex,9).forEach((xs,i)=>P.push({t:'dex',xs,tab:i?null:'도감',h:`도감 No.${String(i*9).padStart(3,'0')}–${String(Math.min(i*9+8,OUR.length)).padStart(3,'0')}${i?'':` · ${own.size} / ${OUR.length}`}`}));
   const tk=WHO?TOK.filter(t=>t.who===WHO).sort((a,b)=>a.date.localeCompare(b.date)):[];
-  chunk(tk.length?tk.map(t=>({tk:t})):[{note:'tok'}],9).forEach((xs,i)=>P.push({t:'tok',xs,tab:i?null:'증표·주문',h:'증표 · 주문 카드 · 자유 칸'}));
-  // 바인더 앱에서는 조커를 만들지 않는다(너머 우주에서) — 가진 조커가 있을 때만 쪽을 둔다
-  if(!window.BINDER||jokers().length) chunk([...jokers().map(j=>({j})),...(window.BINDER?[]:[{add:1}])],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:i?null:'조커',h:'조커 · 책미사 밖에서 읽은 책'}));
+  chunk(tk.length?tk.map(t=>({tk:t})):[{note:'tok'}],9).forEach((xs,i)=>P.push({t:'tok',xs,tab:i?null:'증표',h:`증표 · 주문 카드 ${tk.length}장`}));
+  // 바인더 앱에서는 조커를 만들지 않는다(너머 우주에서) — 가진 조커가 있을 때만 증표 탭 뒤에 둔다
+  if(!window.BINDER||jokers().length) chunk([...jokers().map(j=>({j})),...(window.BINDER?[]:[{add:1}])],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:null,h:`조커 ${jokers().length}장 · 책미사 밖에서 읽은 책`}));
   return P; }
 // 책미사 카드첩: 모두의 것. 지나간 모임 카드와 증표가 날짜순으로 한 권에
 function hallTok(){ const seen=new Set(); return TOK.filter(t=>!t.ex&&ktOf(t.kind).g==='증표').sort((a,b)=>a.date.localeCompare(b.date)).filter(t=>{ const key=t.kind+'|'+t.name+'|'+t.term; if(seen.has(key)) return false; seen.add(key); return true; }); }
@@ -2040,6 +2058,15 @@ function slotOf(o,own){ if(o==='z') return zeroSlot(own); if(typeof o==='number'
 // 첫 쪽 '지금' 칸(11/23 에스파다): 다음 모임 · 가장 최근 모임 카드 · 가장 새 책 카드를 첫 쪽에서 바로. 뒤쪽 카드첩 순서(날짜순·번호순)는 그대로
 // 책미사 카드첩(모두의 것)에서는 '모두의 지금': 다음 모임 · 책미사의 가장 최근 모임 카드 · 책미사가 가장 최근에 함께 읽은 책
 function nowRow(own,hall){ const it=[], up=upcoming();
+  if(!hall){   // 11/25 카드첩 정리: 다음 모임은 위 한 줄, 아래 세 칸은 같은 크기(최근 모임 카드 · 새 책 카드 · 최근 인장), 최근 모임 카드 이름표만 금색
+    const mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[], S=stampsOf(WHO);
+    let ns=null; Object.entries(S).forEach(([g,x])=>[[x.first,1],[!STOLD[g]&&x.five,2]].forEach(([d,t])=>{ if(d&&(!ns||d>ns.d||(d===ns.d&&t>ns.t))) ns={g,d,t}; }));
+    const band=up.length?`<button type="button" class="tnx" data-u="0"><span class="tnd">${up[0].d.slice(5).replace('-','. ')}</span><span><b>다음 모임</b> · ${esc(up[0].m)}<br>『${esc(up[0].t)}』</span></button>`:'';
+    if(mine.length) it.push(['최근 모임 카드',meetCard(mine[0],{}),1]);
+    const nb=[...own].sort((a,b)=>NO[b]-NO[a])[0]; if(nb!=null) it.push(['새 책 카드',slotCard(nb,true)]);
+    if(ns) it.push(['최근 인장',`<button type="button" class="stnow" data-st="${ns.g}" aria-label="${ns.g} 인장 ${ns.t}단계"><img src="cardimg/stamp/${stFile(ns.g,ns.t)}" alt=""></button>`]);
+    const line=ns&&mine.length&&ns.d===MEETS.m[mine[0]][0]?`<div class="tnl">${ns.t===2?`${ns.g} 5회째, 인장이 2단계로 자랐어요.`:`${ns.g} 인장을 처음 받았어요.`}</div>`:'';
+    return band||it.length?`<div class="tnow">${band}${it.length?`<div class="tng">${it.map(([l,h,g])=>`<figure><figcaption${g?' class="gold"':''}>${l}</figcaption><div class="sl">${h}</div></figure>`).join('')}</div>`:''}${line}</div>`:''; }
   if(up.length) it.push(['다음 모임',upCard(up[0],0)]);
   const mine=hall?hallAll().reverse():WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).sort((a,b)=>MEETS.m[b][0].localeCompare(MEETS.m[a][0])):[];
   if(mine.length) it.push([hall?'최근 모임':'최근 모임 카드',meetCard(mine[0],hall?{hall:1}:{})]);
@@ -2057,30 +2084,42 @@ function pageHTML(P,i,own){ const pg=P[i];
       <div class="tcl">${[1,2,3].map(g=>row(GTX[g],all.filter(k=>GEN(MEETS.m[k][0])===g).length+'장',g+'기')).join('')}${row('지나간 증표',hallTok().length+'종','증표')}</div>
       <button type="button" class="go tsh" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩으로</button>
       <div class="pgf">1</div></div>`; }
-  if(pg.t==='toc'){ const n=own.size, JK=jokers(), mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).length:0, tk=WHO?TOK.filter(t=>t.who===WHO).length:0;
-    const row=(lab,val,tab)=>{ const at=P.findIndex(x=>x.tab===tab); return at<0?'':`<button type="button" class="trow" data-a="go" data-p="${at}"><span>${lab}</span><b>${val}</b><i>${at+1}쪽 ›</i></button>`; };
-    const NOW=nowRow(own);
-    return `<div class="pg toc${NOW?' now':''}"><div class="tc1">책미사 너머 · 카드첩</div><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
-      <div class="tc3"><b>${n}</b> / ${OUR.length}<small>모은 책 카드</small></div>
-      <div class="tcr">${[3,2,1].map(l=>`<span>${l===3?'✦✦✦ 희귀':l===2?'✦✦ 드묾':'✦ 흔함'} <b>${[...own].filter(k=>rar(k).lv===l).length}</b></span>`).join('')}</div>
+  if(pg.t==='toc'){ const n=own.size, JK=jokers(), mine=WHO&&MEM[WHO]?MEM[WHO].filter(k=>MEETS.m[k]).length:0, sn=Object.keys(stampsOf(WHO)).length;
+    const NOW=nowRow(own);   // 11/25 카드첩 정리: 머리는 이름 + 숫자 한 줄. 목록 줄은 아래 탭·⋯ 메뉴와 겹쳐 없앰, 희귀도는 도감 쪽에
+    return `<div class="pg toc${NOW?' now':''}"><div class="tc2">${WHO?esc(WHO)+'님의':'나의'} 카드첩</div>
+      <div class="tcn">모임 카드 <b>${mine}</b> · 인장 <b>${sn}</b> · 책 카드 <b>${n}</b> / ${OUR.length}</div>
       ${NOW}
-      <div class="tcl">${row('번호순 도감',`${n}/${OUR.length}`,'도감')}${row('모임 카드',mine+'장','모임')}${row('증표 · 주문 카드',tk+'장','증표·주문')}${window.BINDER&&!JK.length?'':row('조커',JK.length+'장','조커')}<button type="button" class="trow hrow" data-a="hall"><span>📚 책미사 카드첩 · 지나간 카드</span><b>${hallAll().length}장</b><i>열기 ›</i></button></div>
-      <button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>
+      ${window.BINDER?'':`<button type="button" class="go tsh" data-a="shuffle" ${n+JK.length>=3?'':'disabled'}>🂠 섞어서 세 장 뽑기</button>`}
       <div class="pgf">1</div></div>`; }
-  const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length);
+  if(pg.t==='stamp') return stampPage(i);
+  // 모임 쪽 마지막 빈칸 = 책미사 카드첩(지나간 모임 카드)으로 가는 칸(11/25 카드첩 정리)
+  const hl=pg.t==='meet'&&pg.last&&!HALL&&pg.xs.length<9;
+  const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length-(hl?1:0))+(hl?'<div class="sl"><button type="button" class="plk" data-a="hall"><span>📚</span>지나간 모임 카드<br>보기 ›<small>책미사 카드첩</small></button></div>':'');
   return `<div class="pg ${pg.t}"><div class="pgh">${pg.h}</div><div class="pgg">${cells}</div><div class="pgf">${i+1}</div></div>`; }
+// 인장 쪽: 열리는 여섯 장르 위 두 줄, 지원독서는 아랫줄 첫 칸, 남은 두 칸은 한 줄 설명
+function stampPage(i){ const S=stampsOf(WHO), got=Object.keys(S).length, t2=STO.filter(g=>stTier(g,S[g])===2).length;
+  const cells=STO.map(g=>{ const x=S[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g];
+    const ct=t===0?(old?'지난 장르':'아직 안 옴'):old||t===2?`${n}회`:`${n}회 · 2단계까지 ${5-n}`;
+    return `<div class="sl"><button type="button" class="stc${t?'':' off'}" data-st="${g}" style="--gc:${MT[g].c}" aria-label="${g} 인장 ${t?t+'단계 '+n+'회':'잠김'}">${t?`<span class="sttg${t===1?' t1':''}">${t}단계</span>`:''}<img src="cardimg/stamp/${stFile(g,t)}" alt=""><b>${g}</b>${old?'':`<span class="stb"><i style="width:${Math.min(n,5)*20}%"></i></span>`}<small>${ct}</small>${t===2&&!ST2[STP[g]]?'<em>그림 준비 중</em>':''}</button></div>`; }).join('');
+  return `<div class="pg stamp"><div class="pgh">인장 ${got} / 7${t2?` · 2단계 ${t2}`:''}</div><div class="pgg">${cells}<div class="sl stn"><b>인장은 모임에 온 만큼 자라요</b>1회 오면 1단계, 5회 오면 2단계. 지원독서는 지금 열리지 않는 지난 장르예요.</div></div><div class="pgf">${i+1}</div></div>`; }
+function stampPeek(g){ const x=stampsOf(WHO)[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g];
+  const nx=t===0?(old?'지원독서는 지금 열리지 않아요. 지난 모임에 온 분만 가진 인장이에요.':`${g} 모임에 한 번 오면 1단계 인장이 생겨요.`):old?'지원독서는 1단계까지만 있어요.':t===1?`${5-n}번 더 오면 2단계로 자라요.`:`가장 높은 단계예요. ${n}번 함께했어요.`;
+  const stg=(k,on)=>`<span class="sgs${on?' on':''}"><img src="cardimg/stamp/${stFile(g,k)}" alt=""><i>${k}단계</i></span>`;
+  selBar(`<div class="bt stp" style="--gc:${MT[g].c}"><img class="sti${t?'':' off'}" src="cardimg/stamp/${stFile(g,t)}" alt="${g} 인장"><div class="stx"><span style="color:${MT[g].c}">◎ ${g} 인장</span> · ${t?t+'단계':'잠김'}${t===2&&!ST2[STP[g]]?' (그림 준비 중)':''} · ${n}회<br>${x?`<small>처음 받은 날 ${dTx(x.first,true)}${x.five&&!old?` · 2단계 된 날 ${dTx(x.five,true)}`:''}</small><br>`:''}${nx}<span class="sgr">${stg(1,t>=1)}${old?'':stg(2,t>=2)+`<span class="sgs nx"><img src="cardimg/stamp/${STP[g]}_tier1.png" alt=""><i>다음 · 아직 정하지 않음</i></span>`}</span></div></div><button type="button" data-a="x">✕</button>`);
+  barIn.querySelector('[data-a="x"]').onclick=()=>selBar(); if(window.__ev) __ev('카드/인장 봄'); }
 const two=()=>innerWidth>760;
 function cvSym(){ const r=15.5; return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width=".8"/>'+
   SYM.map((p,i)=>{ const a=i/8*Math.PI*2-Math.PI/2, x=50+35.5*Math.cos(a)-5, y=50+35.5*Math.sin(a)-5; return `<svg x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="10" height="10" viewBox="0 0 40 40" style="color:${COL[i]}">${p}</svg>`; }).join('')+
   '<path d="M50 30l4 16 16 4-16 4-4 16-4-16-16-4 16-4z" fill="currentColor"/><path d="M50 8v6M50 86v6M8 50h6M86 50h6" stroke="currentColor" stroke-width="1.2"/></svg>'; }
+const TABI={'지금':'✦','모임':'◆','인장':'◎','도감':'№','증표':'◇','1기':'Ⅰ','2기':'Ⅱ','3기':'Ⅲ'}, tabOf=x=>x.t==='toc'?'지금':x.tab;
 function bookView(){ bar.hidden=true; const own=owned(), P=bookPages(), dbl=two(); if(dbl) BP-=BP%2; BP=Math.max(0,Math.min(BP,P.length-1));
-  box.innerHTML=top(HALL?`<button type="button" class="lnk" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩</button>`:(WHO!==null?`<button type="button" class="lnk" data-a="who">${WHO?'다른 사람이에요':'책미사 회원이에요'}</button>`:'')+`<button type="button" class="lnk" data-a="hall">📚 책미사 카드첩</button><button type="button" class="lnk" data-a="tolist">☰ 한눈에 보기</button>`)+
+  box.innerHTML=top(HALL?`<button type="button" class="lnk" data-a="mine">↩ ${WHO?esc(WHO)+'님의':'내'} 카드첩</button>`:menuHTML())+
     `<div class="bkw"><div class="book${dbl?' two':' one'}">
       <div class="bkb"></div>${dbl?'<div class="pgL ps"></div><div class="pgR ps"></div>':'<div class="pgS ps"></div>'}
       <div class="cover"><div class="cvf"><div class="cvt">책미사 너머</div><div class="cve">${cvSym()}</div><div class="cvn">카 드 첩</div><div class="cvp">${HALL?'모두의 것':WHO?esc(WHO):'나의 카드'}</div></div><div class="cvi"><div>${HALL?'이 카드첩은<br><b>책미사 모두</b>의 것입니다.':`이 카드첩은<br><b>${WHO?esc(WHO)+'님':'당신'}</b>의 것입니다.`}</div></div></div>
     </div></div>
     <div class="bnav"><button type="button" data-a="prev" aria-label="앞 쪽">◀</button><span class="bpn"></span><button type="button" data-a="next" aria-label="다음 쪽">▶</button></div>
-    <div class="btabs">${P.map((x,i)=>x.t==='toc'?`<button type="button" data-p="${i}">처음</button>`:x.tab?`<button type="button" data-p="${i}">${x.tab}</button>`:'').join('')}</div>`;
+    <nav class="btabs" aria-label="카드첩">${P.map((x,i)=>{ const t=tabOf(x); return t?`<button type="button" data-p="${i}" data-tab="${t}"><i aria-hidden="true">${TABI[t]||'·'}</i>${t}</button>`:''; }).join('')}</nav>`;
   bindTop();
   const tl=box.querySelector('[data-a="tolist"]'); if(tl) tl.onclick=()=>{ BMODE='list'; sset(BKEY,'list'); if(window.__ev) __ev('카드/한눈에 보기'); X.scrollTop=0; SEEN=true; albumView(); };
   box.querySelector('[data-a="prev"]').onclick=()=>turn(BP-(dbl?2:1));
@@ -2095,10 +2134,13 @@ function drawSpread(P,own){ P=P||bookPages(); own=own||owned(); const dbl=two();
   if(dbl){ box.querySelector('.pgL').innerHTML=pageHTML(P,BP,own); box.querySelector('.pgR').innerHTML=pageHTML(P,BP+1,own); }
   else box.querySelector('.pgS').innerHTML=pageHTML(P,BP,own);
   bindSlots(box.querySelector('.book'));
-  box.querySelector('.bpn').textContent=dbl?`${BP+1}–${Math.min(BP+2,P.length)} / ${P.length}쪽`:`${BP+1} / ${P.length}쪽`;
   box.querySelector('[data-a="prev"]').disabled=BP<=0; box.querySelector('[data-a="next"]').disabled=BP+(dbl?2:1)>=P.length;
-  const cur=P.slice(0,BP+(dbl?2:1)).map(x=>x.tab||(x.t==='toc'?'처음':null)).filter(Boolean).pop();
-  box.querySelectorAll('.btabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===cur))); }
+  const cur=P.slice(0,BP+(dbl?2:1)).map(tabOf).filter(Boolean).pop();
+  // 쪽 번호는 탭 안에서(11/25 카드첩 정리): '모임 2 / 2쪽'
+  const st=P.findIndex(x=>tabOf(x)===cur); let en=st+1; while(en<P.length&&!tabOf(P[en])) en++;
+  const rel=Math.max(1,BP-st+1), len=en-st;
+  box.querySelector('.bpn').textContent=len>1?`${cur} ${dbl&&rel<len?`${rel}–${rel+1}`:rel} / ${len}쪽`:cur;
+  box.querySelectorAll('.btabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===cur))); }
 // 불러내기: 별빛이 모여들고 → 책이 나타나고 → 표지가 열린다
 function summon(bk,cv,dbl){ const w=box.querySelector('.bkw'), N=30;
   for(let i=0;i<N;i++){ const s=document.createElement('i'); s.className='spk'; w.appendChild(s); const a=Math.random()*Math.PI*2, r=180+Math.random()*260;
@@ -2228,8 +2270,46 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .bnav{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 8px}
 #cx .bnav button{width:40px;height:40px;border-radius:50%;padding:0;font-size:13px} #cx .bnav button:disabled{opacity:.3;cursor:default}
 #cx .bpn{font-size:12.5px;color:var(--ink-dim);min-width:90px;text-align:center;font-variant-numeric:tabular-nums}
-#cx .btabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-#cx .btabs button{font-size:12px;padding:5px 12px}
+#cx .btabs{position:sticky;bottom:0;z-index:1;display:flex;justify-content:center;margin-top:8px;padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(6,9,20,.94);border-top:1px solid var(--line)}
+#cx .btabs button{flex:1 1 0;max-width:92px;display:grid;justify-items:center;gap:1px;border:0;background:none;border-radius:10px;padding:5px 2px;font-size:11.5px;color:var(--ink-faint)}
+#cx .btabs button i{font-style:normal;font-size:15px;line-height:1.15}
+#cx .btabs button[aria-pressed="true"]{color:var(--gold)}
+#cx .cmw{position:relative;margin-left:auto}
+#cx .cmb{width:34px;height:34px;border-radius:50%;padding:0;font-size:16px;line-height:1}
+#cx .cmenu{position:absolute;right:0;top:40px;z-index:20;display:grid;min-width:220px;padding:6px;background:#0e1328;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.55)}
+#cx .cmenu[hidden]{display:none}
+#cx .cmenu button{display:block;width:100%;text-align:left;border:0;background:none;border-radius:8px;padding:9px 10px;font-size:13px;color:var(--ink)}
+#cx .cmenu button:hover{background:rgba(255,255,255,.05)}
+#cx .cmenu small{display:block;font-size:11px;color:var(--ink-faint);margin-top:1px}
+#cx .tcn{font-size:12px;color:var(--ink-dim);font-variant-numeric:tabular-nums} #cx .tcn b{color:var(--gold);font-weight:600}
+#cx .tnx{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid rgba(240,198,116,.55);border-radius:10px;background:rgba(240,198,116,.05);padding:7px 10px;font-size:12px;line-height:1.4;color:var(--ink);margin-bottom:8px}
+#cx .tnx b{color:var(--gold);font-weight:600} #cx .tnd{font-family:var(--f-display);font-size:20px;color:var(--gold);line-height:1;white-space:nowrap}
+#cx .tng figcaption.gold{color:var(--gold);font-weight:600}
+#cx .stnow{position:absolute;inset:0;display:grid;place-items:center;border:0;background:none;padding:6px;border-radius:7px;cursor:pointer}
+#cx .stnow img{width:100%;aspect-ratio:1;object-fit:contain}
+#cx .tnl{font-size:11px;color:var(--ink-dim);margin-top:6px}
+#cx .stc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;padding:4px;border-radius:7px;cursor:pointer;color:var(--ink);text-align:center}
+#cx .stc img{width:82%;aspect-ratio:1;object-fit:contain}
+#cx .stc.off img{filter:grayscale(1) brightness(.45);opacity:.55}
+#cx .stc b{font-size:11px;font-weight:600;color:var(--gc)} #cx .stc.off b{color:var(--ink-faint)}
+#cx .stc small{font-size:9.5px;color:var(--ink-dim);font-variant-numeric:tabular-nums} #cx .stc em{font-style:normal;font-size:8.5px;color:var(--ink-faint)}
+#cx .stb{width:70%;height:3px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden} #cx .stb i{display:block;height:100%;background:var(--gc)}
+#cx .sttg{position:absolute;top:4px;right:4px;font-size:9px;font-weight:600;padding:0 5px;border-radius:999px;background:var(--gold);color:#1a1408}
+#cx .sttg.t1{background:none;border:1px solid var(--gc);color:var(--gc)}
+#cx .sl.stn{grid-column:span 2;display:grid;align-content:center;gap:3px;padding:8px 10px;font-size:10.5px;line-height:1.45;color:var(--ink-dim);text-align:left}
+#cx .sl.stn b{color:var(--ink);font-size:11px}
+#cx .plk{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px dashed rgba(240,198,116,.35);background:rgba(240,198,116,.03);border-radius:7px;padding:6px;font-size:11px;line-height:1.4;color:var(--ink-dim);text-align:center;cursor:pointer}
+#cx .plk span{font-size:18px} #cx .plk small{font-size:9.5px;color:var(--ink-faint)}
+#cx .pg.toc:not(.hall) .tc2{margin-top:auto}
+#cx .bar .stp{display:flex;gap:12px;align-items:flex-start}
+#cx .bar .sti{width:72px;height:72px;object-fit:contain;flex:none} #cx .bar .sti.off{filter:grayscale(1) brightness(.45);opacity:.6}
+#cx .bar .stx{min-width:0}
+#cx .bar .sgr{display:flex;gap:8px;margin-top:6px}
+#cx .bar .sgs{display:grid;justify-items:center;gap:1px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;font-size:10px;color:var(--ink-faint);min-width:58px}
+#cx .bar .sgs img{width:32px;height:32px;object-fit:contain;filter:grayscale(1) brightness(.45);opacity:.55} #cx .bar .sgs i{font-style:normal}
+#cx .bar .sgs.on{border-color:var(--gc);color:var(--ink)} #cx .bar .sgs.on img{filter:none;opacity:1}
+#cx .bar .sgs.nx{border-style:dashed} #cx .bar .sgs.nx img{filter:grayscale(1) blur(2px) brightness(.4);opacity:.4}
+#cxs .snote.stn2{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--gold)} #cxs .snote.stn2 img{width:28px;height:28px;object-fit:contain}
 `; document.head.appendChild(st3); }
 
 // 처음 펼칠 때: 카드마다 지금 하늘에 떠 있는 그 책의 별 자리에서 날아와 제 칸에 앉는다
@@ -2361,6 +2441,8 @@ function showCard(o,el){ const own=owned(); let front='', back='', acts=''; askT
     const who=HALL&&GEN(d)<3?(h.includes(WHO)?`${esc(WHO)}님도 받은 카드`:''):HALL?`받은 사람 · ${h.map(esc).join(' · ')||'—'}`:`함께 받은 사람 · ${h.filter(n=>n!==WHO).map(esc).join(' · ')||'혼자'}`;
     front=bigMeet(d,m,b.t,o.k,`${cntLine(o.k)}${who?`<br><small>${who}</small>`:''}`);
     back=bigBack(mtOf(m).c,mtSvg(m),esc(m)); if(window.__ev) __ev('카드/모임 카드 봄');
+    if(!HALL&&WHO){ const x=stampsOf(WHO)[m], ix=x?x.ks.indexOf(o.k):-1, tx=ix===0?`${m} 인장을 처음 받은 모임`:ix===4&&!STOLD[m]?`${m} 5회째 · 인장이 2단계로 자란 모임`:'';
+      if(tx) acts+=`<span class="snote stn2"><img src="cardimg/stamp/${stFile(m,ix===4?2:1)}" alt="">${tx}</span>`; }
   } else if(o.t==='seal'){ const k=o.k, b=OUR[k], m=MEETS.m[k][1];
     front=withVeil(bigMeet(o.d,m,b.t,k,`${cntLine(k)}<br><small>모임이 끝나는 순간 QR로 받아, 봉인을 깨고 연 카드</small>`),{d:o.d,t:b.t,m});
     back=bigBack(mtOf(m).c,mtSvg(m),esc(m)); acts=`<span class="snote">봉인이 깨졌어요 · 『${esc(b.t)}』 모임 카드가 카드첩에 들어왔어요</span>`;
