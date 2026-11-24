@@ -1714,14 +1714,15 @@ const noTx=k=>String(NO[k]).padStart(3,'0');
 const WD='일월화수목금토';
 const dTx=(d,yr)=>{ const t=new Date(d+'T00:00:00'); return `${yr?t.getFullYear()+'.':''}${t.getMonth()+1}.${t.getDate()}(${WD[t.getDay()]})`; };
 // 모임 카드를 가진 사람 = 그 책의 모임에 와서 홈페이지 별자리에 기록된 회원(몇 번째인지는 근거가 없어 매기지 않음)
+// 11/25 에스파다: 장르 색 = 인장 그림 바탕색 계열(c 밝게, d 어둡게). 출처: 모임카드/장르인장성장시스템패키지v0.1 manifest
 const MT={
-  '문학산책':{c:'#e88a8a',d:'#3a1418',p:'<path d="M28 6c-9 2-16 10-17 22l-3 6 5-3c11-1 18-9 19-18-3 1-6 1-8 0 2-2 4-4 4-7z" fill="currentColor"/>',w:'문학과 고전만 함께 걷는 모임'},
-  '지정독서':{c:'#7fa8ff',d:'#101c3a',p:'<path d="M20 5l15 8v14l-15 8-15-8V13z" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M20 13l7 4v7l-7 4-7-4v-7z" fill="currentColor"/>',w:'어떤 장르든 함께 읽는 가장 기본 모임 · 매달 한 번 이상'},
-  '경제독서':{c:'#5fc99a',d:'#0d2a20',p:'<path d="M7 31l8-9 6 5 12-15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 11h7v7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',w:'경제와 돈의 흐름을 다룬 책을 읽는 모임'},
-  '오프모임':{c:'#f2a35a',d:'#3a2010',p:'<path d="M9 15h18v9a8 8 0 01-8 8h-2a8 8 0 01-8-8z" fill="currentColor"/><path d="M27 17h3a4 4 0 010 8h-3" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M14 6q2 3 0 6M19 6q2 3 0 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',w:'장소를 빌려 얼굴을 마주하고 읽는 모임'},
-  '수요독서':{c:'#b99cff',d:'#22163d',p:'<path d="M26 6a14 14 0 100 28A11 11 0 0126 6z" fill="currentColor"/><circle cx="31" cy="12" r="1.8" fill="currentColor"/><circle cx="34" cy="20" r="1.2" fill="currentColor"/>',w:'400쪽이 넘는 책을 수요일 두 번에 나눠 읽는 모임'},
-  '한책읽기':{c:'#4fd0d8',d:'#0b2a2e',p:'<path d="M20 9c-4-3-9-3-14-1v23c5-2 10-2 14 1 4-3 9-3 14-1V8c-5-2-10-2-14 1z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 9v23" stroke="currentColor" stroke-width="2.4"/>',w:'500쪽이 넘는 벽돌책을 정한 날 정한 만큼 읽고 기록하는 모임'},
-  '지원독서':{c:'#d5dbe6',d:'#1c2230',p:'<path d="M20 6l3.5 8.5L32 16l-6.5 6 2 9L20 26.5 12.5 31l2-9L8 16l8.5-1.5z" fill="currentColor"/>',w:'출판사에서 책을 지원받아 함께 읽는 모임'}};
+  '문학산책':{c:'#d49bc4',d:'#2d1626',p:'<path d="M28 6c-9 2-16 10-17 22l-3 6 5-3c11-1 18-9 19-18-3 1-6 1-8 0 2-2 4-4 4-7z" fill="currentColor"/>',w:'문학과 고전만 함께 걷는 모임'},
+  '지정독서':{c:'#8ddee2',d:'#0f3133',p:'<path d="M20 5l15 8v14l-15 8-15-8V13z" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M20 13l7 4v7l-7 4-7-4v-7z" fill="currentColor"/>',w:'어떤 장르든 함께 읽는 가장 기본 모임 · 매달 한 번 이상'},
+  '경제독서':{c:'#e2bd8d',d:'#33240f',p:'<path d="M7 31l8-9 6 5 12-15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 11h7v7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',w:'경제와 돈의 흐름을 다룬 책을 읽는 모임'},
+  '오프모임':{c:'#b8cea1',d:'#212a18',p:'<path d="M9 15h18v9a8 8 0 01-8 8h-2a8 8 0 01-8-8z" fill="currentColor"/><path d="M27 17h3a4 4 0 010 8h-3" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M14 6q2 3 0 6M19 6q2 3 0 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',w:'장소를 빌려 얼굴을 마주하고 읽는 모임'},
+  '수요독서':{c:'#8da7e2',d:'#0f1a33',p:'<path d="M26 6a14 14 0 100 28A11 11 0 0126 6z" fill="currentColor"/><circle cx="31" cy="12" r="1.8" fill="currentColor"/><circle cx="34" cy="20" r="1.2" fill="currentColor"/>',w:'400쪽이 넘는 책을 수요일 두 번에 나눠 읽는 모임'},
+  '한책읽기':{c:'#d8ad97',d:'#2f1d14',p:'<path d="M20 9c-4-3-9-3-14-1v23c5-2 10-2 14 1 4-3 9-3 14-1V8c-5-2-10-2-14 1z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 9v23" stroke="currentColor" stroke-width="2.4"/>',w:'500쪽이 넘는 벽돌책을 정한 날 정한 만큼 읽고 기록하는 모임'},
+  '지원독서':{c:'#96c2da',d:'#13252f',p:'<path d="M20 6l3.5 8.5L32 16l-6.5 6 2 9L20 26.5 12.5 31l2-9L8 16l8.5-1.5z" fill="currentColor"/>',w:'출판사에서 책을 지원받아 함께 읽는 모임'}};
 // 견본 17(11/20 에스파다: 새로 온 사람은 지나간 카드를 절대 채울 수 없다): 내 카드첩엔 못 채울 빈칸을 두지 않는다.
 //   지정 칸 = 도감(읽으면 누구나) / 자유 칸 = 모임·증표(받은 순서대로, 빈칸은 다가오는 모임만) / 지나간 카드는 '책미사 카드첩' 한 권(모두의 것, 1·2기는 숫자만)
 const GEN=d=>d<'2022-01-01'?1:d<'2025-09-16'?2:3;
