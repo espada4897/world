@@ -1386,6 +1386,8 @@ ${url}`;
 function open(){ card.hidden=true; X.hidden=false; document.body.classList.add('cxo'); SEEN=false; BSEEN=false; try{ stopJourney(); }catch(e){} X.scrollTop=0; SEL=[]; if(WHO===null) whoView(); else albumView(); if(window.__ev) __ev('카드/시작',1); }
 function close(){ if(window.BINDER) return; X.hidden=true; bar.hidden=true; document.body.classList.remove('cxo'); try{ card.hidden=true; }catch(e){} }
 window.openCards=open;
+// 대작품관(너머 은하 건너편)이 쓰는 자료: 모임 별·다가오는 모임·장르 빛깔·지금 회원
+window.hallData=()=>({m:hallAll().map(k=>({k,d:MEETS.m[k][0],g:MEETS.m[k][1],t:OUR[k]?OUR[k].t:'',n:cntOf(k),me:!!(WHO&&holders(k).includes(WHO))})),u:yrLeft().map(x=>({d:x.d,g:x.m,t:x.t||''})),who:WHO||null,col:Object.fromEntries(Object.entries(MT).map(([g,v])=>[g,v.c]))});
 addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stopImmediatePropagation(); } },true);
 { const sub=document.querySelector('#me .sub'); const b=document.createElement('button'); b.id='cBtn'; b.type='button'; b.textContent='🂠 내 카드';
   b.style.cssText='color:var(--gold);border-color:rgba(240,198,116,.55)'; b.onclick=open;
