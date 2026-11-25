@@ -2084,8 +2084,10 @@ function hallDoor(){ const all=yrMeets(), my=WHO?all.filter(k=>holders(k).includ
 const H3={intro:true};
 function h3Load(cb){ if(window.THREE) return cb(); if(H3.fail) return; if(H3.wait){ H3.wait.push(cb); return; } H3.wait=[cb];
   const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-  s.onload=()=>{ const L=H3.wait||[]; H3.wait=null; L.forEach(f=>f()); }; s.onerror=()=>{ H3.fail=1; H3.wait=null; }; document.head.appendChild(s); }
-function h3Mount(box){ const go=()=>{ if(!box.isConnected) return; if(!H3.R&&!h3Build()) return; h3Who(); box.appendChild(H3.cv); box.classList.add('on'); H3.box=box; H3.txt=box.querySelector('.h3t'); h3Size();
+  s.onload=()=>{ const L=H3.wait||[]; H3.wait=null; L.forEach(f=>f()); }; s.onerror=()=>{ H3.fail=1; H3.wait=null; h3No(); }; document.head.appendChild(s); }
+// 3D가 안 되면(불러오기 실패·WebGL 없음·8초 넘게 안 옴) 그때만 2D 성좌를 보인다
+function h3No(){ document.querySelectorAll('#cx .h3d:not(.on)').forEach(b=>b.classList.add('no')); }
+function h3Mount(box){ if(H3.fail){ box.classList.add('no'); return; } setTimeout(()=>{ if(box.isConnected&&!box.classList.contains('on')) box.classList.add('no'); },8000); const go=()=>{ if(!box.isConnected) return; if(!H3.R&&!h3Build()){ h3No(); return; } h3Who(); box.appendChild(H3.cv); box.classList.add('on'); H3.box=box; H3.txt=box.querySelector('.h3t'); h3Size();
     if(H3.intro&&!H3.RM){ H3.intro=false; h3Intro(); } else if(!H3.TRAV&&!H3.introOn) h3Focus(HY,true); if(!H3.raf) H3.raf=requestAnimationFrame(h3Frame); };
   h3Load(go); }
 function h3Build(){ const T3=window.THREE; let R; try{ const cv=document.createElement('canvas'); cv.className='h3c'; R=new T3.WebGLRenderer({canvas:cv,antialias:true}); }catch(e){ H3.fail=1; return false; }
@@ -2445,8 +2447,8 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .hyr,#cx .htg{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 #cx .hyr button,#cx .htg button{font-size:11px;border-radius:999px;padding:3px 10px;color:var(--ink-dim)}
 #cx .hyr button[aria-pressed="true"],#cx .htg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)} #cx .hyr button:disabled{opacity:.5;cursor:default}
-#cx .h3d{position:relative;width:100%;max-width:calc(var(--s)*3 + 16px);aspect-ratio:1;margin:0 auto;border-radius:10px;overflow:hidden}
-#cx .h3d .hart{max-width:none} #cx .h3d.on .hart{display:none}
+#cx .h3d{position:relative;width:100%;max-width:calc(var(--s)*3 + 16px);aspect-ratio:1;margin:0 auto;border-radius:10px;overflow:hidden;background:#03050b}
+#cx .h3d .hart{max-width:none;visibility:hidden} #cx .h3d.no .hart{visibility:visible} #cx .h3d.on .hart{display:none}
 #cx .h3c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #cx .h3t{position:absolute;left:0;right:0;top:38%;z-index:1;text-align:center;pointer-events:none;font-family:var(--f-display);color:var(--gold);opacity:0;transition:opacity .6s;text-shadow:0 0 16px #000,0 0 4px #000}
 #cx .h3t b{display:block;font-size:24px;font-weight:400;line-height:1.2} #cx .h3t small{font-family:var(--f-body);font-size:11px;color:var(--ink-dim)}
