@@ -3022,8 +3022,9 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
   const ev=(n)=>{ try{ if(window.__ev) __ev('메뉴/'+n); }catch(e){} };
 
-  const nav=document.createElement('nav'); nav.id='doors'; nav.setAttribute('aria-label','책미사 너머의 네 문');
-  const D=[['u','🌌','우주'],['c','🂠','내 카드'],['w','🌍','내 세계'],['o','🔭','천문대']];
+  const nav=document.createElement('nav'); nav.id='doors'; nav.setAttribute('aria-label','책미사 너머의 다섯 문');
+  // 11/25 에스파다: 대작품관을 다섯째 문으로(가운데)
+  const D=[['u','🌌','우주'],['c','🂠','내 카드'],['g','🏛','대작품관'],['w','🌍','내 세계'],['o','🔭','천문대']];
   nav.innerHTML=D.map(([k,i,t])=>`<button type="button" data-d="${k}" aria-expanded="false"><span class="i">${i}</span><span>${t}</span><span class="dot"></span></button>`).join('');
   document.body.appendChild(nav);
 
@@ -3038,12 +3039,13 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
   const txt=b=>(b.textContent||'').trim();
   function where(b){
     if(b.id==='clr') return null;                       // 내 별 지우기는 별 칸에 남김
-    if(b.id==='tourBtn'||b.id==='ourC'||b.id==='ghBtn') return 'u';
+    if(b.id==='tourBtn'||b.id==='ourC') return 'u';
+    if(b.id==='ghBtn') return 'g';
     if(b.id==='cBtn') return 'c';
     if(/천문대/.test(txt(b))&&!b.id) return 'o';
     return 'w';                                          // 깨우기·예시 세계·연대기·질문에서·그 밖의 새 단추
   }
-  const HOLD={c:null,o:null};
+  const HOLD={c:null,o:null,g:null};
   const ORDER={wake:0,qBtn:1,bkMe:3};
   function sortW(){ const l=SW.querySelector('.dlist'); [...l.children].sort((a,b)=>(ORDER[a.id]??2)-(ORDER[b.id]??2)).forEach(x=>l.appendChild(x)); }
   function sweep(){ if(!sub) return; [...sub.querySelectorAll(':scope > button'),...document.querySelectorAll('.dsheet .dlist > button')].forEach(b=>{ if(b.dataset.door) return; const w=where(b); if(!w) return;
@@ -3073,8 +3075,8 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
     // 휴대폰: 내 별 칸은 접어 둔다(겹치지 않게)
     if(matchMedia('(max-width:760px)').matches){ const me=document.getElementById('me'), f=document.getElementById('meFold'); if(me&&f&&!me.classList.contains('fold')) f.click(); } }
   nav.addEventListener('click',e=>{ const b=e.target.closest('button[data-d]'); if(!b) return; const k=b.dataset.d;
-    ev(({u:'우주',c:'내 카드',w:'내 세계',o:'천문대'})[k]);
-    if(k==='c'||k==='o'){ shut(); const h=HOLD[k]; if(h) h.click(); return; }
+    ev(({u:'우주',c:'내 카드',g:'대작품관',w:'내 세계',o:'천문대'})[k]);
+    if(k==='c'||k==='o'||k==='g'){ shut(); const h=HOLD[k]; if(h) h.click(); return; }
     show(k); });
   // 문 안의 단추를 누르면 시트 닫기(시간 이동 줄은 남겨 둠)
   [SU,SW].forEach(s=>s.addEventListener('click',e=>{ if(e.target.closest('.dlist button')) setTimeout(shut,0); }));
@@ -3082,7 +3084,7 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
   addEventListener('keydown',e=>{ if(e.key==='Escape') shut(); });
   // 처음 온 사람 안내에 맞춰 문장 고치기
   const hl=document.querySelector('#hello ol li:nth-child(2)'); if(hl) hl.innerHTML=hl.innerHTML.replace('왼쪽 위에','왼쪽 위 칸에');
-  const hol=document.querySelector('#hello ol'); if(hol){ const li=document.createElement('li'); li.innerHTML='둘러보기·카드·세계·천문대는 '+(matchMedia('(max-width:760px)').matches?'화면 아래':'화면 위 가운데')+'의 <b>네 문</b>에서.'; hol.appendChild(li); }
+  const hol=document.querySelector('#hello ol'); if(hol){ const li=document.createElement('li'); li.innerHTML='둘러보기·카드·대작품관·세계·천문대는 '+(matchMedia('(max-width:760px)').matches?'화면 아래':'화면 위 가운데')+'의 <b>다섯 문</b>에서.'; hol.appendChild(li); }
 })();
 /*}DOORS*/
 
