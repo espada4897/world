@@ -2050,16 +2050,14 @@ function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc
   // 바인더 앱에서는 조커를 만들지 않는다(너머 우주에서) — 가진 조커가 있을 때만 증표 탭 뒤에 둔다
   if(!window.BINDER||jokers().length) chunk([...jokers().map(j=>({j})),...(window.BINDER?[]:[{add:1}])],9).forEach((xs,i)=>P.push({t:'jk',xs,tab:null,h:`조커 ${jokers().length}장 · 책미사 밖에서 읽은 책`}));
   return P; }
-// 책미사 카드첩: 모두의 것. 지나간 모임 카드와 증표가 날짜순으로 한 권에
-function hallTok(){ const seen=new Set(); return TOK.filter(t=>!t.ex&&ktOf(t.kind).g==='증표').sort((a,b)=>a.date.localeCompare(b.date)).filter(t=>{ const key=t.kind+'|'+t.name+'|'+t.term; if(seen.has(key)) return false; seen.add(key); return true; }); }
+// (11/25 에스파다: 연간 작품관에는 증표 탭 없음 — 증표는 각자 내 카드첩 증표 탭에)
 const hallAll=()=>Object.keys(MEETS.m).map(Number).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])||a-b);
-// 연간 작품관: 첫 쪽 = 그해 작품(성좌), 그다음 그해 모임 카드(최근 달부터, 남은 모임 빈칸 먼저), 증표. 지난 해(2019~)는 12/20 뒤에 연다
+// 연간 작품관: 첫 쪽 = 그해 작품(성좌), 그다음 그해 모임 카드(최근 달부터, 남은 모임 빈칸 먼저). 지난 해(2019~)는 12/20 뒤에 연다
 const HY=String(new Date().getFullYear()), yrMeets=()=>hallAll().filter(k=>MEETS.m[k][0].startsWith(HY));
 const yrLeft=()=>{ const t=new Date(); t.setHours(0,0,0,0); return (MEETS.u||[]).filter(x=>x.d.startsWith(HY)&&new Date(x.d+'T00:00:00')>=t); };
 function hallPages(){ const P=[{t:'toc',hall:1}], ys=yrMeets().reverse(), up=upcoming().map((x,i)=>({u:i,d:x.d})).filter(x=>x.d.startsWith(HY)).reverse();
   const xs=[...up,...ys.map(k=>({m:k,hall:1}))], mo=o=>+(o.d||MEETS.m[o.m][0]).slice(5,7);
   chunk(xs,9).forEach((c,i)=>{ const a=mo(c[0]), b=mo(c[c.length-1]); P.push({t:'meet',xs:c,tab:i?null:HY,h:`${HY} · ${a===b?a+'월':a+'월 – '+b+'월'}`}); });
-  const tk=hallTok(); if(tk.length) chunk(tk.map(t=>({tk:t,hall:1})),9).forEach((c,i)=>P.push({t:'tok',xs:c,tab:i?null:'증표',h:'지나간 증표 · 받은 사람만'}));
   return P; }
 // 그해 작품 A 성좌: 해를 한 바퀴로, 모임 하나 = 별 하나(날짜 = 자리, 온 사람 수 = 크기, 장르 = 색). 남은 모임은 점선 빈 별
 function hallArt(w,big){ const cx=200,cy=200, doy=d=>(new Date(d+'T00:00:00')-new Date(HY+'-01-01T00:00:00'))/864e5;
