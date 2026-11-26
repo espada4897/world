@@ -672,7 +672,7 @@ function pageHTML(P,i,own){ const pg=P[i];
   const hl=pg.t==='meet'&&pg.last&&!HALL&&pg.xs.length<9;
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length-(hl?1:0))+(hl?'<div class="sl"><button type="button" class="plk" data-a="hall"><span>✦</span>연간 작품관<br>보기 ›<small>${HY} 모임 카드 모두</small></button></div>':'');
   const yj=pg.yj?`<div class="yj">${pg.yj.map(([y,ix])=>`<button type="button" data-yp="${ix}" aria-pressed="${y===pg.yr}">${y}</button>`).join('')}</div>`:'';
-  return `<div class="pg ${pg.t}"><div class="pgh">${pg.h}</div><div class="pgg">${cells}</div><div class="pgf">${pg.yj&&!two()?'':yj||i+1}</div></div>`; }
+  return `<div class="pg ${pg.t}"><div class="pgh">${pg.h}</div><div class="pgg">${cells}</div><div class="pgf">${pg.yj?'':i+1}</div></div>`; }
 // 인장 쪽: 열리는 여섯 장르 위 두 줄, 지원독서는 아랫줄 첫 칸, 남은 두 칸은 한 줄 설명
 function stampPage(i){ const S=stampsOf(WHO), got=Object.keys(S).length, t2=STO.filter(g=>stTier(g,S[g])===2).length;
   const cells=STO.map(g=>{ const x=S[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g];
@@ -721,8 +721,8 @@ function drawSpread(P,own){ P=P||bookPages(); own=own||owned(); const dbl=two();
   // 쪽 번호는 탭 안에서(11/25 카드첩 정리): '모임 2 / 2쪽'
   const st=P.findIndex(x=>tabOf(x)===cur); let en=st+1; while(en<P.length&&!tabOf(P[en])) en++;
   const rel=Math.max(1,BP-st+1), len=en-st;
-  const bpn=box.querySelector('.bpn'), pg=P[BP]; bpn.classList.toggle('yr',!dbl&&!!(pg&&pg.yj));
-  if(!dbl&&pg&&pg.yj){ bpn.innerHTML=`<label class="bys"><select aria-label="연도로 가기">${pg.yj.map(([y,ix])=>`<option value="${ix}"${y===pg.yr?' selected':''}>${y}년</option>`).join('')}</select><i aria-hidden="true">▾</i></label>`;
+  const bpn=box.querySelector('.bpn'), pg=P[BP]&&P[BP].yj?P[BP]:dbl&&P[BP+1]&&P[BP+1].yj?P[BP+1]:null; bpn.classList.toggle('yr',!!pg);
+  if(pg){ bpn.innerHTML=`<label class="bys"><select aria-label="연도로 가기">${pg.yj.map(([y,ix])=>`<option value="${ix}"${y===pg.yr?' selected':''}>${y}년</option>`).join('')}</select><i aria-hidden="true">▾</i></label>`;
     bpn.querySelector('select').onchange=e=>turn(+e.target.value); }
   else bpn.textContent=len>1?`${cur} ${dbl&&rel<len?`${rel}–${rel+1}`:rel} / ${len}쪽`:cur;
   box.querySelectorAll('.btabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===cur))); }
