@@ -129,18 +129,24 @@ function ready(p){ return p.lo&&p.lo.complete&&p.lo.naturalWidth; }
 function hzScreen(c,p,t,dy,zm){ const im=p.hz; if(!im.complete||!im.naturalWidth) return false;
   const sc=Math.max(W/im.naturalWidth,Hs/im.naturalHeight)*1.28*(zm||1), w=im.naturalWidth*sc, h=im.naturalHeight*sc, pan=Math.max(-.5,Math.min(.5,(t-1.25)*.55+(p.pan-.5)*.3));
   c.save(); if(p.filt&&'filter' in c) c.filter=p.filt; c.drawImage(im,(W-w)/2-pan*(w-W),(Hs-h)/2+(h-Hs)*.2+dy,w,h); c.restore(); return true; }
+// 11/26 이음새: 영상이 있는 별은 들어갈 때·나올 때도 영상 프레임과 같은 크기·자리로 그려 툭 튀지 않게
+const VFIRST_HZ=k=>k!==6;   // 내려감 영상 첫 장면 = 그 종류의 지평선 그림(지원독서만 행성 그림에서 시작)
+function coverV(c,v,dy,a){ if(!v||v.readyState<2||!v.videoWidth) return false; const sc=Math.max(W/v.videoWidth,Hs/v.videoHeight), w=v.videoWidth*sc, h=v.videoHeight*sc;
+  c.save(); if(a!=null) c.globalAlpha=a; c.drawImage(v,(W-w)/2,(Hs-h)/2+(dy||0),w,h); c.restore(); return true; }
 function drawDive(p,t,alpha){
   if(t<1){ const G=geom(p,t), {cx,cy,r}=G; drawPlanetAt(p,G,alpha,t,true);
     const ha=Math.max(0,Math.min(1,(r/Hs-.35)/.6)); if(ha<=0) return 0;
-    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r*.995,0,Math.PI*2); ctx.clip(); ctx.globalAlpha=ha; hzScreen(ctx,p,t,0); ctx.restore();
+    const v0=p.vid&&VFIRST_HZ(p.k)&&p.vid.down&&p.vid.down.readyState>=2?p.vid.down:null;
+    if(v0&&v0.paused&&v0.currentTime>.05&&!(inside&&inside.i===p.i)) v0.currentTime=0;   // 다시 지나갈 때 첫 장면으로
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r*.995,0,Math.PI*2); ctx.clip(); ctx.globalAlpha=ha; if(!(v0&&coverV(ctx,v0,0))) hzScreen(ctx,p,t,0); ctx.restore();
     if(ha<1){ const pal=PAL[R[p.i][1]]||PAL['한책읽기'], g=ctx.createRadialGradient(cx,cy,r*.85,cx,cy,r*1.05); g.addColorStop(0,'rgba('+pal[2]+',0)'); g.addColorStop(.75,'rgba('+pal[2]+','+(.5*(1-ha))+')'); g.addColorStop(1,'rgba('+pal[2]+',0)');
       ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r*1.05,0,Math.PI*2); ctx.fill(); }
     return ha; }
-  if(t<1.35&&p.vid&&inside&&inside.i===p.i){ const q=(t-1)/.35, V=p.vid, useLow=V.low&&(!V.down||inside.el>=vDur(V)-.05), v=useLow?V.low:V.down;
-    hzScreen(ctx,p,t,0);
-    if(v&&v.readyState>=2){ const a=sm(q,0,.04)*(1-sm(q,.86,.98)), sc=Math.max(W/v.videoWidth,Hs/v.videoHeight), w=v.videoWidth*sc, h=v.videoHeight*sc;
-      ctx.save(); ctx.globalAlpha=a; ctx.drawImage(v,(W-w)/2,(Hs-h)/2,w,h); ctx.restore(); }
-    else if(!v&&ready(p)){ hzScreen(ctx,p,t,0); }
+  if(t<1.35&&p.vid&&inside&&inside.i===p.i){ const q=(t-1)/.35, V=p.vid, D=vDur(V), mix=V.low&&V.down?sm(inside.el,D-.8,D):V.low?1:0;
+    const fin=VFIRST_HZ(p.k)?1:sm(q,0,.06);   // 지원독서는 첫 장면이 달라 잠깐 겹쳐 들어감
+    if(fin<1) hzScreen(ctx,p,t,0);
+    if(mix<1&&!coverV(ctx,V.down,0,fin)&&mix<=0) hzScreen(ctx,p,t,0);
+    if(mix>0) coverV(ctx,V.low,0,fin*mix);
     return 1; }
   if(t<1.35){ const q=(t-1)/.35, f=ready(p)?lowF(q):0;
     if(f<1) hzScreen(ctx,p,t,f*Hs*.55,1+f*1.6);   // 궤도에서 땅 쪽으로 파고들며
@@ -151,7 +157,7 @@ function drawDive(p,t,alpha){
   if(hzCv.width!==Math.round(W*DPR)||hzCv.height!==Math.round(Hs*DPR)){ hzCv.width=Math.round(W*DPR); hzCv.height=Math.round(Hs*DPR); }
   hx.setTransform(DPR,0,0,DPR,0,0); hx.globalCompositeOperation='source-over'; hx.clearRect(0,0,W,Hs);
   const limb=lerp(-Hs*.25,Hs*1.12,e), RB=W*1.9, cx=W*.42, cy=limb+RB;
-  hzScreen(hx,p,t,e*Hs*.75);
+  const vl=p.vid&&(p.vid.low||p.vid.down); if(!(vl&&coverV(hx,vl,e*Hs*.75))) hzScreen(hx,p,t,e*Hs*.75);
   hx.globalCompositeOperation='destination-in'; const m=hx.createLinearGradient(0,limb,0,limb+Hs*.3); m.addColorStop(0,'rgba(0,0,0,0)'); m.addColorStop(1,'rgba(0,0,0,1)');
   hx.fillStyle=m; hx.beginPath(); hx.arc(cx,cy,RB,0,Math.PI*2); hx.fill();
   ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(hzCv,0,0); ctx.restore();
@@ -323,10 +329,10 @@ function frame(now){
   if(toastTimer>0){ toastTimer-=dt; if(toastTimer<=0){ toastTimer=0; toastEl.classList.remove('on'); } }
   step(dt);
   { const ii=Math.floor(u)-1, pi=ii>=0&&ii<R.length?planetOf(ii):null, inV=pi&&pi.vid&&u-ii>=1&&u-ii<1.35;
-    if(inV){ const V=pi.vid; if(!inside||inside.i!==ii){ if(inside) stopVid(); inside={i:ii,el:0}; if(V.down){ V.down.currentTime=0; V.down.play().catch(()=>{}); } else if(V.low){ V.low.currentTime=0; V.low.play().catch(()=>{}); } }
+    if(inV){ const V=pi.vid; if(!inside||inside.i!==ii){ if(inside) stopVid(); inside={i:ii,el:0}; if(V.low) V.low.currentTime=0; if(V.down){ V.down.currentTime=0; V.down.play().catch(()=>{}); } else if(V.low){ V.low.play().catch(()=>{}); } }
       else if(playing||posePlay) inside.el+=dt*speed;
       const rt=Math.min(4,speed); for(const x of [V.down,V.low]) if(x) x.playbackRate=rt;
-      if(V.low&&V.down&&inside.el>=vDur(V)-.3&&V.low.paused){ V.low.currentTime=0; V.low.play().catch(()=>{}); }
+      if(V.low&&V.down&&inside.el>=vDur(V)-.85&&V.low.paused&&V.low.currentTime<.05){ V.low.currentTime=0; V.low.play().catch(()=>{}); }
       if(!playing&&!posePlay) for(const x of [V.down,V.low]) if(x&&!x.paused) x.pause(); }
     else if(inside) stopVid(); }
   const go=playing?Math.min(speed,3):0, v=VP();
@@ -351,7 +357,9 @@ function frame(now){
     const G=geom(p,t), key=p.dive&&t>=1.35?-1:p.dive&&t>=1?1e9:G.r; list.push([p,t,G,key]); }
   if(fu+2<R.length) planetOf(fu+2);
   list.sort((a,b)=>a[3]-b[3]);
-  let hz=0; for(const [p,t,G] of list) hz=Math.max(hz, drawPlanetAt(p,G,Math.max(0,Math.min(1,(t+.8)/.35)),t));
+  // 11/26 이음새: 영상 별에서 나오는 동안 땅이 아직 화면을 덮고 있으면 다음 별은 숨겼다가, 땅이 빠지는 만큼 드러냄
+  let cov=0; for(const [p,t] of list) if(p.dive&&p.vid&&t>=1&&t<1.85) cov=Math.max(cov, t<1.35?1:1-sm(t,1.4,1.75));
+  let hz=0; for(const [p,t,G] of list) hz=Math.max(hz, drawPlanetAt(p,G,Math.max(0,Math.min(1,(t+.8)/.35))*(p.dive&&t>=1?1:1-cov),t));
   // 다가오는 별 이름
   ctx.font='15px "Gowun Batang",serif'; ctx.textAlign='center';
   { let best=null, ba=0; for(const [p,t,G] of list){ if(t>=1) continue; const a=Math.min(1,(t+.6)*3)*Math.max(0,Math.min(1,(Hs*.24-G.r)/(Hs*.08))); if(a>0&&(!best||G.r>best[2].r)){ best=[p,t,G]; ba=a; } }
