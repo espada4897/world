@@ -1685,7 +1685,7 @@ window.MEETART={
 };
 window.SERIES={"2": [{"d": "2026-08-22", "p": "PART I · 마주하다", "who": ["에스파다", "플라잉", "책좋아", "벙찐"], "known": true}, {"d": "2026-09-19", "p": "PART II · 살아내다", "who": ["에스파다", "단아"], "known": false}]};
 window.TOKENS=[{"date": "2026-10-20", "who": "플라잉", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 27일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "단아", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 25일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "미토맘", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 18일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "미지", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 8일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "벙찐", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 7일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "소리", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 5일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "책좋아", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 5일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "플라잉", "kind": "완수", "name": "매일 독서 인증 첫 달", "note": "20일 이상 인증 · 27일", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "플라잉", "kind": "커피", "name": "메가커피 아이스 아메리카노 한 잔", "note": "매일 독서 인증 첫 달 완수 선물(20일 이상)", "term": "", "pages": "", "used": "2026-11-20", "ex": false}, {"date": "2026-11-20", "who": "단아", "kind": "완수", "name": "매일 독서 인증 첫 달", "note": "20일 이상 인증 · 25일", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "단아", "kind": "커피", "name": "메가커피 아이스 아메리카노 한 잔", "note": "매일 독서 인증 첫 달 완수 선물(20일 이상)", "term": "", "pages": "", "used": "2026-11-20", "ex": false}, {"date": "2026-11-20", "who": "에스파다", "kind": "무료권", "name": "다음 모임 1회 무료", "note": "모임 참가비 5", "term": "000원 한 번 면제", "pages": "", "used": "", "ex": false}];
-// 견본 8(11/19): 내 카드 — 읽은 책이 카드가 된다
+﻿// 견본 8(11/19): 내 카드 — 읽은 책이 카드가 된다
 // 에스파다: "세 권을 떠올리고 조합을 생각하는 것부터가 높은 벽" → 카드로.
 //          "내가 가진 카드가 얼마나 있나 흥미를 갖고, 그 카드를 갖기 위해 책을 읽어야겠다고 생각하지 않을까"
 //          "회원들이 읽은 책은 홈페이지 별자리에 이미 있다. 책좋아가 들어오면 너머는 이미 알고 있어야 하고, 펼쳐 보이고, 섞어서 보여 줘야 한다"
@@ -2038,7 +2038,7 @@ function tokCard(t,o){ const T=ktOf(t.kind), spell=T.g==='주문', got=o&&o.hall
 const TMUL=()=>window.__TMUL||1;   // 시험용: 느린 시험 브라우저에서 마무리 타이머를 늘림(평소 1)
 const BKEY='chaekmisa-albummode'; let BMODE=sget(BKEY)||'book', BP=0, BSEEN=false, TURNING=false;
 function albumView(){ const r=BMODE==='list'&&!HALL?listView():bookView(); sealSoon(); return r; }
-function openHall(on){ if(TURNING) return; HALL=on; BP=0; BSEEN=false; X.scrollTop=0; if(on){ sset(HSK,'1'); H3.intro=true; } if(window.__ev) __ev(on?'카드/연간 작품관 펼침':'카드/연간 작품관 → 내 카드첩'); albumView(); }
+function openHall(on){ if(TURNING) return; HALL=on; HY=HY0; BP=0; BSEEN=false; X.scrollTop=0; if(on){ sset(HSK,'1'); H3.intro=true; } if(window.__ev) __ev(on?'카드/연간 작품관 펼침':'카드/연간 작품관 → 내 카드첩'); albumView(); }
 function jokerSlot(j){ const si=SEL.indexOf(j.id); return `<button type="button" class="mc own joker${si>=0?' sel':''}" ${si>=0?`data-n="${si+1}"`:''} data-j="${esc(j.id)}" title="${esc(j.t)} · 조커"><div class="art jk">${jsvg()}</div><span class="mt">${esc(j.t)}</span></button>`; }
 function zeroSlot(own){ const full=own.size>=OUR.length; return `<button type="button" class="mc zero${full?' open':''}" data-a="zero" aria-label="No.000"><span class="no">000</span><span class="zs">✦</span><span class="zt">${full?'책미사의 별':'171칸을 모두<br>채우면 열림'}</span></button>`; }
 function bindSlots(root){
@@ -2053,6 +2053,8 @@ function bindSlots(root){
   root.querySelectorAll('[data-a="mine"]').forEach(a=>a.onclick=()=>openHall(false));
   { const hz=root.querySelector('.h3d'); if(hz) h3Mount(hz); }
   root.querySelectorAll('[data-a="trav"]').forEach(b=>b.onclick=h3Travel);
+  root.querySelectorAll('[data-yp]').forEach(b=>b.onclick=()=>turn(+b.dataset.yp));
+  root.querySelectorAll('[data-hy]').forEach(b=>b.onclick=()=>{ if(b.disabled||HY===b.dataset.hy) return; HY=b.dataset.hy; if(window.__ev) __ev("카드/작품관 연도 "+HY); albumView(); if(typeof H3!=='undefined'&&H3.R) h3Focus(HY); });
   root.querySelectorAll('[data-hv]').forEach(b=>b.onclick=()=>{ if(HV===b.dataset.hv) return; HV=b.dataset.hv; sset(HVK,HV); if(window.__ev) __ev(HV==='me'?'카드/작품관 내 별만':'카드/작품관 전체'); drawSpread(); });
   root.querySelectorAll('[data-a="shuffle"]').forEach(a=>a.onclick=()=>dealFrom(pool().sort(()=>Math.random()-.5).slice(0,3),false));
   root.querySelectorAll('.mc:not(.add):not(.mt0):not(.mtg):not(.zero):not(.tk)').forEach(el=>el.onclick=()=>{ const k=el.dataset.j||+el.dataset.k;
@@ -2062,9 +2064,13 @@ function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc
   // 11/25 에스파다(카드첩 정리): 탭 = 지금 · 모임 · 인장 · 도감 · 증표. '다음 칸' 탭은 없앰(다음 모임은 지금 쪽 위 칸과 모임 쪽 마지막 칸에)
   // 자유 칸: 처음 온 날부터 받은 순서대로 꽂히고, 맨 뒤 빈칸은 다가오는 모임뿐
   const mine=myMeets(WHO);
-  const ms=[...(mine.length?[]:[{note:'meet'}]),...mine.map((k,i)=>({m:k,first:i===0})),...upcoming().map((x,i)=>({u:i}))];
-  const mp=chunk(ms,9);
-  mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':null,last:i===mp.length-1,h:`모임 카드 ${mine.length}장`}));
+  if(!mine.length){ const mp=chunk([{note:'meet'},...upcoming().map((x,i)=>({u:i}))],9); mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:i===0?'모임':null,last:i===mp.length-1,h:'모임 카드 0장'})); }
+  else { const byY={}, put=(y,o)=>(byY[y]=byY[y]||[]).push(o);
+    mine.forEach((k,i)=>put(MEETS.m[k][0].slice(0,4),{m:k,first:i===0})); upcoming().forEach((x,i)=>put(x.d.slice(0,4),{u:i}));
+    const ys=Object.keys(byY).sort(), yj=[], s0=P.length;
+    ys.forEach((y,yi)=>{ const n=byY[y].filter(o=>o.m!=null).length, mp=chunk(byY[y],9); yj.push([y,P.length]);
+      mp.forEach((xs,i)=>P.push({t:'meet',xs,tab:P.length===s0?'모임':null,last:yi===ys.length-1&&i===mp.length-1,yr:y,h:`<b class="yb">${y}</b><span class="gb">${GBAND(y)}</span>모임 카드 ${n}장${mp.length>1?` · ${i+1}/${mp.length}`:''}`})); });
+    if(ys.length>1) P.slice(s0).forEach(p=>p.yj=yj); }
   P.push({t:'stamp',tab:'인장'});
   const dex=['z',...OUR.map((_,k)=>k).sort((a,b)=>NO[a]-NO[b])];
   chunk(dex,9).forEach((xs,i)=>P.push({t:'dex',xs,tab:i?null:'도감',h:`도감 No.${String(i*9).padStart(3,'0')}–${String(Math.min(i*9+8,OUR.length)).padStart(3,'0')}${i?'':` · ${own.size} / ${OUR.length}`}`}));
@@ -2076,11 +2082,16 @@ function bookPages(){ if(HALL) return hallPages(); const own=owned(), P=[{t:'toc
 // (11/25 에스파다: 연간 작품관에는 증표 탭 없음 — 증표는 각자 내 카드첩 증표 탭에)
 const hallAll=()=>Object.keys(MEETS.m).map(Number).sort((a,b)=>MEETS.m[a][0].localeCompare(MEETS.m[b][0])||a-b);
 // 연간 작품관: 첫 쪽 = 그해 작품(성좌), 그다음 그해 모임 카드(최근 달부터, 남은 모임 빈칸 먼저). 지난 해(2019~)는 12/20 뒤에 연다
-const HY=String(new Date().getFullYear()), yrMeets=()=>hallAll().filter(k=>MEETS.m[k][0].startsWith(HY));
+// 11/27 에스파다: 카드첩은 연도별(기수로 나누지 않음 — 기수 경계는 갈라진 날이라 제목으로 두지 않고 띠로만, 한책읽기 '기'와도 겹침)
+const HY0=String(new Date().getFullYear()); let HY=HY0;
+const PASTQ=/[?&]past=1/.test(location.search), PASTOK=()=>PASTQ||new Date()>=new Date(HY0+'-12-20T00:00:00');   // 지난 해 작품관은 12/20부터(?past=1 = 견본 미리 보기)
+const YRS=()=>[...new Set(hallAll().map(k=>MEETS.m[k][0].slice(0,4)))].sort();
+const GBAND=y=>{ const g=[...new Set(hallAll().filter(k=>MEETS.m[k][0].startsWith(y)).map(k=>GEN(MEETS.m[k][0])))].sort(); if(!g.length) return ''; return g.map(x=>x+'기').join(' → ')+(g.length>1&&g.includes(3)?'(9월~)':''); };
+const yrMeets=()=>hallAll().filter(k=>MEETS.m[k][0].startsWith(HY));
 const yrLeft=()=>{ const t=new Date(); t.setHours(0,0,0,0); return (MEETS.u||[]).filter(x=>x.d.startsWith(HY)&&new Date(x.d+'T00:00:00')>=t); };
 function hallPages(){ const P=[{t:'toc',hall:1}], ys=yrMeets().reverse(), up=upcoming().map((x,i)=>({u:i,d:x.d})).filter(x=>x.d.startsWith(HY)).reverse();
   const xs=[...up,...ys.map(k=>({m:k,hall:1}))], mo=o=>+(o.d||MEETS.m[o.m][0]).slice(5,7);
-  chunk(xs,9).forEach((c,i)=>{ const a=mo(c[0]), b=mo(c[c.length-1]); P.push({t:'meet',xs:c,tab:i?null:HY,h:`${HY} · ${a===b?a+'월':a+'월 – '+b+'월'}`}); });
+  chunk(xs,9).forEach((c,i)=>{ const a=mo(c[0]), b=mo(c[c.length-1]); P.push({t:'meet',xs:c,tab:i?null:HY,h:`<b class="yb">${HY}</b><span class="gb">${GBAND(HY)}</span>${a===b?a+'월':a+'월 – '+b+'월'}`}); });
   return P; }
 // 그해 작품 A 성좌: 해를 한 바퀴로, 모임 하나 = 별 하나(날짜 = 자리, 온 사람 수 = 크기, 장르 = 색). 남은 모임은 점선 빈 별
 function hallArt(w,big){ const cx=200,cy=200, doy=d=>(new Date(d+'T00:00:00')-new Date(HY+'-01-01T00:00:00'))/864e5;
@@ -2094,7 +2105,7 @@ function hallArt(w,big){ const cx=200,cy=200, doy=d=>(new Date(d+'T00:00:00')-ne
   P.forEach(([x,y,d])=>{ const c=mtOf(d.g).c; x=x.toFixed(1); y=y.toFixed(1);
     if(d.up){ o+=`<circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${c}" stroke-opacity=".55" stroke-dasharray="2 2"/>`; return; }
     const r=3+Math.sqrt(d.h.length)*1.9; o+=`<g${big?` data-m="${d.k}" role="button" aria-label="${esc(d.d)} ${esc(d.g)} 모임 카드"`:''} opacity="${on(d)?1:.16}"><circle cx="${x}" cy="${y}" r="${(r*2.4).toFixed(1)}" fill="${c}" opacity=".13"/><circle cx="${x}" cy="${y}" r="${r.toFixed(1)}" fill="${c}"/><circle cx="${x}" cy="${y}" r="${(r*.38).toFixed(1)}" fill="#fff" opacity=".85"/></g>`; });
-  if(big) o+=`<text x="${cx}" y="${cy-2}" fill="#f0c674" font-size="28" font-family="Gowun Batang,serif" text-anchor="middle">${HY}</text><text x="${cx}" y="${cy+18}" fill="#a3a9c0" font-size="12" text-anchor="middle">성장 중</text>`;
+  if(big) o+=`<text x="${cx}" y="${cy-2}" fill="#f0c674" font-size="28" font-family="Gowun Batang,serif" text-anchor="middle">${HY}</text><text x="${cx}" y="${cy+18}" fill="#a3a9c0" font-size="12" text-anchor="middle">${HY===HY0?'성장 중':'완성'}</text>`;
   return o; }
 function hallDoor(){ const all=yrMeets(), my=WHO?all.filter(k=>holders(k).includes(WHO)).length:0, nw=!sget(HSK);
   return `<button type="button" class="yl" data-a="hall">${nw?'<span class="ylnew">새로</span>':''}<svg viewBox="0 0 400 400" aria-hidden="true">${hallArt(WHO&&my?WHO:'',false)}</svg><span>${WHO&&my?`<b>${HY} 작품에 내 별 ${my}개</b><br>책미사 별 ${all.length}개 중 · 연간 작품관 ›`:`<b>${HY} 작품 · 책미사 별 ${all.length}개</b><br>연간 작품관 ›`}<small>모임이 열릴 때마다 별이 하나씩 늘어요</small></span></button>`; }
@@ -2233,7 +2244,7 @@ function pageHTML(P,i,own){ const pg=P[i];
   if(!pg) return `<div class="pg end"><div class="pend">✦<br><small>책미사 너머</small></div></div>`;
   if(pg.t==='toc'&&pg.hall){ const all=yrMeets(), left=yrLeft().length, me=WHO&&HV==='me'?WHO:'', my=WHO?all.filter(k=>holders(k).includes(WHO)).length:0;
     return `<div class="pg toc hall wk"><div class="tc2">연간 작품관</div>
-      <div class="hyr"><button type="button" aria-pressed="true">${HY} · 성장 중</button><button type="button" disabled title="12/20 뒤에 열려요">2019~${HY-1} · 12/20 뒤</button></div>
+      <div class="hyr">${YRS().reverse().map(y=>{ const lock=y!==HY0&&!PASTOK(); return `<button type="button" data-hy="${y}" aria-pressed="${y===HY}"${lock?' disabled title="12/20에 열려요"':''}>${y}${y===HY0?' · 성장 중':''}<small>${GBAND(y)}</small></button>`; }).join('')}${PASTOK()?'':'<span class="hyl">지난 해는 12/20에 열려요</span>'}</div>
       ${WHO?`<div class="htg" role="group" aria-label="누구의 별"><button type="button" data-hv="all" aria-pressed="${!me}">책미사 전체</button><button type="button" data-hv="me" aria-pressed="${!!me}">내 별만 밝게</button></div>`:''}
       <div class="h3d"><svg class="hart" viewBox="0 0 400 400" role="img" aria-label="${HY} 성좌">${hallArt(me,true)}</svg><div class="h3t" aria-live="polite"></div></div><div class="hbt"><button type="button" data-a="trav">🕳 시간 여행</button></div>
       <div class="hcnt">${WHO?`내 별 <b>${my}</b> / ${HY}년 별 ${all.length}`:`${HY}년 별 <b>${all.length}</b>`}${left?` · 남은 모임 ${left}`:''}</div>
@@ -2250,7 +2261,8 @@ function pageHTML(P,i,own){ const pg=P[i];
   // 모임 쪽 마지막 빈칸 = 책미사 카드첩(지나간 모임 카드)으로 가는 칸(11/25 카드첩 정리)
   const hl=pg.t==='meet'&&pg.last&&!HALL&&pg.xs.length<9;
   const cells=pg.xs.map(o=>`<div class="sl">${slotOf(o,own)}</div>`).join('')+'<div class="sl e"></div>'.repeat(9-pg.xs.length-(hl?1:0))+(hl?'<div class="sl"><button type="button" class="plk" data-a="hall"><span>✦</span>연간 작품관<br>보기 ›<small>${HY} 모임 카드 모두</small></button></div>':'');
-  return `<div class="pg ${pg.t}"><div class="pgh">${pg.h}</div><div class="pgg">${cells}</div><div class="pgf">${i+1}</div></div>`; }
+  const yj=pg.yj?`<div class="yj">${pg.yj.map(([y,ix])=>`<button type="button" data-yp="${ix}" aria-pressed="${y===pg.yr}">${y}</button>`).join('')}</div>`:'';
+  return `<div class="pg ${pg.t}"><div class="pgh">${pg.h}</div><div class="pgg">${cells}</div><div class="pgf">${yj||i+1}</div></div>`; }
 // 인장 쪽: 열리는 여섯 장르 위 두 줄, 지원독서는 아랫줄 첫 칸, 남은 두 칸은 한 줄 설명
 function stampPage(i){ const S=stampsOf(WHO), got=Object.keys(S).length, t2=STO.filter(g=>stTier(g,S[g])===2).length;
   const cells=STO.map(g=>{ const x=S[g], t=stTier(g,x), n=x?x.n:0, old=STOLD[g];
@@ -2279,7 +2291,7 @@ function bookView(){ bar.hidden=true; const own=owned(), P=bookPages(), dbl=two(
       <div class="cover"><div class="cvf"><div class="cvt">책미사 너머</div><div class="cve">${cvSym()}</div><div class="cvn">${HALL?'작 품 관':'카 드 첩'}</div><div class="cvp">${HALL?HY:WHO?esc(WHO):'나의 카드'}</div></div><div class="cvi"><div>${HALL?'이 작품관은<br><b>책미사 모두</b>의 것입니다.':`이 카드첩은<br><b>${WHO?esc(WHO)+'님':'당신'}</b>의 것입니다.`}</div></div></div>
     </div></div>
     <div class="bnav"><button type="button" data-a="prev" aria-label="앞 쪽">◀</button><span class="bpn"></span><button type="button" data-a="next" aria-label="다음 쪽">▶</button></div>
-    <nav class="btabs" aria-label="카드첩">${P.map((x,i)=>{ const t=tabOf(x); return t?`<button type="button" data-p="${i}" data-tab="${t}"><i aria-hidden="true">${TABI[t]||'·'}</i>${t}</button>`:''; }).join('')}</nav>`;
+    <nav class="btabs" aria-label="카드첩">${P.map((x,i)=>{ const t=tabOf(x); return t?`<button type="button" data-p="${i}" data-tab="${t}"><i aria-hidden="true">${TABI[t]||(/^\d{4}$/.test(t)?'◆':'·')}</i>${t}</button>`:''; }).join('')}</nav>`;
   bindTop();
   const tl=box.querySelector('[data-a="tolist"]'); if(tl) tl.onclick=()=>{ BMODE='list'; sset(BKEY,'list'); if(window.__ev) __ev('카드/한눈에 보기'); X.scrollTop=0; SEEN=true; albumView(); };
   box.querySelector('[data-a="prev"]').onclick=()=>turn(BP-(dbl?2:1));
@@ -2468,7 +2480,11 @@ addEventListener('keydown',e=>{ if(X.hidden||!SV.hidden||(BMODE!=='book'&&!HALL)
 #cx .pg.toc.wk{gap:6px;padding-top:14px}
 #cx .hyr,#cx .htg{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 #cx .hyr button,#cx .htg button{font-size:11px;border-radius:999px;padding:3px 10px;color:var(--ink-dim)}
-#cx .hyr button[aria-pressed="true"],#cx .htg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)} #cx .hyr button:disabled{opacity:.5;cursor:default}
+#cx .hyr button[aria-pressed="true"],#cx .htg button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+#cx .hyr button small{display:block;font-size:9px;letter-spacing:0;opacity:.7} #cx .hyl{flex-basis:100%;text-align:center;font-size:10.5px;color:var(--ink-faint)}
+#cx .pgh .yb{font-family:'Gowun Batang',serif;font-size:14px;letter-spacing:.04em;margin-right:6px;font-weight:600}
+#cx .pgh .gb{font-size:10px;letter-spacing:0;color:var(--ink-dim);border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:6px}
+#cx .yj{display:flex;gap:3px;flex-wrap:wrap;justify-content:center} #cx .yj button{font-size:10px;line-height:1.4;border-radius:999px;padding:0 7px;color:var(--ink-faint);background:none;border:1px solid var(--line)} #cx .yj button[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)} #cx .hyr button:disabled{opacity:.5;cursor:default}
 #cx .h3d{position:relative;width:100%;max-width:calc(var(--s)*3 + 16px);aspect-ratio:1;margin:0 auto;border-radius:10px;overflow:hidden;background:#03050b}
 #cx .h3d .hart{max-width:none;visibility:hidden} #cx .h3d.no .hart{visibility:visible} #cx .h3d.on .hart{display:none}
 #cx .h3c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
