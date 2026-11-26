@@ -1,0 +1,383 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#05070d"><style>html,body{margin:0;height:100%;background:#04060c}</style></head><body><title>자라는 비행체</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* 한 화면: 우주 전체가 캔버스, 위엔 비행체 이름·정거장, 아래엔 조종대, 오른쪽엔 부품 장부 */
+:root{
+  --void:#05070d; --ink:#e9eefb; --dim:#8a96b3; --gold:#ffd36a; --line:rgba(160,185,230,.22);
+  --panel:rgba(8,12,22,.72);
+  --display:"Gowun Batang","Nanum Myeongjo",serif;
+  --body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--void);color:var(--ink);font-family:var(--body);overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.top{text-shadow:0 1px 10px rgba(0,0,0,.95),0 0 3px rgba(0,0,0,.9);position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:0;right:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.stage{font-family:var(--display);font-size:clamp(22px,4vw,34px);font-weight:700;letter-spacing:.02em;text-wrap:balance}
+.stage small{font-size:.5em;font-weight:400;color:var(--dim);margin-left:.5em;letter-spacing:.08em}
+.now{font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums}
+.now b{color:var(--ink);font-weight:400}
+.ledger{position:fixed;right:max(16px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 92px);
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:5px 8px;align-items:center;backdrop-filter:blur(4px)}
+.ledger .h{grid-column:1/-1;font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%}
+.ledger .n{font-variant-numeric:tabular-nums;text-align:right;min-width:2ch}
+.ledger .m{color:var(--dim)}
+.ledger .g{grid-column:1/-1;border-top:1px solid var(--line);padding-top:6px;margin-top:2px;color:var(--gold);font-size:12px}
+.toast{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;
+  font-family:var(--display);opacity:0;transition:opacity .5s}
+.toast.on{opacity:1}
+.toast .a{font-size:15px;color:var(--dim)}
+.toast .b{font-size:clamp(18px,3vw,24px)}
+.ctrl{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:8px 16px;cursor:pointer}
+button:hover{border-color:rgba(255,211,106,.6)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.main{border-color:rgba(255,211,106,.7);color:var(--gold)}
+input[type=range]{flex:1 1 220px;max-width:520px;accent-color:var(--gold)}
+.size{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;min-width:9ch;text-align:center}
+.label{position:fixed;left:0;top:0;pointer-events:none;font-size:12px;color:var(--gold);white-space:nowrap;margin:-26px 0 0 10px;text-shadow:0 0 6px #000}
+@media (max-width:640px){
+  .ledger{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);right:auto;left:max(16px,env(safe-area-inset-left,0px));
+    grid-template-columns:auto auto auto auto auto auto;font-size:12px;padding:8px 10px}
+  .ledger .m{display:none}
+}
+</style>
+
+<canvas id="sky"></canvas>
+<div class="top">
+  <div class="stage" id="stage">아크<small>책미사 · 이름 없는 비행체</small></div>
+  <div class="now" id="now"></div>
+</div>
+<div class="ledger" id="ledger"></div>
+<div class="toast" id="toast"><div class="a" id="ta"></div><div class="b" id="tb"></div></div>
+<div class="ctrl">
+  <button class="main" id="play">▶ 첫 정거장부터 날기</button>
+  <input type="range" id="seek" min="0" max="170" value="170" aria-label="정거장">
+  <span class="size" id="size"></span>
+  <button id="speed">속도 1×</button>
+  <button id="view">멀리 보기</button>
+  <button id="today">지금 모습</button>
+</div>
+
+<script>
+(function(){
+// 정거장: 끝난 모임(정거장_자료.json) + 예정 모임 중 보는 사람 날짜로 이미 지난 것(다음 날부터 별이 켜짐)
+const UPCOMING = [["2026-11-28", "지정독서", "남에게 보여주려고 인생을 낭비하지 마라", "", "예정", "", ""], ["2026-12-05", "문학산책", "달과 6펜스", "", "예정", "", ""], ["2026-12-12", "지정독서", "러브 머신", "", "예정", "", ""], ["2026-12-19", "경제독서", "브레이크넥", "", "예정", "", ""], ["2026-12-26", "지정독서", "드디어 만나는 천문학 수업", "", "예정", "", ""]];
+const TODAY = (d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))(new Date());
+const R = [["2020-01-04", "오프모임", "공간혁명", "세라 윌리엄스 골드헤이건", "진행 중", "O", "law"], ["2020-02-08", "오프모임", "21세기를 위한 21가지 제언", "유발 하라리", "진행 중", "", "law"], ["2020-07-31", "오프모임", "불안한 사람들", "프레드릭 배크만", "진행 중", "", "land"], ["2021-01-23", "지정독서", "공정하다는 착각", "마이클 샌델", "진행 중", "", "law"], ["2021-10-16", "지정독서", "소크라테스 익스프레스", "에릭 와이너", "진행 중", "", "law"], ["2022-02-19", "문학산책", "동물농장", "조지 오웰", "진행 중", "", "land"], ["2022-03-16", "경제독서", "2022년 글로벌/우리나라 경제 트렌드는 어떻게 바뀔 것인가?", "", "?", "", "law"], ["2022-03-19", "문학산책", "파리대왕", "윌리엄 골딩", "진행 중", "", "land"], ["2022-04-02", "지정독서", "타인에 대한 연민", "마사 누스바움", "진행 중", "", "law"], ["2022-04-23", "문학산책", "호밀밭의 파수꾼", "J.D. 샐린저", "진행 중", "O", "land"], ["2022-05-07", "지정독서", "어서 오세요, 휴남동 서점입니다", "황보름", "완성", "O", "land"], ["2022-05-21", "문학산책", "오만과 편견", "제인 오스틴", "진행 중", "", "land"], ["2022-06-11", "지정독서", "작별인사", "김영하", "진행 중", "", "land"], ["2022-06-20", "한책읽기", "엔드 오브 타임", "브라이언 그린", "진행 중", "", "law"], ["2022-06-25", "문학산책", "참을 수 없는 존재의 가벼움", "밀란 쿤데라", "진행 중", "", "land"], ["2022-07-23", "문학산책", "변신", "프란츠 카프카", "진행 중", "", "land"], ["2022-08-03", "수요독서", "나를 살리는 논어 한마디", "판덩", "?", "", "law"], ["2022-08-15", "한책읽기", "지구는 괜찮아, 우리가 문제지", "곽재식", "진행 중", "", "law"], ["2022-08-20", "문학산책", "인간 실격", "다자이 오사무", "진행 중", "", "land"], ["2022-09-14", "수요독서", "이토록 친밀한 배신자", "마사 스타우트", "?", "", "law"], ["2022-09-24", "문학산책", "여름", "이디스 워튼", "진행 중", "", "land"], ["2022-09-25", "경제독서", "인피니트 게임", "사이먼 시넥", "진행 중", "", "law"], ["2022-09-26", "경제독서", "리스크 프레임", "미셸 부커", "진행 중", "", "law"], ["2022-09-30", "지정독서", "철학은 어떻게 삶의 무기가 되는가", "야마구치 슈", "진행 중", "", "law"], ["2022-10-03", "한책읽기", "뇌 과학의 모든 역사", "매튜 코브", "진행 중", "", "law"], ["2022-10-03", "경제독서", "숫자에 속지 않고 숫자 읽는 법", "톰 치버스·데이비드 치버스", "진행 중", "", "law"], ["2022-10-05", "경제독서", "보이지 않는 중국", "스콧 로젤·내털리 헬", "진행 중", "", "law"], ["2022-10-10", "수요독서", "부분과 전체", "베르너 하이젠베르크", "진행 중", "", "law"], ["2022-10-22", "문학산책", "자기 앞의 生", "로맹 가리", "진행 중", "", "land"], ["2022-10-26", "경제독서", "중동을 보면 미래경제가 보인다", "임성수·손원호", "진행 중", "", "law"], ["2022-10-29", "지정독서", "당신의 삶에 명상이 필요할 때", "앤디 퍼디컴", "진행 중", "", "law"], ["2022-11-05", "지원독서", "위대한 과학 고전 30권을 1권으로 읽는 책", "김성근", "진행 중", "", "law"], ["2022-11-21", "오프모임", "19호실로 가다", "도리스 레싱", "진행 중", "", "land"], ["2022-11-26", "문학산책", "멋진 신세계", "올더스 헉슬리", "진행 중", "", "land"], ["2022-11-30", "경제독서", "자이언트 임팩트", "박종훈", "진행 중", "", "law"], ["2022-12-03", "지원독서", "팀장의 본질", "장윤혁", "진행 중", "", "law"], ["2023-01-02", "한책읽기", "이기적 유전자", "리처드 도킨스", "진행 중", "", "law"], ["2023-01-08", "수요독서", "인간이 만든 물질, 물질이 만든 인간", "마크 미오도닉", "진행 중", "", "law"], ["2023-01-09", "문학산책", "브람스를 좋아하세요", "프랑수아즈 사강", "진행 중", "", "land"], ["2023-01-19", "지정독서", "영화를 빨리 감기로 보는 사람들", "이나다 도요시", "진행 중", "", "law"], ["2023-01-21", "경제독서", "장하준의 경제학 강의", "장하준", "진행 중", "", "law"], ["2023-02-02", "지정독서", "물고기는 존재하지 않는다", "룰루 밀러", "진행 중", "", "law"], ["2023-02-10", "지정독서", "자기돌봄의 시", "나태주", "진행 중", "", "land"], ["2023-02-12", "수요독서", "괴델, 에셔, 바흐", "더글러스 호프스태터", "진행 중", "", "law"], ["2023-02-25", "오프모임", "책 읽어주는 남자", "베른하르트 슐링크", "진행 중", "O", "land"], ["2023-02-26", "경제독서", "스케일의 법칙", "존 리스트", "진행 중", "", "law"], ["2023-03-02", "한책읽기", "위어드", "조지프 헨릭", "진행 중", "", "law"], ["2023-03-07", "지정독서", "과부하 시대", "로라 판 더누트 립스키", "진행 중", "", "law"], ["2023-03-16", "지정독서", "인비저블", "데이비드 즈와이그", "진행 중", "", "law"], ["2023-03-20", "문학산책", "파우스트", "요한 볼프강 폰 괴테", "진행 중", "", "land"], ["2023-03-22", "경제독서", "마케팅 설계자", "러셀 브런슨", "진행 중", "", "law"], ["2023-04-05", "지정독서", "디컨슈머", "J. B. 매키넌", "진행 중", "", "law"], ["2023-04-19", "문학산책", "그리스인 조르바", "니코스 카잔차키스", "진행 중", "", "land"], ["2023-04-24", "경제독서", "AI 2041", "리카이푸·천치우판", "진행 중", "", "law"], ["2023-05-06", "오프모임", "그들의 생각을 바꾸는 방법", "데이비드 맥레이니", "진행 중", "O", "law"], ["2023-05-30", "수요독서", "현대미술", "K. 해리스", "진행 중", "", "law"], ["2023-05-30", "경제독서", "브라질에 비가 내리면 스타벅스 주식을 사라", "피터 나바로", "진행 중", "O", "law"], ["2023-05-30", "문학산책", "이방인", "알베르 카뮈", "진행 중", "", "land"], ["2023-06-05", "한책읽기", "메트로폴리스", "벤 윌슨", "진행 중", "", "law"], ["2023-06-09", "지정독서", "세이노의 가르침", "세이노", "진행 중", "", "law"], ["2023-06-16", "문학산책", "욕망이라는 이름의 전차", "테네시 윌리엄스", "진행 중", "", "land"], ["2023-06-24", "경제독서", "세컨드 브레인", "티아고 포르테", "진행 중", "", "law"], ["2023-07-08", "오프모임", "나의 돈 많은 고등학교친구", "송희구", "진행 중", "O", "land"], ["2023-07-18", "수요독서", "불확실성의 시대", "존 케네스 갤브레이스", "진행 중", "", "law"], ["2023-07-21", "문학산책", "금각사", "미시마 유키오", "진행 중", "", "land"], ["2023-07-29", "경제독서", "도둑맞은 집중력", "요한 하리", "진행 중", "", "law"], ["2023-08-04", "지원독서", "탁월함에 이르는 피터 드러커의 습관", "문정엽", "진행 중", "", "law"], ["2023-08-10", "지정독서", "미술관에 간 클래식", "박소현", "진행 중", "", "law"], ["2023-08-19", "한책읽기", "이토록 굉장한 세계", "에드 용", "진행 중", "", "law"], ["2023-08-21", "경제독서", "비열한 시장과 도마뱀의 뇌", "테리 번햄", "진행 중", "", "law"], ["2023-08-21", "문학산책", "이반 일리치의 죽음", "레프 톨스토이", "진행 중", "", "land"], ["2023-09-01", "지원독서", "시몽의 아빠", "기 드 모파상", "진행 중", "", "land"], ["2023-09-09", "오프모임", "살아 있는 것은 모두 게임을 한다", "모시 호프먼·에레즈 요엘리", "진행 중", "O", "law"], ["2023-09-16", "문학산책", "예감은 틀리지 않는다", "줄리언 반스", "진행 중", "", "land"], ["2023-09-20", "수요독서", "유현준의 인문건축기행", "유현준", "진행 중", "", "law"], ["2023-09-22", "경제독서", "브랜드 설계자", "러셀 브런슨", "진행 중", "", "law"], ["2023-10-13", "지정독서", "노화의 재설계", "모건 레빈", "진행 중", "", "law"], ["2023-10-20", "문학산책", "파이 이야기", "얀 마텔", "진행 중", "", "land"], ["2023-10-29", "경제독서", "슈퍼사이트", "데이비드 로즈", "진행 중", "", "law"], ["2023-11-16", "문학산책", "프랑켄슈타인", "메리 셸리", "진행 중", "", "land"], ["2023-11-18", "오프모임", "우리는 모든 것의 주인이기를 원한다", "브루스 후드", "완성", "O", "law"], ["2023-11-20", "수요독서", "기계 속의 악마", "폴 데이비스", "진행 중", "O", "law"], ["2023-11-23", "경제독서", "인간을 진화 시키는 AI", "리드 호프먼", "진행 중", "", "law"], ["2023-12-08", "오프모임", "아침 그리고 저녁", "욘 포세", "완성", "O", "land"], ["2023-12-15", "지정독서", "시대예보:핵개인의 시대", "송길영", "진행 중", "", "law"], ["2023-12-28", "경제독서", "스태그플레이션 2024년 경제전망", "김광석", "진행 중", "", "law"], ["2024-01-13", "지정독서", "신은 주사위놀이를 하지 않는다", "데이비드 핸드", "완성", "O", "law"], ["2024-01-14", "수요독서", "일론 머스크", "월터 아이작슨", "진행 중", "", "law"], ["2024-01-19", "문학산책", "지킬 앤 하이드", "로버트 루이스 스티븐슨", "진행 중", "", "land"], ["2024-01-27", "경제독서", "히트 리프레시", "사티아 나델라", "진행 중", "", "law"], ["2024-01-28", "문학산책", "토지", "박경리", "?", "", "land"], ["2024-02-03", "문학산책", "칠드런 액트", "이언 매큐언", "진행 중", "", "land"], ["2024-02-13", "한책읽기", "코스모스", "칼 세이건", "진행 중", "", "law"], ["2024-02-17", "오프모임", "보보스", "데이비드 브룩스", "진행 중", "O", "law"], ["2024-02-23", "경제독서", "레버리지", "롭 무어", "진행 중", "", "law"], ["2024-03-09", "지정독서", "모순", "양귀자", "완성", "O", "land"], ["2024-03-14", "문학산책", "도리언 그레이의 초상", "오스카 와일드", "진행 중", "", "land"], ["2024-03-24", "오프모임", "맡겨진 소녀", "클레어 키건", "완성", "O", "land"], ["2024-03-26", "수요독서", "열린사회와 그 적들", "칼 포퍼", "진행 중", "", "law"], ["2024-03-30", "경제독서", "초월기업의 법칙", "스탠 버나드", "진행 중", "", "law"], ["2024-04-01", "한책읽기", "군중의 망상", "윌리엄 번스타인", "진행 중", "", "law"], ["2024-04-04", "지정독서", "아무튼, 술, 클래식, 식물", "김혼비·김호경·임이랑", "진행 중", "", "law"], ["2024-04-13", "오프모임", "빅 픽처", "더글라스 케네디", "진행 중", "", "land"], ["2024-04-18", "문학산책", "두 도시 이야기", "찰스 디킨스", "진행 중", "", "land"], ["2024-04-22", "수요독서", "링크", "앨버트 라슬로 바라바시", "진행 중", "", "law"], ["2024-04-25", "경제독서", "불변의 법칙", "모건 하우절", "진행 중", "", "law"], ["2024-05-12", "지정독서", "메리골드 마음사진관", "윤정은", "진행 중", "", "land"], ["2024-05-25", "경제독서", "히든 포텐셜", "애덤 그랜트", "진행 중", "", "law"], ["2024-06-14", "지정독서", "우리는 여전히 삶을 사랑하는가", "에리히 프롬", "진행 중", "", "law"], ["2024-06-21", "문학산책", "케이크와 맥주", "서머싯 몸", "진행 중", "", "land"], ["2024-07-01", "한책읽기", "세포의 노래", "싯다르타 무케르지", "진행 중", "", "law"], ["2024-07-07", "지정독서", "미움받을 용기", "기시미 이치로·고가 후미타케", "진행 중", "", "law"], ["2024-07-24", "경제독서", "부자의 언어", "존 소포릭", "진행 중", "", "law"], ["2024-07-24", "문학산책", "위대한 개츠비", "F. 스콧 피츠제럴드", "진행 중", "", "land"], ["2024-08-09", "오프모임", "이처럼 사소한 것들", "클레어 키건", "진행 중", "", "land"], ["2024-09-01", "경제독서", "어떻게 팔지 막막할 때 읽는 카피 책", "톰 올브라이튼", "진행 중", "", "law"], ["2024-09-03", "지정독서", "진정성이라는 거짓말", "앤드류 포터", "진행 중", "", "law"], ["2024-09-03", "문학산책", "나 같은 기계들", "이언 매큐언", "진행 중", "", "land"], ["2024-09-08", "지정독서", "내 영혼이 따뜻했던 날들", "포리스트 카터", "진행 중", "", "land"], ["2024-09-21", "수요독서", "뉴맵", "대니얼 예긴", "진행 중", "", "law"], ["2024-09-26", "경제독서", "컨셉 수업", "호소다 다카히로", "진행 중", "", "law"], ["2024-10-01", "한책읽기", "꿈의 인문학", "싯다르타 히베이루", "진행 중", "", "law"], ["2024-10-12", "오프모임", "시간의 지배자", "토머스 서든도프 외", "완성", "O", "law"], ["2024-10-19", "문학산책", "연인", "마르그리트 뒤라스", "진행 중", "", "land"], ["2024-10-23", "수요독서", "수학자의 생각법", "마커스 드 사토이", "?", "", "law"], ["2024-10-30", "지정독서", "나는 왜 이런 사람이 됐을까?", "네시베 카흐라만", "진행 중", "", "law"], ["2024-11-11", "지정독서", "온전히 평등하고 지극히 차별적인", "김원영", "진행 중", "", "law"], ["2024-11-21", "문학산책", "소년이 온다", "한강", "진행 중", "", "land"], ["2024-11-27", "경제독서", "AI 반도체 혁명", "권순우 외", "진행 중", "", "law"], ["2024-12-20", "오프모임", "프랭클린 익스프레스", "에릭 와이너", "진행 중", "", "law"], ["2025-01-11", "지정독서", "시대예보:호명사회", "송길영", "완성", "O", "law"], ["2025-01-18", "경제독서", "지금 당장 양자컴퓨터에 투자하라", "권중현", "진행 중", "O", "law"], ["2025-02-01", "문학산책", "싯다르타", "헤르만 헤세", "완성", "O", "land"], ["2025-02-06", "한책읽기", "넥서스", "유발 하라리", "?", "", "law"], ["2025-02-08", "문학산책", "글쓰기의 힘", "사이토 다카시", "진행 중", "", "law"], ["2025-02-22", "오프모임", "질투라는 감옥", "야마모토 케이", "완성", "O", "law"], ["2025-02-26", "지정독서", "양자컴퓨터의 미래", "미치오 카쿠", "진행 중", "", "law"], ["2025-03-22", "문학산책", "맥베스", "윌리엄 셰익스피어", "진행 중", "", "land"], ["2025-04-05", "경제독서", "초예측 트럼프 2.0 새로운 시대", "유발 하라리, 폴 크루그먼, 짐 로저스, 폴 댄스, 이안 브레머 외 5명", "진행 중", "", "law"], ["2025-04-17", "수요독서", "공급망 붕괴의 시대", "피터 S. 굿맨", "?", "", "law"], ["2025-04-26", "경제독서", "미국주식 처음공부", "수미숨(상의민), 애나정", "진행 중", "", "law"], ["2025-05-08", "한책읽기", "메소드", "아이작 버틀러", "?", "", "law"], ["2025-05-10", "오프모임", "순수의 시대", "이디스 워튼", "진행 중", "O", "land"], ["2025-05-24", "문학산책", "스토너", "존 윌리엄스", "진행 중", "", "land"], ["2025-05-31", "경제독서", "셰일 혁명과 미국 없는 세계", "피터 자이한", "진행 중", "", "law"], ["2025-06-21", "문학산책", "카라마조프가의 형제들", "표도르 도스토옙스키", "?", "", "land"], ["2025-07-12", "수요독서", "굿 에너지", "케이시 민스", "진행 중", "", "law"], ["2025-07-26", "지정독서", "지리의 힘 1", "팀 마샬", "진행 중", "", "law"], ["2025-08-23", "지정독서", "지리의 힘 2", "팀 마샬", "진행 중", "", "law"], ["2025-08-30", "경제독서", "환율의 대전환", "오건영", "진행 중", "", "law"], ["2025-11-15", "지정독서", "경험의 멸종", "크리스틴 로젠", "진행 중", "", "law"], ["2026-01-31", "지정독서", "편안함의 습격", "마이클 이스터", "진행 중", "", "law"], ["2026-02-14", "오프모임", "사이토 히토리의 어떻게 살 것인가", "사이토 히토리", "녹음 없음", "", "law"], ["2026-02-28", "경제독서", "배터리 전쟁", "강희종", "?", "", "law"], ["2026-03-21", "문학산책", "노인과 바다", "어니스트 헤밍웨이", "진행 중", "", "land"], ["2026-04-11", "문학산책", "그러나 꽃보다도 적게 산 나여", "나희덕", "진행 중", "", "land"], ["2026-04-18", "경제독서", "워런 버핏 전설의 투자자", "토드 A. 핑클", "?", "O", "law"], ["2026-05-09", "경제독서", "신약의 전쟁", "윤태진", "진행 중", "", "law"], ["2026-06-20", "문학산책", "백년의 고독", "가브리엘 가르시아 마르케스", "녹음 없음", "", "land"], ["2026-07-04", "지정독서", "읽기의 위기", "크리스토프 엥게만", "진행 중", "O", "law"], ["2026-07-25", "지정독서", "우아한 사고를 위한 철학", "호세 카를로스 루이스", "완성", "O", "law"], ["2026-08-12", "수요독서", "마침내 특이점이 시작된다", "레이 커즈와일", "?", "", "law"], ["2026-08-22", "지정독서", "어떻게 살아낼 것인가", "짐 콜린스", "?", "", "law"], ["2026-08-29", "문학산책", "윗집 부부", "황보름", "완성", "O", "land"], ["2026-09-12", "문학산책", "너무 시끄러운 고독", "보후밀 흐라발", "완성", "O", "land"], ["2026-10-17", "문학산책", "죄와 벌", "표도르 도스토옙스키", "완성", "O", "land"], ["2026-10-24", "지정독서", "리더는 언제 차이를 만들어내는가", "재레드 다이아몬드", "완성", "O", "law"], ["2026-11-07", "지정독서", "가호", "무라카미 하루키", "완성", "O", "land"], ["2026-11-14", "지정독서", "다시, 책으로", "매리언 울프", "완성", "O", "law"], ["2026-11-21", "문학산책", "빨강의 자서전", "앤 카슨", "완성", "O", "land"]].concat(UPCOMING.filter(r=>r[0]<TODAY));
+const SHIP = [{"w": 443, "h": 196, "eng": [0.16443827053307863, 0.4951962323390895], "espan": 0.12755102040816327, "lights": [[0.4108, 0.6276], [0.4266, 0.7194], [0.4312, 0.2245], [0.4424, 0.4286], [0.456, 0.2143], [0.456, 0.7296], [0.4718, 0.4337], [0.5214, 0.148], [0.526, 0.4082], [0.5847, 0.1378], [0.6005, 0.4133], [0.6614, 0.4235], [0.7336, 0.4082], [0.7585, 0.4439], [0.763, 0.3878], [0.7675, 0.1837], [0.7878, 0.6837], [0.7968, 0.4082], [0.8014, 0.4643], [0.8172, 0.6939], [0.8217, 0.4286], [0.8375, 0.7806], [0.851, 0.3827], [0.851, 0.4439], [0.8758, 0.4235], [0.8871, 0.4949], [0.9187, 0.4694]]}, {"w": 169, "h": 81, "eng": [0.14699470569915912, 0.5009746588693957], "espan": 0.08641975308641975, "lights": [[0.497, 0.5556], [0.5266, 0.3704], [0.5503, 0.5432], [0.5799, 0.5432], [0.7219, 0.4321], [0.7633, 0.4568], [0.7929, 0.4815], [0.8107, 0.4444], [0.8343, 0.4691], [0.8639, 0.4815]]}, {"w": 236, "h": 115, "eng": [0.12124111536358666, 0.5099579242636746], "espan": 0.0782608695652174, "lights": [[0.2669, 0.1304], [0.4831, 0.3739], [0.5085, 0.3739], [0.5169, 0.5391], [0.5466, 0.3739], [0.589, 0.3826], [0.6102, 0.5391], [0.7076, 0.4174], [0.7458, 0.4174], [0.7754, 0.4609], [0.822, 0.4435], [0.8517, 0.4696], [0.8814, 0.4696]]}, {"w": 759, "h": 421, "eng": [0.0983647213826242, 0.4694313259745703], "espan": 0.24465558194774348, "lights": [[0.1265, 0.3017], [0.1357, 0.62], [0.1858, 0.9406], [0.1884, 0.3135], [0.1937, 0.6128], [0.1989, 0.0451], [0.2134, 0.9454], [0.2253, 0.0641], [0.2358, 0.6081], [0.2437, 0.924], [0.2582, 0.0689], [0.2951, 0.8147], [0.2964, 0.8907], [0.303, 0.3872], [0.3175, 0.7245], [0.3202, 0.4466], [0.3267, 0.8052], [0.3307, 0.3895], [0.336, 0.2304], [0.3518, 0.6366], [0.386, 0.6271], [0.39, 0.4038], [0.4137, 0.3492], [0.4177, 0.6366], [0.4177, 0.7553], [0.4401, 0.2755], [0.4414, 0.3492], [0.4453, 0.4941], [0.4796, 0.3468], [0.4796, 0.4941], [0.4862, 0.6675], [0.4914, 0.5819], [0.5217, 0.3492], [0.5428, 0.5012], [0.5428, 0.5962], [0.5507, 0.3515], [0.5665, 0.5226], [0.5916, 0.5748], [0.5955, 0.5012], [0.6074, 0.3658], [0.6271, 0.5368], [0.6311, 0.3444], [0.6522, 0.4371], [0.668, 0.4869], [0.6798, 0.2732], [0.6864, 0.5249], [0.6957, 0.6057], [0.7128, 0.5511], [0.7378, 0.6033], [0.7457, 0.4323], [0.7721, 0.4323], [0.8221, 0.4157], [0.8524, 0.4584], [0.8827, 0.3753], [0.8854, 0.4394], [0.9117, 0.4608], [0.9157, 0.5368], [0.917, 0.4038], [0.9381, 0.4418], [0.9631, 0.4656]]}, {"w": 828, "h": 461, "eng": [0.09375274483970136, 0.5323131532242161], "espan": 0.2950108459869848, "lights": [[0.2609, 0.397], [0.2609, 0.4447], [0.2766, 0.3341], [0.2923, 0.6052], [0.3104, 0.4252], [0.3297, 0.6052], [0.3333, 0.449], [0.3466, 0.3254], [0.3563, 0.4772], [0.378, 0.8547], [0.3853, 0.5011], [0.4022, 0.5401], [0.4179, 0.4013], [0.4372, 0.5033], [0.4384, 0.256], [0.4517, 0.5466], [0.4698, 0.2343], [0.4698, 0.4056], [0.471, 0.4859], [0.471, 0.7874], [0.4831, 0.7354], [0.4964, 0.4056], [0.4976, 0.2798], [0.5097, 0.7289], [0.5193, 0.3319], [0.5278, 0.564], [0.5374, 0.7289], [0.5556, 0.5662], [0.564, 0.4035], [0.5688, 0.6703], [0.5785, 0.7419], [0.5809, 0.5575], [0.6087, 0.5683], [0.6184, 0.7332], [0.6341, 0.5727], [0.6679, 0.4013], [0.6775, 0.4599], [0.6944, 0.7375], [0.6957, 0.4252], [0.7114, 0.3861], [0.7222, 0.3297], [0.7319, 0.7484], [0.7391, 0.5879], [0.7403, 0.4013], [0.7452, 0.6486], [0.7548, 0.4469], [0.7705, 0.3297], [0.7814, 0.4143], [0.7862, 0.5857], [0.7959, 0.4967], [0.8031, 0.6377], [0.82, 0.4165], [0.8394, 0.5271], [0.8563, 0.6247], [0.8575, 0.4946], [0.8865, 0.4946], [0.8937, 0.538], [0.9203, 0.5011], [0.942, 0.577], [0.9589, 0.538]]}, {"w": 792, "h": 546, "eng": [0.08992796820665673, 0.5117876658860266], "espan": 0.11172161172161173, "lights": [[0.1301, 0.4011], [0.1717, 0.3535], [0.2525, 0.3773], [0.2866, 0.3718], [0.3737, 0.1685], [0.3813, 0.4469], [0.3838, 0.4103], [0.3927, 0.3187], [0.399, 0.6832], [0.4015, 0.2747], [0.4091, 0.3718], [0.4116, 0.2253], [0.4242, 0.7582], [0.4255, 0.5604], [0.447, 0.1117], [0.4495, 0.8352], [0.4684, 0.0916], [0.4697, 0.3498], [0.4823, 0.5696], [0.4848, 0.6905], [0.4874, 0.3223], [0.4874, 0.4634], [0.4924, 0.619], [0.4962, 0.533], [0.5038, 0.0623], [0.5114, 0.4158], [0.5114, 0.5733], [0.5189, 0.9231], [0.5202, 0.3407], [0.5265, 0.6172], [0.5328, 0.293], [0.5379, 0.5788], [0.5455, 0.348], [0.5492, 0.7051], [0.5518, 0.2344], [0.5593, 0.315], [0.5644, 0.4689], [0.5669, 0.4066], [0.5682, 0.0806], [0.572, 0.3516], [0.572, 0.5714], [0.5846, 0.3095], [0.5922, 0.6813], [0.601, 0.3553], [0.6149, 0.4048], [0.6199, 0.6868], [0.6515, 0.4249], [0.678, 0.5073], [0.6793, 0.4011], [0.7083, 0.4194], [0.7348, 0.5018], [0.7412, 0.5916], [0.7424, 0.4121], [0.7639, 0.6172], [0.7765, 0.4121], [0.7841, 0.5952], [0.8232, 0.4267], [0.8472, 0.5256], [0.851, 0.6136], [0.9722, 0.5037]]}];
+const KIND = {'문학산책':'#ffe9b8','지정독서':'#b9a4ff','경제독서':'#6fe3ff','오프모임':'#ff8a7a','수요독서':'#7fffd0','한책읽기':'#cfe6ff','지원독서':'#ff9bd2'};
+// 행성 색: 모임 종류마다 [밝은 색, 어두운 색, 대기 빛]
+const PAL = {'문학산책':[[226,170,110],[92,52,40],'255,190,130'],'지정독서':[[150,130,220],[40,32,80],'170,150,255'],'경제독서':[[90,190,210],[16,52,74],'110,220,255'],
+  '오프모임':[[220,120,100],[70,30,34],'255,140,110'],'수요독서':[[100,200,160],[18,60,52],'120,255,200'],'한책읽기':[[190,205,225],[50,62,90],'200,225,255'],'지원독서':[[220,140,190],[70,30,60],'255,160,210']};
+const STAGES = [[0,'스파크'],[10,'글라이더'],[30,'스카우트'],[60,'크루저'],[100,'캐리어'],[140,'아크']];
+const stageIx = n => STAGES.filter(s => n >= s[0]).length - 1;
+const $ = id => document.getElementById(id);
+function hash(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+const ease=q=>q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2, lerp=(a,b,t)=>a+(b-a)*t, lerpLog=(a,b,t)=>Math.exp(lerp(Math.log(a),Math.log(b),t));
+
+const cv=$('sky'), ctx=cv.getContext('2d');
+let W=0,Hs=0,DPR=1;
+function resize(){ DPR=Math.min(2,devicePixelRatio||1); W=innerWidth; Hs=innerHeight; cv.width=W*DPR; cv.height=Hs*DPR; }
+addEventListener('resize',resize); resize();
+
+// ---- 행성: 에스파다 그림(종류마다 다섯 모습) + 지평선 그림 ----
+const PJ = {"0_0": [305, 306, 0.5016, 0.4984, 0.4869], "1_0": [307, 307, 0.5016, 0.4984, 0.4853], "2_0": [301, 301, 0.5017, 0.4983, 0.485], "3_0": [304, 304, 0.5016, 0.4984, 0.4852], "4_0": [358, 359, 0.4162, 0.5836, 0.4036], "5_0": [306, 306, 0.5016, 0.4984, 0.4853], "6_0": [351, 372, 0.4744, 0.4987, 0.4231], "0_1": [306, 307, 0.5016, 0.4984, 0.4869], "1_1": [307, 307, 0.5016, 0.4984, 0.4853], "2_1": [305, 305, 0.5016, 0.4984, 0.4852], "3_1": [302, 303, 0.5017, 0.4983, 0.4868], "4_1": [365, 365, 0.4164, 0.5836, 0.4027], "5_1": [304, 304, 0.5016, 0.4984, 0.4852], "6_1": [355, 365, 0.4507, 0.4986, 0.4113], "0_2": [307, 308, 0.5016, 0.4984, 0.487], "1_2": [310, 310, 0.5016, 0.4984, 0.4855], "2_2": [311, 310, 0.5016, 0.4984, 0.4839], "3_2": [310, 310, 0.5016, 0.4984, 0.4855], "4_2": [358, 359, 0.4162, 0.5836, 0.4036], "5_2": [316, 316, 0.5016, 0.4984, 0.4858], "6_2": [342, 373, 0.5, 0.4987, 0.4357], "0_3": [295, 296, 0.5017, 0.4983, 0.4864], "1_3": [294, 295, 0.5017, 0.4983, 0.4864], "2_3": [288, 289, 0.5017, 0.4983, 0.4861], "3_3": [291, 291, 0.5017, 0.4983, 0.4845], "4_3": [335, 335, 0.4164, 0.5821, 0.403], "5_3": [291, 292, 0.5017, 0.4983, 0.4863], "6_3": [349, 357, 0.5057, 0.4986, 0.4097], "0_4": [308, 308, 0.5016, 0.4984, 0.4854], "1_4": [311, 311, 0.5016, 0.4984, 0.4855], "2_4": [307, 307, 0.5016, 0.4984, 0.4853], "3_4": [311, 311, 0.5016, 0.4984, 0.4855], "4_4": [365, 366, 0.4164, 0.5833, 0.4041], "5_4": [313, 313, 0.5016, 0.4984, 0.4856], "6_4": [338, 378, 0.4837, 0.4987, 0.4482], "0_5": [226, 227, 0.5022, 0.4978, 0.4867], "1_5": [224, 225, 0.5022, 0.4978, 0.4866], "2_5": [226, 226, 0.5022, 0.4978, 0.4845], "3_5": [225, 225, 0.5022, 0.4978, 0.4844], "4_5": [269, 269, 0.4164, 0.5818, 0.4033], "5_5": [224, 225, 0.5022, 0.4978, 0.4866], "6_5": [382, 274, 0.5615, 0.4982, 0.2866], "0_6": [205, 204, 0.5024, 0.4975, 0.4854], "1_6": [221, 221, 0.5023, 0.4977, 0.4842], "2_6": [219, 220, 0.5023, 0.4977, 0.4863], "3_6": [220, 221, 0.5023, 0.4977, 0.4864], "4_6": [255, 245, 0.4176, 0.5633, 0.4039], "5_6": [223, 223, 0.5022, 0.4978, 0.4843], "6_6": [385, 258, 0.5545, 0.5116, 0.2753]};
+const KI = {'문학산책':0,'지정독서':1,'경제독서':2,'오프모임':3,'수요독서':4,'한책읽기':5,'지원독서':6};
+// 지평선 그림이 아직 없는 종류는 비슷한 그림의 색을 틀어서 씀
+const HAVE_HZ = [0, 1, 2, 3, 4, 5];
+const HAVE_GR = [0, 1, 2, 3, 4, 5, 6];
+// 영상(내려감·낮게 날기)이 있는 종류: {종류번호:{down:1,low:1}}
+const VID = {"0": {"down": 1, "low": 1}, "1": {"down": 1, "low": 1}, "2": {"down": 1, "low": 1}, "3": {"down": 1, "low": 1}, "4": {"down": 1, "low": 1}, "5": {"down": 1, "low": 1}, "6": {"down": 1, "low": 1}}, VEL={};
+function vidOf(k){ if(!VID[k]) return null; if(VEL[k]) return VEL[k];
+  const mk=n=>{ if(!VID[k][n]) return null; const v=document.createElement('video'); v.src='planet/v'+k+'_'+n+'.mp4'; v.muted=true; v.playsInline=true; v.preload='auto'; v.loop=n==='low'; return v; };
+  return VEL[k]={down:mk('down'), low:mk('low')}; }
+let inside=null;   // 지금 영상으로 나는 별 {i, el(지난 시간)}
+const vDur=V=>(V&&V.down&&V.down.duration)||5;   // 지면 가까이(낮게 나는 하늘) 그림이 있는 종류
+const HZ = [['h0',''],['h1',''],['h2',''],['h3',''],['h4',''],['h1','hue-rotate(-55deg) saturate(.55) brightness(1.1)'],['h3','hue-rotate(-38deg) saturate(.9)']].map((x,k)=>HAVE_HZ.includes(k)?['h'+k,'']:x);
+const CACHE={}; const img=src=>CACHE[src]||(CACHE[src]=Object.assign(new Image(),{src}));
+let bgYear=2026, bgPrev=2026, bgFade=1;
+function drawBg(y,a,z){ const im=img('planet/bg'+Math.max(2020,Math.min(2026,y))+'.jpg'); if(!im.complete||!im.naturalWidth||a<=0) return;
+  const sc=Math.max(W/im.naturalWidth,Hs/im.naturalHeight)*z, w=im.naturalWidth*sc, h=im.naturalHeight*sc;
+  ctx.save(); ctx.globalAlpha=a; if(im.naturalWidth<1400&&'filter' in ctx) ctx.filter='blur('+Math.max(1,W/im.naturalWidth*.9).toFixed(1)+'px)'; ctx.drawImage(im,(W-w)/2,(Hs-h)/2,w,h); ctx.restore(); }
+for(let y=2020;y<=2026;y++) img('planet/bg'+y+'.jpg');
+// ---- 끊기지 않는 비행: 별(행성)은 앞쪽 소실점에서 작게 나타나 점점 커지고, 비행체 곁을 스쳐 화면 밖으로 ----
+// u = 지나온 거리(정거장 단위, 소수). 행성 i는 t=u-i 가 1일 때 비행체 바로 곁(도착), 그 사이 다음 별이 이미 멀리 보임
+const PL={};
+function planetOf(i){ if(PL[i]) return PL[i];
+  const r=R[i], k=KI[r[1]]??5, v=Math.floor(hash(r[2])*7)%7, key=k+'_'+v, h=hash(r[2]+'o');
+  const dive = r[5]==='O' || hash(r[2]+'d')<.5;   // 들어갔다 나오는 별(후기 쓴 금빛 별은 늘) / 나머지는 곁을 스침
+  const off = dive ? [-.036,.077] : h<.55 ? [-.11,.35] : h<.8 ? [-.21,.31] : [-.17,-.31];   // 들어감 / 발밑으로 스침 / 왼쪽 아래로 / 머리 위로
+  return PL[i]={i,k,dive,vid:dive?vidOf(k):null,lo:HAVE_GR.includes(k)?img('planet/g'+k+'.jpg'):null,info:PJ[key],im:img('planet/p'+key+'.png'),hz:img('planet/'+HZ[k][0]+'.jpg'),filt:HZ[k][1],flip:hash(r[2]+'f')<.5,pan:hash(r[2]+'p'),off}; }
+const VP=()=>({x:W*.70,y:Hs*.23});
+function geom(p,t){ const d=p.dive ? .02+3.5*Math.pow(Math.max(0,1.05-t),2) : .12+3.5*Math.pow(Math.max(0,1.3-t),2), v=VP(); return {cx:v.x+p.off[0]*W/d, cy:v.y+p.off[1]*Hs/d, r:Hs*.25/d}; }
+// 들어가는 별: 행성이 화면을 다 덮을 만큼 커지며 그 안이 지평선 하늘로 → 그 위를 날다가 → 솟아오르면 땅이 둥근 지평선이 되어 아래로 빠짐
+const hzCv=document.createElement('canvas'), hx=hzCv.getContext('2d');
+const sm=(x,a,b)=>{ const q=Math.max(0,Math.min(1,(x-a)/(b-a))); return q*q*(3-2*q); };
+// 행성 안 머묾(q 0→1) 중 지면 가까이 나는 정도: 궤도 → 내려감 → 낮게 → 솟음
+const lowF=q=>sm(q,.12,.32)*(1-sm(q,.8,.96));
+function ready(p){ return p.lo&&p.lo.complete&&p.lo.naturalWidth; }
+function hzScreen(c,p,t,dy,zm){ const im=p.hz; if(!im.complete||!im.naturalWidth) return false;
+  const sc=Math.max(W/im.naturalWidth,Hs/im.naturalHeight)*1.28*(zm||1), w=im.naturalWidth*sc, h=im.naturalHeight*sc, pan=Math.max(-.5,Math.min(.5,(t-1.25)*.55+(p.pan-.5)*.3));
+  c.save(); if(p.filt&&'filter' in c) c.filter=p.filt; c.drawImage(im,(W-w)/2-pan*(w-W),(Hs-h)/2+(h-Hs)*.2+dy,w,h); c.restore(); return true; }
+function drawDive(p,t,alpha){
+  if(t<1){ const G=geom(p,t), {cx,cy,r}=G; drawPlanetAt(p,G,alpha,t,true);
+    const ha=Math.max(0,Math.min(1,(r/Hs-.35)/.6)); if(ha<=0) return 0;
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r*.995,0,Math.PI*2); ctx.clip(); ctx.globalAlpha=ha; hzScreen(ctx,p,t,0); ctx.restore();
+    if(ha<1){ const pal=PAL[R[p.i][1]]||PAL['한책읽기'], g=ctx.createRadialGradient(cx,cy,r*.85,cx,cy,r*1.05); g.addColorStop(0,'rgba('+pal[2]+',0)'); g.addColorStop(.75,'rgba('+pal[2]+','+(.5*(1-ha))+')'); g.addColorStop(1,'rgba('+pal[2]+',0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r*1.05,0,Math.PI*2); ctx.fill(); }
+    return ha; }
+  if(t<1.35&&p.vid&&inside&&inside.i===p.i){ const q=(t-1)/.35, V=p.vid, useLow=V.low&&(!V.down||inside.el>=vDur(V)-.05), v=useLow?V.low:V.down;
+    hzScreen(ctx,p,t,0);
+    if(v&&v.readyState>=2){ const a=sm(q,0,.04)*(1-sm(q,.86,.98)), sc=Math.max(W/v.videoWidth,Hs/v.videoHeight), w=v.videoWidth*sc, h=v.videoHeight*sc;
+      ctx.save(); ctx.globalAlpha=a; ctx.drawImage(v,(W-w)/2,(Hs-h)/2,w,h); ctx.restore(); }
+    else if(!v&&ready(p)){ hzScreen(ctx,p,t,0); }
+    return 1; }
+  if(t<1.35){ const q=(t-1)/.35, f=ready(p)?lowF(q):0;
+    if(f<1) hzScreen(ctx,p,t,f*Hs*.55,1+f*1.6);   // 궤도에서 땅 쪽으로 파고들며
+    if(f>0){ const im=p.lo, sc=Math.max(W/im.naturalWidth,Hs/im.naturalHeight)*1.45, w=im.naturalWidth*sc, h=im.naturalHeight*sc, pan=-.5+q;   // 낮게: 땅이 빠르게 흐름
+      ctx.save(); ctx.globalAlpha=f; ctx.drawImage(im,(W-w)/2-pan*(w-W),(Hs-h)/2+(h-Hs)*.15*(1-f)+Math.sin(clock*.9)*Hs*.006,w,h); ctx.restore(); }
+    return 1; }
+  const e=ease(Math.min(1,(t-1.35)/.5)); if(e>=1) return 0;
+  if(hzCv.width!==Math.round(W*DPR)||hzCv.height!==Math.round(Hs*DPR)){ hzCv.width=Math.round(W*DPR); hzCv.height=Math.round(Hs*DPR); }
+  hx.setTransform(DPR,0,0,DPR,0,0); hx.globalCompositeOperation='source-over'; hx.clearRect(0,0,W,Hs);
+  const limb=lerp(-Hs*.25,Hs*1.12,e), RB=W*1.9, cx=W*.42, cy=limb+RB;
+  hzScreen(hx,p,t,e*Hs*.75);
+  hx.globalCompositeOperation='destination-in'; const m=hx.createLinearGradient(0,limb,0,limb+Hs*.3); m.addColorStop(0,'rgba(0,0,0,0)'); m.addColorStop(1,'rgba(0,0,0,1)');
+  hx.fillStyle=m; hx.beginPath(); hx.arc(cx,cy,RB,0,Math.PI*2); hx.fill();
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(hzCv,0,0); ctx.restore();
+  const pal=PAL[R[p.i][1]]||PAL['한책읽기'], g=ctx.createRadialGradient(cx,cy,RB*.985,cx,cy,RB*1.02); g.addColorStop(0,'rgba('+pal[2]+',0)'); g.addColorStop(.6,'rgba('+pal[2]+','+(.45*(1-e))+')'); g.addColorStop(1,'rgba('+pal[2]+',0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,RB*1.02,0,Math.PI*2); ctx.fill();
+  return 1-e;
+}
+function drawPlanetAt(p,G,alpha,t,raw){
+  if(!raw&&p.dive) return drawDive(p,t,alpha);
+  if(alpha<=0||!p.im.complete||!p.im.naturalWidth) return 0;
+  const f=p.info, {cx,cy,r}=G; if(cx+r*1.7<0||cx-r*1.7>W||cy+r*1.7<0||cy-r*1.7>Hs) return 0;
+  const s=r/(f[4]*f[0]), w=f[0]*s, h=f[1]*s, gold=R[p.i][5]==='O';
+  ctx.save(); ctx.globalAlpha=alpha; if(gold) ring(cx,cy,r,false);
+  ctx.save(); ctx.translate(cx,cy); if(p.flip) ctx.scale(-1,1); ctx.drawImage(p.im,-f[2]*w,-f[3]*h,w,h); ctx.restore();
+  // 아주 가까워지면 그 별의 땅(지평선 그림)이 표면에 드러남 — 화면이 바뀌지 않고 행성 위를 스치는 느낌
+  const ha=!raw&&p.off[1]>0?Math.max(0,Math.min(1,(r/Hs-.38)/.55)):0, im=p.hz;
+  if(ha>0&&im.complete&&im.naturalWidth){
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r*.997,0,Math.PI*2); ctx.clip();
+    const iw=Math.max(W*1.6,r*1.1), ih=iw*im.naturalHeight/im.naturalWidth, x0=Math.max(W*.3,Math.min(W*.7,cx))-iw/2-(t-1)*iw*.12+(p.pan-.5)*iw*.1, y0=cy-r-ih*.47;
+    ctx.globalAlpha=alpha*ha; if(p.filt&&'filter' in ctx) ctx.filter=p.filt; ctx.drawImage(im,x0,y0,iw,ih); ctx.filter='none';
+    const pal=PAL[R[p.i][1]]||PAL['한책읽기'], g=ctx.createRadialGradient(cx,cy,r*.9,cx,cy,r);
+    g.addColorStop(0,'rgba('+pal[2]+',0)'); g.addColorStop(1,'rgba('+pal[2]+','+(.55*ha)+')'); ctx.fillStyle=g; ctx.fillRect(0,0,W,Hs); ctx.restore();
+    const g2=ctx.createRadialGradient(cx,cy,r,cx,cy,r*1.06); g2.addColorStop(0,'rgba('+pal[2]+','+(.35*ha*alpha)+')'); g2.addColorStop(1,'rgba('+pal[2]+',0)');
+    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(cx,cy,r*1.06,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+  if(gold){ ctx.save(); ctx.globalAlpha=alpha; ring(cx,cy,r,true); ctx.restore(); }
+  return ha;
+}
+// 후기를 쓴 별 = 금빛 고리
+function ring(cx,cy,r,front){
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(-.28); ctx.scale(1,.22);
+  for(let j=0;j<3;j++){ ctx.strokeStyle='rgba(255,211,106,'+(front?.75:.35)*(1-j*.25)+')'; ctx.lineWidth=(r*.05)*(1-j*.2);
+    ctx.beginPath(); ctx.arc(0,0,r*(1.45+j*.12), front?0:Math.PI, front?Math.PI:Math.PI*2); ctx.stroke(); }
+  ctx.restore();
+}
+
+// ---- 비행체 ----
+const IMG=SHIP.map((s,i)=>{ const im=new Image(); im.onload=()=>{ if(i===st) paintShip(); }; im.src='ship/s'+(i+1)+'.png'; return im; });
+const shipCv=document.createElement('canvas'), sx=shipCv.getContext('2d');
+function paintShip(){
+  const k=st, im=IMG[k]; if(!im.complete||!im.naturalWidth) return;
+  const w=im.naturalWidth, h=im.naturalHeight; shipCv.width=w; shipCv.height=h; sx.clearRect(0,0,w,h); sx.drawImage(im,0,0);
+  const a=STAGES[k][0], Ls=SHIP[k].lights; sx.globalCompositeOperation='lighter';
+  for(let i=a;i<n&&Ls.length;i++){ const p=Ls[(i-a)%Ls.length], gold=R[i][5]==='O', twice=(i-a)>=Ls.length;
+    const r=(gold?1.5:1)*(twice?1.3:1)*Math.max(3,w*.011), x=p[0]*w, y=p[1]*h, c=gold?'255,211,106':'255,226,170';
+    const g=sx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,'rgba('+c+',1)'); g.addColorStop(1,'rgba('+c+',0)'); sx.fillStyle=g; sx.beginPath(); sx.arc(x,y,r,0,Math.PI*2); sx.fill(); }
+  sx.globalCompositeOperation='source-over';
+}
+// 화면 크기는 처음 6단계 그림 속 크기 비율을 따름(새로 받은 큰 그림이 와도 단계 크기가 뒤엉키지 않게)
+const REL=[105,169,236,354,503,792];
+function shipBox(k){ const s=SHIP[k], big=SHIP[5], maxW=Math.min(W*.62, Hs*.6*big.w/big.h); const w=maxW*Math.pow(REL[k]/REL[5],.55); return {w,h:w*s.h/s.w}; }
+
+// ---- 소행성 ----
+let rockA=1; const ROCKS=[...Array(24)].map(()=>newRock(Math.random()));
+function newRock(x){ const z=.25+Math.random()*1.35, nv=7+Math.floor(Math.random()*4), v=[...Array(nv)].map((_,k)=>({a:k/nv*Math.PI*2,r:.65+Math.random()*.45}));
+  return {x, y:Math.random(), z, v, s:(4+Math.random()*14), rot:Math.random()*6, vr:(Math.random()-.5)*.6}; }
+function drawRock(o){
+  const sc=Hs/760, sz=o.s*o.z*sc*(o.z>1.42?1.3:1), X=o.x*W, Y=o.y*Hs;
+  ctx.save(); ctx.translate(X,Y); ctx.rotate(o.rot);
+  ctx.beginPath(); o.v.forEach((p,k)=>{ const px=Math.cos(p.a)*p.r*sz, py=Math.sin(p.a)*p.r*sz; k?ctx.lineTo(px,py):ctx.moveTo(px,py); }); ctx.closePath();
+  const lx=Math.cos(-o.rot-.8)*sz*.6, ly=Math.sin(-o.rot-.8)*sz*.6;
+  const g=ctx.createRadialGradient(lx,ly,sz*.1,0,0,sz*1.1), dk=o.z>1.42?.4:1;
+  g.addColorStop(0,'rgba('+(170*dk|0)+','+(155*dk|0)+','+(140*dk|0)+',1)'); g.addColorStop(1,'rgba(18,16,20,1)');
+  ctx.fillStyle=g; ctx.globalAlpha=Math.min(1,.35+o.z*.6)*rockA; ctx.fill(); ctx.restore();
+}
+
+// ---- 상태 ----
+let n=R.length, st=stageIx(n), u=n, playing=false, posePlay=false, speed=1, clock=0, glow=0, pop=1;
+const T=4.2;   // 1×에서 별 하나 지나는 시간(초)
+const STARS=[...Array(260)].map(()=>newStar(Math.random()));
+function newStar(z){ return {x:(Math.random()*2-1)*1.6, y:(Math.random()*2-1)*1.1, z:.05+z*.95, b:Math.random()}; }
+const toastEl=$('toast'); let toastTimer=0;
+function toast(a,b,t){ $('ta').textContent=a; $('tb').textContent=b; toastEl.classList.add('on'); toastTimer=t||2.4; }
+const seek=$('seek'), playBtn=$('play'); seek.max=R.length; seek.value=R.length;
+function setN(k, animate){
+  const before=st; n=k; st=stageIx(n); seek.value=n;
+  if(st!==before&&animate){ pop=0; glow=1; setTimeout(()=>toast('정거장 '+n+'에서', STAGES[before][1]+'가 '+STAGES[st][1]+'로 자랐다',3),900); }
+  paintShip(); render();
+}
+function rest(k){ u=k; setN(k,false); }
+function render(){
+  $('stage').innerHTML=STAGES[st][1]+'<small>책미사 · 이름 없는 비행체</small>';
+  const r=R[n-1];
+  $('now').innerHTML = n ? '정거장 <b>'+n+'</b> / '+R.length+' · '+r[0].replaceAll('-','.')+' · <b>'+r[2]+'</b> · '+r[1] : '출발 전 · 작은 스파크 하나';
+  const cnt={}; for(let i=0;i<n;i++) cnt[R[i][1]]=(cnt[R[i][1]]||0)+1;
+  let h='<div class="h">지나온 별</div>';
+  for(const k in KIND) h+='<span class="dot" style="background:'+KIND[k]+'"></span><span class="m">'+k+'</span><span class="n">'+(cnt[k]||0)+'</span>';
+  let gold=0; for(let i=0;i<n;i++) if(R[i][5]==='O') gold++;
+  const next=STAGES[st+1];
+  h+='<div class="g">금빛 고리 별 '+gold+' · 후기를 쓴 모임</div>';
+  h+='<div class="h">'+(next ? '다음 모습 '+next[1]+'까지 '+(next[0]-n)+'정거장' : '마지막 모습 · 다음 그림을 기다리는 중')+'</div>';
+  $('ledger').innerHTML=h;
+  $('size').textContent=(st+1)+' / 6 단계';
+}
+seek.addEventListener('input',()=>{ playing=false; playBtn.textContent='▶ 여기서부터 날기'; rest(+seek.value); });
+playBtn.addEventListener('click',()=>{
+  if(playing){ playing=false; playBtn.textContent='▶ 이어서 날기'; return; }
+  if(u>=R.length) rest(0);
+  playing=true; playBtn.textContent='⏸ 멈추기';
+});
+$('speed').addEventListener('click',e=>{ speed= speed===1?3:speed===3?8:1; e.target.textContent='속도 '+speed+'×'; });
+$('today').addEventListener('click',()=>{ playing=false; playBtn.textContent='▶ 첫 정거장부터 날기'; rest(R.length); });
+$('view').hidden=true;
+function nextUp(){ return UPCOMING.find(r=>r[0]>=TODAY); }
+function step(dt){
+  if(!playing) return;
+  const ii=Math.floor(u)-1, pi=ii>=0?planetOf(ii):null, slow=pi&&pi.dive&&u-ii>=1&&u-ii<1.35?(pi.vid?.35*T/(vDur(pi.vid)+(pi.vid.low?3.5:.6)):ready(pi)?.3:1):1;   // 영상: 내려감 영상 길이 + 낮게 3.5초   // 지면 가까이 나는 별에선 천천히
+  u=Math.min(R.length, u+dt*speed/T*slow);
+  const k=Math.floor(u+1e-9);
+  if(k>n){ const grew=stageIx(k)!==st; setN(k,true); const r=R[k-1]; if(speed<8&&!grew) toast(k+'번째 별 · '+r[0].replaceAll('-','.')+' · '+r[1], '『'+r[2]+'』', Math.min(2.2,T/speed*.8)); }
+  if(u>=R.length){ playing=false; playBtn.textContent='▶ 첫 정거장부터 날기'; const x=nextUp();
+    setTimeout(()=>toast('지금, '+R.length+'번째 별', x?'다음 별 · '+x[0].slice(5).replace('-','.')+' 『'+x[2]+'』':'책미사의 비행체는 아직 자라는 중',3),900); }
+}
+
+// ---- 비행체의 움직임: 늘 화면에 있음 ----
+// 순항(옆모습) 사이사이 다음 별 쪽으로 몸을 틀어 파고들었다가(뒷모습) 돌아옴, 또는 크게 기울며 돎. 모습이 자라면 앞모습으로 돌아 보여 줌
+const VIEWS = {"0": {"rear": {"w": 329, "h": 188, "eng": [0.25637827844452105, 0.4997696863347225]}, "front": {"w": 326, "h": 210, "eng": [0.16624001412367037, 0.4903048989379925]}}, "3": {"rear": {"w": 526, "h": 396, "eng": [0.16470986732566517, 0.4840785521463062]}, "front": {"w": 606, "h": 371, "eng": [0.11058142851322168, 0.4238294898672257]}}, "4": {"rear": {"w": 576, "h": 438, "eng": [0.17637105367721428, 0.5125659844071943]}, "front": {"w": 593, "h": 451, "eng": [0.07824124590814403, 0.5272107734446329]}}, "5": {"rear": {"w": 711, "h": 536, "eng": [0.12567963744335053, 0.5676268656716418]}, "front": {"w": 711, "h": 558, "eng": [0.16317362499074692, 0.4621474721750613]}}}; const VIMG={}; for(const k in VIEWS){ VIMG[k]={}; for(const v in VIEWS[k]) VIMG[k][v]=Object.assign(new Image(),{src:'ship/s'+(+k+1)+'_'+v+'.png'}); }
+const bump=(t,a,b)=>{ const q=(t-a)/(b-a); return q<=0||q>=1?0:Math.sin(Math.PI*q); };
+function shipPose(){
+  let x=.40, y=.47, s=1, r=-.07, view=null, vm=0;
+  if(playing||posePlay){
+    const i=Math.max(0,Math.min(R.length-1,Math.floor(u))), tl=u-Math.floor(u), h=R.length?hash(R[i][2]+'s'):0;
+    const pin=planetOf(i), pout=i>0?planetOf(i-1):null;
+    if(pin.dive&&tl>.45){ const q=ease(Math.min(1,(tl-.45)/.45)); view='rear'; vm=Math.max(0,Math.min(1,(q-.2)/.3)); x+=.12*q; y+=.03*q; s*=1-.2*q; r-=.04*q; }
+    else if(pout&&pout.dive&&tl<.85){
+      // 영상이 있는 별: 카메라가 화면 안쪽으로 날아가므로 비행체도 내내 뒷모습(따라가는 시점), 살짝 좌우로 기울며 / 나올 때 옆모습으로 풀리며 솟음
+      // 영상이 없는 별: 그림이 옆으로 흐르므로 뒷모습에서 옆모습으로 풀리며 낮게
+      const hv=pout.vid&&(pout.vid.down||pout.vid.low);
+      const q=hv ? (tl<.33?1:1-ease(Math.min(1,(tl-.33)/.15))) : (tl<.3?1-ease(tl/.3):0), up=bump(tl,hv?.36:.3,.85);
+      const lf=ready(pout)?lowF(tl/.35):0, sway=hv&&tl<.35?Math.sin(clock*.9)*.05*Math.min(1,tl/.03):0;
+      view='rear'; vm=Math.max(0,Math.min(1,(q-.2)/.3)); x+=.12*q+sway*.25; y+=.03*q+.05*bump(tl,0,.5)*(1-lf)+.09*lf-.07*up; s*=(1-.2*q)*(1+.06*lf); r-=.04*q+.17*up-sway; }
+    else if(h<.5){ const q=bump(tl,.15,.95); view='rear'; vm=Math.max(0,Math.min(1,(q-.35)/.2)); x+=.11*q; y-=.08*q; s*=1-.25*q; r-=.08*q; }
+    else if(h<.8){ const q=bump(tl,.1,.9); r-=.16*q; y+=.05*q; x-=.04*q; s*=1+.08*q; }
+    else { const q=bump(tl,.2,.9); y-=.06*q; x+=.05*q; r+=.06*Math.sin(tl*Math.PI*2)*q; }
+  }
+  if(pop<1){ const q=Math.sin(Math.PI*pop); view='front'; vm=Math.max(0,Math.min(1,(q-.25)/.2)); s*=1+.25*q; x-=.04*q; }
+  const dx=Math.sin(clock*.21)*.03, dy=Math.sin(clock*.33+1)*.025, dr=Math.sin(clock*.27)*.03;
+  if(!view||!VIEWS[st]||!VIEWS[st][view]){ view=null; vm=0; }
+  return {x:(x+dx)*W, y:(y+dy)*Hs, s, r:r+dr, flip:false, a:1, sx:1, view, vm};
+}
+function drawShipAt(q,W0,H0,alpha,BL){
+  if(q.a<=0||!shipCv.width) return; const w=W0*q.s, h=H0*q.s, E=SHIP[st].eng; let g;
+  ctx.save(); ctx.globalAlpha=alpha*q.a; ctx.translate(q.x,q.y); ctx.rotate(q.r); ctx.scale((q.flip?-1:1)*q.sx,1);
+  if(BL>0&&!(q.view&&q.vm>.5)){
+    // 엔진 불꽃: 납작한 빛줄기 대신, 흐리게 번지는 두 겹(바깥 푸른 기운 + 안쪽 흰 심지)
+    const ex=(E[0]-.5)*w, ey=(E[1]-.5)*h, beams=1+Math.min(2,st>>1), sp=h*SHIP[st].espan*.5, L=Math.min(BL*.55, w*1.1)*Math.max(.3,q.s);
+    const blur='filter' in ctx;
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(let j=0;j<beams;j++){ const yy=ey+(beams>1?(j/(beams-1)-.5)*sp*1.4:0), th=Math.max(1.5,h*.045), fl=.9+.1*Math.sin(clock*23+j*2);
+      for(const [len,rad,a0,b] of [[L*fl,th*1.5,.32,th*.9],[L*.45*fl,th*.65,.75,th*.35]]){
+        if(blur) ctx.filter='blur('+Math.max(1,b).toFixed(1)+'px)';
+        g=ctx.createLinearGradient(ex,0,ex-len,0); g.addColorStop(0,'rgba(225,250,255,'+a0+')'); g.addColorStop(.25,'rgba(110,210,255,'+(a0*.6)+')'); g.addColorStop(1,'rgba(60,150,255,0)');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(ex,yy-rad); ctx.quadraticCurveTo(ex-len*.35,yy-rad*.9,ex-len,yy); ctx.quadraticCurveTo(ex-len*.35,yy+rad*.9,ex,yy+rad); ctx.closePath(); ctx.fill(); } }
+    ctx.restore(); }
+  const VI=q.view&&VIMG[st]?VIMG[st][q.view]:null, vm=VI&&VI.complete&&VI.naturalWidth?q.vm:0;
+  if(vm<1){ ctx.globalAlpha=alpha*q.a*(1-vm); ctx.drawImage(shipCv,-w/2,-h/2,w,h); }
+  if(vm>0){ const V=VIEWS[st][q.view], vw=w*V.w/SHIP[st].w*1.1, vh=vw*V.h/V.w;
+    ctx.globalAlpha=alpha*q.a*vm; ctx.drawImage(VI,-vw/2,-vh/2,vw,vh);
+    if(q.view==='rear'){ const gx=(V.eng[0]-.5)*vw, gy=(V.eng[1]-.5)*vh, gr=vh*.13*(.92+.08*Math.sin(clock*19)); ctx.globalCompositeOperation='lighter';
+      const gg=ctx.createRadialGradient(gx,gy,0,gx,gy,gr); gg.addColorStop(0,'rgba(220,250,255,.35)'); gg.addColorStop(.4,'rgba(90,210,255,.14)'); gg.addColorStop(1,'rgba(60,160,255,0)');
+      ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(gx,gy,gr,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over'; } }
+  ctx.restore();
+}
+
+function stopVid(){ const p=PL[inside.i]; if(p&&p.vid) for(const x of [p.vid.down,p.vid.low]) if(x) x.pause(); inside=null; }
+let prev=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-prev)/1000); prev=now; clock+=dt;
+  if(toastTimer>0){ toastTimer-=dt; if(toastTimer<=0){ toastTimer=0; toastEl.classList.remove('on'); } }
+  step(dt);
+  { const ii=Math.floor(u)-1, pi=ii>=0&&ii<R.length?planetOf(ii):null, inV=pi&&pi.vid&&u-ii>=1&&u-ii<1.35;
+    if(inV){ const V=pi.vid; if(!inside||inside.i!==ii){ if(inside) stopVid(); inside={i:ii,el:0}; if(V.down){ V.down.currentTime=0; V.down.play().catch(()=>{}); } else if(V.low){ V.low.currentTime=0; V.low.play().catch(()=>{}); } }
+      else if(playing||posePlay) inside.el+=dt*speed;
+      const rt=Math.min(4,speed); for(const x of [V.down,V.low]) if(x) x.playbackRate=rt;
+      if(V.low&&V.down&&inside.el>=vDur(V)-.3&&V.low.paused){ V.low.currentTime=0; V.low.play().catch(()=>{}); }
+      if(!playing&&!posePlay) for(const x of [V.down,V.low]) if(x&&!x.paused) x.pause(); }
+    else if(inside) stopVid(); }
+  const go=playing?Math.min(speed,3):0, v=VP();
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='#04060c'; ctx.fillRect(0,0,W,Hs);
+  // 해마다 다른 우주 배경: 다가가는 별의 해로 천천히 바뀜
+  const iy=Math.max(0,Math.min(R.length-1,Math.floor(u))), yr=R.length?+R[iy][0].slice(0,4):2020;
+  if(yr!==bgYear){ bgPrev=bgYear; bgYear=yr; bgFade=0; }
+  bgFade=Math.min(1,bgFade+dt/3);
+  const bz=1.05+Math.sin(clock*.02)*.01;
+  if(bgFade<1) drawBg(bgPrev,1,bz); drawBg(bgYear,bgFade,bz); ctx.fillStyle='rgba(4,6,12,.18)'; ctx.fillRect(0,0,W,Hs);
+  // 별빛: 소실점에서 끝없이 흘러나옴(날 때는 빛줄기)
+  const vs=playing?.16*go+.02:.012, m=Math.min(W,Hs*1.6)*.5;
+  for(const o of STARS){ const z0=o.z; o.z-=dt*vs;
+    const X=v.x+o.x*m/o.z, Y=v.y+o.y*m/o.z;
+    if(o.z<.04||X<-20||X>W+20||Y<-20||Y>Hs+20){ Object.assign(o,newStar(1)); continue; }
+    const zb=Math.min(1.2,z0+dt*vs*5), X0=v.x+o.x*m/zb, Y0=v.y+o.y*m/zb, br=Math.min(1,(1-o.z)*1.3)*(.4+.6*o.b);
+    ctx.strokeStyle='rgba(225,232,255,'+br+')'; ctx.lineWidth=.6+(1-o.z)*1.6; ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X+.5,Y+.5); ctx.stroke(); }
+  // 별(행성): 먼 것부터
+  const list=[], fu=Math.floor(u);
+  for(let i=fu-2;i<=fu+1;i++){ if(i<0||i>=R.length) continue; const t=u-i, p=planetOf(i); if(t<-.8||t>(p.dive?1.85:1.4)) continue;
+    const G=geom(p,t), key=p.dive&&t>=1.35?-1:p.dive&&t>=1?1e9:G.r; list.push([p,t,G,key]); }
+  if(fu+2<R.length) planetOf(fu+2);
+  list.sort((a,b)=>a[3]-b[3]);
+  let hz=0; for(const [p,t,G] of list) hz=Math.max(hz, drawPlanetAt(p,G,Math.max(0,Math.min(1,(t+.8)/.35)),t));
+  // 다가오는 별 이름
+  ctx.font='15px "Gowun Batang",serif'; ctx.textAlign='center';
+  { let best=null, ba=0; for(const [p,t,G] of list){ if(t>=1) continue; const a=Math.min(1,(t+.6)*3)*Math.max(0,Math.min(1,(Hs*.24-G.r)/(Hs*.08))); if(a>0&&(!best||G.r>best[2].r)){ best=[p,t,G]; ba=a; } }
+    ba*=Math.max(0,1-hz*1.4);   // 행성 안을 날 때는 이름을 감춤, 이름은 가장 가까이 오는 별 하나만
+    if(best&&ba>0){ const [p,,G]=best; ctx.fillStyle='rgba(233,238,251,'+(ba*.9)+')'; ctx.fillText('『'+R[p.i][2]+'』',G.cx,G.cy-G.r*1.2-10); } }
+  // 먼 소행성
+  rockA=Math.max(0,1-hz*1.3); const fs=playing?.3*go:.04;
+  for(const o of ROCKS){ o.x-=dt*fs*.6*o.z; o.y+=dt*fs*.08*o.z; o.rot+=dt*o.vr; if(o.x<-.1||o.y>1.1){ Object.assign(o,newRock(1.08)); } }
+  ROCKS.filter(o=>o.z<=1.5).forEach(drawRock);
+  // 비행체
+  pop=Math.min(1,pop+dt/2.2); const pe=1-Math.pow(1-Math.min(1,pop*1.6),3);
+  const b=shipBox(st), span=(STAGES[st+1]?STAGES[st+1][0]:R.length)-STAGES[st][0], grow=1+.05*((n-STAGES[st][0])/Math.max(1,span));
+  const W0=b.w*grow*(.7+.3*pe), H0=b.h*grow*(.7+.3*pe);
+  const pose=shipPose();
+  drawShipAt(pose,W0,H0,1,W*(.12+(playing?.18*go/3+.08:0))*(.92+.08*Math.sin(clock*17)));
+  // 자랄 때: 화면 전체 번쩍임 대신 비행체 둘레로 번지는 빛
+  if(glow>0){ glow=Math.max(0,glow-dt*.5); const R0=W0*.9, g=ctx.createRadialGradient(pose.x,pose.y,0,pose.x,pose.y,R0);
+    g.addColorStop(0,'rgba(255,240,210,'+(glow*.55)+')'); g.addColorStop(1,'rgba(255,220,160,0)'); ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.fillStyle=g; ctx.fillRect(pose.x-R0,pose.y-R0,R0*2,R0*2); ctx.restore(); }
+  // 가까운 소행성(비행체 앞을 스침)
+  ctx.save(); if('filter' in ctx) ctx.filter='blur(3px)'; ROCKS.filter(o=>o.z>1.5).forEach(drawRock); ctx.restore();
+  requestAnimationFrame(frame);
+}
+render(); { const mm=location.hash.match(/^#look-([\d.]+)(-p)?$/); if(mm){ u=+mm[1]; setN(Math.min(R.length,Math.floor(u)),false); posePlay=!!mm[2]; } } requestAnimationFrame(frame);
+})();
+</script>
+<a href="/" style="position:fixed;z-index:50;right:max(14px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 14px);font:13px system-ui,sans-serif;color:#c9a35a;background:rgba(5,7,13,.7);border:1px solid rgba(201,163,90,.45);border-radius:999px;padding:6px 14px;text-decoration:none">← 책미사 너머</a>
+<script>window.goatcounter={path:function(p){return '너머'+p}};</script>
+<script data-goatcounter="https://espada.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body></html>

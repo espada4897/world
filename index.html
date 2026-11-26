@@ -3008,7 +3008,7 @@ addEventListener('keydown',e=>{ if(!X.hidden&&e.key==='Escape'){ close(); e.stop
 body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
 @media (max-width:760px){
   #doors{top:auto;bottom:0;left:0;right:0;transform:none;border-radius:0;border-width:1px 0 0;padding:4px max(6px,env(safe-area-inset-left,0px)) calc(env(safe-area-inset-bottom,0px) + 4px);gap:0;justify-content:space-around}
-  #doors>button{flex:1;flex-direction:column;gap:2px;padding:6px 2px;border-radius:10px;font-size:11.5px;position:relative}
+  #doors>button{flex:1;flex-direction:column;gap:2px;padding:6px 1px;border-radius:10px;font-size:11px;position:relative;min-width:0}
   #doors>button .i{font-size:19px}
   #doors>button .dot{position:absolute;top:5px;right:calc(50% - 18px)}
   .dsheet{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 66px);left:12px;right:12px;width:auto;transform:none;max-height:60vh;overflow-y:auto}
@@ -3022,9 +3022,11 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
   const ev=(n)=>{ try{ if(window.__ev) __ev('메뉴/'+n); }catch(e){} };
 
-  const nav=document.createElement('nav'); nav.id='doors'; nav.setAttribute('aria-label','책미사 너머의 다섯 문');
+  const nav=document.createElement('nav'); nav.id='doors'; nav.setAttribute('aria-label','책미사 너머의 여섯 문');
   // 11/25 에스파다: 대작품관을 다섯째 문으로(가운데)
-  const D=[['u','🌌','우주'],['c','🂠','내 카드'],['g','🏛','대작품관'],['w','🌍','내 세계'],['o','🔭','천문대']];
+  // 11/26 에스파다: 자라는 비행체는 첫 화면이 아니라 여섯째 문으로(영상이 완벽하지 않아 보여 주는 전시) → 공개판 /craft/, 견본에선 claude.ai 견본을 새 창으로
+  const D=[['u','🌌','우주'],['c','🂠','내 카드'],['g','🏛','대작품관'],['w','🌍','내 세계'],['o','🔭','천문대'],['f','🚀','비행체']];
+  const CRAFT=/chaekmisa\.com$|^127\.0\.0\.1$|^localhost$/.test(location.hostname)?'/craft/':'https://claude.ai/artifact/NPXzPrBSgPvPdfBkb4te4S';
   nav.innerHTML=D.map(([k,i,t])=>`<button type="button" data-d="${k}" aria-expanded="false"><span class="i">${i}</span><span>${t}</span><span class="dot"></span></button>`).join('');
   document.body.appendChild(nav);
 
@@ -3075,7 +3077,8 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
     // 휴대폰: 내 별 칸은 접어 둔다(겹치지 않게)
     if(matchMedia('(max-width:760px)').matches){ const me=document.getElementById('me'), f=document.getElementById('meFold'); if(me&&f&&!me.classList.contains('fold')) f.click(); } }
   nav.addEventListener('click',e=>{ const b=e.target.closest('button[data-d]'); if(!b) return; const k=b.dataset.d;
-    ev(({u:'우주',c:'내 카드',g:'대작품관',w:'내 세계',o:'천문대'})[k]);
+    ev(({u:'우주',c:'내 카드',g:'대작품관',w:'내 세계',o:'천문대',f:'자라는 비행체'})[k]);
+    if(k==='f'){ shut(); if(CRAFT[0]==='/') location.href=CRAFT; else window.open(CRAFT,'_blank','noopener'); return; }
     if(k==='c'||k==='o'||k==='g'){ shut(); const h=HOLD[k]; if(h) h.click(); return; }
     show(k); });
   // 문 안의 단추를 누르면 시트 닫기(시간 이동 줄은 남겨 둠)
@@ -3084,7 +3087,7 @@ body.cxo #doors,body.cxo .dsheet{visibility:hidden!important}
   addEventListener('keydown',e=>{ if(e.key==='Escape') shut(); });
   // 처음 온 사람 안내에 맞춰 문장 고치기
   const hl=document.querySelector('#hello ol li:nth-child(2)'); if(hl) hl.innerHTML=hl.innerHTML.replace('왼쪽 위에','왼쪽 위 칸에');
-  const hol=document.querySelector('#hello ol'); if(hol){ const li=document.createElement('li'); li.innerHTML='둘러보기·카드·대작품관·세계·천문대는 '+(matchMedia('(max-width:760px)').matches?'화면 아래':'화면 위 가운데')+'의 <b>다섯 문</b>에서.'; hol.appendChild(li); }
+  const hol=document.querySelector('#hello ol'); if(hol){ const li=document.createElement('li'); li.innerHTML='둘러보기·카드·대작품관·세계·천문대·비행체는 '+(matchMedia('(max-width:760px)').matches?'화면 아래':'화면 위 가운데')+'의 <b>여섯 문</b>에서.'; hol.appendChild(li); }
 })();
 /*}DOORS*/
 
