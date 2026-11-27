@@ -595,13 +595,13 @@ function toChrome(){
   ev('바깥으로 넘김 '+(KAKAO?'카톡':SAMSUNG?'삼성':'기타'));
   const target=URL0+'?inst=1';
   if(KAKAO){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(target);
-    return `<b>${IOS?'사파리':'크롬'}</b>으로 열었어요. 열린 화면에서 ${IOS?'<b>공유</b> → <b>홈 화면에 추가</b>':'<b>설치하기</b>를 한 번 더'} 누르면 끝.<br><small>안 열리면 카톡 메뉴 → ${IOS?'Safari로 열기':'다른 브라우저로 열기'}</small>`; }
+    return `<b>${IOS?'사파리':'크롬'}</b>으로 열었어요. 열린 화면에서 ${IOS?'아래 <b>≡</b>(또는 <b>⋯</b>) → <b>공유</b> → <b>홈 화면에 추가</b>':'<b>설치하기</b>를 한 번 더'} 누르면 끝.<br><small>안 열리면 카톡 메뉴 → ${IOS?'Safari로 열기':'다른 브라우저로 열기'}</small>`; }
   if(ANDROID){ location.href='intent://world.chaekmisa.com/seojae/?inst=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(target)+';end';
     return '<b>크롬</b>으로 열었어요. 열린 화면에서 <b>설치하기</b>를 한 번 더 누르면 끝.<br><small>안 열리면 메뉴 <b>⋮</b> → <b>다른 브라우저로 열기</b></small>'; }
-  return '메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, 아래 <b>공유</b> → <b>홈 화면에 추가</b>.';
+  return '메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, 아래 <b>≡</b>(또는 <b>⋯</b>) → <b>공유</b> → <b>홈 화면에 추가</b>.';
 }
 function manualTxt(){
-  if(IOS) return '사파리 아래 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>를 누르세요.';
+  if(IOS) return '사파리 주소창 옆 <b>≡</b>(또는 <b>⋯</b>) → <b>공유</b> → <b>홈 화면에 추가</b>를 누르세요.<br><small>공유 목록에 없으면 아래로 내려 <b>더 보기</b>. 예전 아이폰은 아래 막대의 공유(네모 위 화살표) 단추예요.</small>';
   if('onbeforeinstallprompt' in window) return PHONE?'크롬 오른쪽 위 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)를 누르세요.':'주소창 오른쪽 <b>설치 아이콘</b>(또는 메뉴 <b>⋯</b> → <b>앱</b> → <b>설치</b>)을 누르세요.';
   return '이 브라우저는 설치를 못 해요. <b>크롬</b>으로 world.chaekmisa.com/seojae/ 를 열어 주세요.';
 }

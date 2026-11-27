@@ -4405,7 +4405,7 @@ function drawQr(url){
   sc.onload=put; sc.onerror=()=>{ const c=document.getElementById('binQr'); if(c) c.textContent=url; }; document.head.appendChild(sc);
 }
 const where=PHONE?'홈 화면':'바탕화면·시작 메뉴';
-const IOSTXT='사파리 아래 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>';
+const IOSTXT='사파리 주소창 옆 <b>≡</b>(또는 <b>⋯</b>) → <b>공유</b> → <b>홈 화면에 추가</b>';   // 11/27: iOS 26 사파리는 아래 막대에 공유 단추가 없음
 const GO='<button type="button" id="binGo" class="bgo">설치</button>';
 
 // 카톡 등 앱 안 브라우저 → 바깥 브라우저로
