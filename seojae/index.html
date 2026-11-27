@@ -162,6 +162,15 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     <button class="btn solid" id="open" type="button">문 열기</button>
   </div>
 </div>
+<div class="veil" id="vInst" hidden>
+  <div class="card">
+    <img src="icon-192.png" alt="" width="72" height="72" style="margin:0 auto;border-radius:16px">
+    <h2>밤의 서재를 홈 화면에 두세요</h2>
+    <p id="instHow"></p>
+    <button class="btn solid" id="instDo" type="button">설치하기</button>
+    <button class="btn" id="instSkip" type="button">설치 없이 들어가기</button>
+  </div>
+</div>
 <div class="veil" id="vWho" hidden>
   <div class="card">
     <h2>어떻게 들어갈까요?</h2>
@@ -553,57 +562,80 @@ requestAnimationFrame(loop);
 })();
 </script>
 
-<div id="sinst" hidden><img src="icon-192.png" alt=""><div class="sp"></div><button type="button" id="sinstGo" hidden>홈 화면에 두기</button><button type="button" id="sinstX" aria-label="닫기">✕</button></div>
 <script>
-// 밤의 서재를 홈 화면에 두기 (11/27, 책미사 바인더 설치 방식을 빌려 옴)
+// 밤의 서재를 홈 화면에 두기 (11/27)
+// 에스파다: 아이콘이 없는 폰이면 '들어가기'보다 설치 안내가 먼저. 아이콘(앱)으로 열면 바로 문 앞.
 // 카톡·네이버 같은 앱 안 브라우저와 삼성 인터넷은 설치가 막히거나 실패함 → 크롬(아이폰은 사파리)으로 넘김.
 (function(){
 const sget=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const sset=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const ev=(n,o)=>{try{if(window.__ev)__ev('서재/'+n,o)}catch(e){}};
 const ua=navigator.userAgent, IOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const ANDROID=/android/i.test(ua), APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const ANDROID=/android/i.test(ua), PHONE=IOS||ANDROID||/mobile/i.test(ua);
+const APP=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const KAKAO=/KAKAOTALK/i.test(ua), SAMSUNG=/SamsungBrowser/i.test(ua);
 const INAPP=KAKAO||/NAVER\(inapp|Instagram|FBAN|FBAV|FB_IAB|Line\/|BAND\/|DaumApps|everytimeApp|; wv\)/i.test(ua);
 const URL0='https://world.chaekmisa.com/seojae/', QS=new URLSearchParams(location.search), INST=QS.get('inst')==='1';
-ev('열림',1); if(APP) ev('홈 화면에서 엶',1); if(INST) ev('바깥 브라우저로 옴',1);
-if(INST) history.replaceState(null,'',location.pathname+(APP?'?app=1':''));
-const bar=document.getElementById('sinst'), sp=bar.querySelector('.sp'), go=document.getElementById('sinstGo');
-let DEF=null;
-const show=(html,btn,force)=>{ if(APP||(!force&&!INST&&sget('seojae-inst'))) return; sp.innerHTML=html; go.hidden=!btn; if(btn) go.textContent=btn; bar.hidden=false; };
-document.getElementById('sinstX').onclick=()=>{ bar.hidden=true; sset('seojae-inst','x'); };
+ev('열림',1); if(APP) ev('홈 화면에서 엶',1); if(INST) ev('설치하러 옴',1);
+if(INST) history.replaceState(null,'',location.pathname+location.hash);
+
+const veil=document.getElementById('vInst'), how=document.getElementById('instHow'), doB=document.getElementById('instDo'), skipB=document.getElementById('instSkip');
+if(!veil) return;
+let DEF=null, veilOn=false;
+
 function toChrome(){
   ev('바깥으로 넘김 '+(KAKAO?'카톡':SAMSUNG?'삼성':'기타'));
   const target=URL0+'?inst=1';
   if(KAKAO){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(target);
-    return show(`<b>${IOS?'사파리':'크롬'}</b>으로 열었어요. 거기서 ${IOS?'<b>공유</b> → <b>홈 화면에 추가</b>':'<b>홈 화면에 두기</b>를 한 번 더'}.<br><small>안 열리면 카톡 메뉴 → ${IOS?'Safari로 열기':'다른 브라우저로 열기'}</small>`); }
+    return `<b>${IOS?'사파리':'크롬'}</b>으로 열었어요. 열린 화면에서 ${IOS?'<b>공유</b> → <b>홈 화면에 추가</b>':'<b>설치하기</b>를 한 번 더'} 누르면 끝.<br><small>안 열리면 카톡 메뉴 → ${IOS?'Safari로 열기':'다른 브라우저로 열기'}</small>`; }
   if(ANDROID){ location.href='intent://world.chaekmisa.com/seojae/?inst=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(target)+';end';
-    return show('<b>크롬</b>으로 열었어요. 거기서 <b>홈 화면에 두기</b>를 한 번 더.'); }
-  show('메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, <b>공유</b> → <b>홈 화면에 추가</b>.');
+    return '<b>크롬</b>으로 열었어요. 열린 화면에서 <b>설치하기</b>를 한 번 더 누르면 끝.<br><small>안 열리면 메뉴 <b>⋮</b> → <b>다른 브라우저로 열기</b></small>'; }
+  return '메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, 아래 <b>공유</b> → <b>홈 화면에 추가</b>.';
 }
-go.onclick=async()=>{
+function manualTxt(){
+  if(IOS) return '사파리 아래 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>를 누르세요.';
+  if('onbeforeinstallprompt' in window) return PHONE?'크롬 오른쪽 위 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)를 누르세요.':'주소창 오른쪽 <b>설치 아이콘</b>(또는 메뉴 <b>⋯</b> → <b>앱</b> → <b>설치</b>)을 누르세요.';
+  return '이 브라우저는 설치를 못 해요. <b>크롬</b>으로 world.chaekmisa.com/seojae/ 를 열어 주세요.';
+}
+async function install(){
   if((INAPP||SAMSUNG)&&!APP) return toChrome();
-  if(!DEF) return manual(); DEF.prompt(); const r=await DEF.userChoice.catch(()=>null); DEF=null; bar.hidden=true;
-  if(r&&r.outcome==='accepted') ev('홈 화면에 둠',1);
-};
-function manual(){
-  if(IOS) return show('<b>홈 화면에 두기</b> · 사파리 아래 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>',null,true);
-  if('onbeforeinstallprompt' in window) return show('이미 두었다면 홈 화면의 <b>밤의 서재</b> 아이콘을 눌러 주세요. 아직이면 브라우저 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>).',null,true);
-  show('이 브라우저는 바로 설치를 못 해요. <b>크롬</b>으로 world.chaekmisa.com/seojae/ 를 열어 주세요.',null,true);
+  if(DEF){ const p=DEF; DEF=null; p.prompt(); const r=await p.userChoice.catch(()=>null);
+    if(r&&r.outcome==='accepted'){ ev('홈 화면에 둠',1); return 'done'; }
+    return '설치를 미뤘어요. 언제든 위쪽 <b>📲 홈 화면에 두기</b>로 다시 할 수 있어요.'; }
+  return manualTxt();
 }
+function setVeil(){
+  let label='설치하기', text='한 번 두면 다음부터 홈 화면의 등불 아이콘으로 바로 들어와요.';
+  if(INAPP){ label=(IOS?'사파리':'크롬')+'으로 열어 설치하기'; text=`${KAKAO?'카톡':'이 앱'} 안에서는 설치가 안 돼요. ${IOS?'사파리':'크롬'}으로 열어서 설치해요.`; }
+  else if(SAMSUNG){ label='크롬으로 열어 설치하기'; text='삼성 인터넷은 설치가 잘 안 돼요. 크롬으로 열어서 설치해요.'; }
+  else if(IOS){ label=null; text='아이폰은 단추로 바로 설치가 안 돼요.<br>'+manualTxt(); }
+  else if(!PHONE){ label='이 PC에 설치하기'; }
+  how.innerHTML=text; doB.hidden=!label; if(label) doB.textContent=label; skipB.textContent='설치 없이 들어가기';
+}
+function openVeil(){ setVeil(); veil.hidden=false; veilOn=true; ev('설치 안내 봄',1); checkInstalled(); }
+function closeVeil(){ veil.hidden=true; veilOn=false; }
+doB.onclick=async()=>{ ev('설치 안내 설치 누름');
+  const m=await install();
+  if(m==='done'){ how.innerHTML='<b>설치됐어요!</b> 다음부터는 홈 화면의 <b>밤의 서재</b> 아이콘으로 여세요.<br><small>아이콘이 안 보이면 앱 목록(홈 화면에서 위로 쓸어 올리기)에 있어요.</small>'; doB.hidden=true; skipB.textContent='지금은 여기서 계속하기'; }
+  else if(m){ how.innerHTML=m; } };
+skipB.onclick=()=>{ ev('설치 없이 들어감'); sset('seojae-skip',String(Date.now())); closeVeil(); };
+// 이미 설치한 폰(안드로이드 크롬)이면 알려 주기
+function checkInstalled(){
+  if(APP||!navigator.getInstalledRelatedApps) return;
+  navigator.getInstalledRelatedApps().then(list=>{ if(list&&list.length&&veilOn){
+    ev('설치돼 있는데 브라우저로 옴',1);
+    how.innerHTML='이 폰에는 이미 <b>밤의 서재</b>가 있어요. 홈 화면(또는 앱 목록)의 등불 아이콘으로 열면 앱처럼 열려요.';
+    doB.hidden=true; skipB.textContent='여기서 그냥 들어가기'; } }).catch(()=>{});
+}
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); DEF=e; });
+addEventListener('appinstalled',()=>{ ev('홈 화면에 둠',1); if(veilOn){ how.innerHTML='<b>설치됐어요!</b> 다음부터는 홈 화면의 <b>밤의 서재</b> 아이콘으로 여세요.'; doB.hidden=true; skipB.textContent='지금은 여기서 계속하기'; } });
+
+// 앱으로 열지 않았으면 설치 안내부터. '설치 없이'를 고른 뒤 사흘은 안 띄움(너머의 설치 단추로 오면 늘 띄움)
+const recentSkip=()=>Date.now()-(+sget('seojae-skip')||0)<3*864e5;
+if(!APP&&(INST||!recentSkip())) openVeil();
 const top=document.getElementById('instTop');
-if(top&&!APP){ top.hidden=false; top.onclick=()=>{ ev('머리 단추 누름'); try{localStorage.removeItem('seojae-inst')}catch(e){}
-  if((INAPP||SAMSUNG)) return toChrome();
-  if(DEF) return go.onclick();
-  manual(); }; }
-addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); DEF=e; if(!INAPP&&!SAMSUNG) show('<b>밤의 서재</b>를 홈 화면에 두면 앱처럼 바로 열려요.','홈 화면에 두기'); });
-addEventListener('appinstalled',()=>{ bar.hidden=true; ev('홈 화면에 둠',1); });
-if(!APP){
-  if(INAPP) setTimeout(()=>show(`${KAKAO?'카톡':'이 앱'} 안에서는 홈 화면에 둘 수 없어요. ${IOS?'사파리':'크롬'}으로 열면 앱처럼 둘 수 있어요.`,IOS?'사파리로 열기':'크롬으로 열기'),2500);
-  else if(SAMSUNG) setTimeout(()=>show('삼성 인터넷은 설치가 잘 안 돼요. <b>크롬</b>으로 열어 홈 화면에 두세요.','크롬으로 열기'),2500);
-  else if(IOS) setTimeout(()=>show('<b>홈 화면에 두기</b> · 사파리 <b>공유</b>(네모 위 화살표) → <b>홈 화면에 추가</b>'),2500);
-  else setTimeout(()=>{ if(!DEF) show('<b>홈 화면에 두기</b> · 브라우저 메뉴 <b>⋮</b> → <b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)'); },4000);
-}
+if(top&&!APP){ top.hidden=false; top.onclick=()=>{ ev('머리 단추 누름'); openVeil(); }; }
+
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 
