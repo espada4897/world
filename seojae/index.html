@@ -143,6 +143,10 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .mlist p{margin:0;color:var(--paper);font-size:14px}
 .mlist small{color:var(--dim)}
 .donen{color:var(--lamp)!important;font-size:14px}
+.tlist .note{font-size:14px;padding:8px 10px;cursor:pointer}
+.tlist .note .t{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tlist .note .by{display:block}
+.tlist .more{background:none;border:0;color:var(--lamp);font:inherit;font-size:13px;cursor:pointer;padding:2px 0;text-align:left}
 </style>
 
 <div class="wrap">
@@ -219,6 +223,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     <h2>오늘 밤의 서재</h2>
     <div class="tlist" id="tNow"></div>
     <div class="tlist" id="tDay"></div>
+    <div class="tlist" id="tWall"></div>
     <div class="row"><button class="btn" data-me type="button">📜 내 기록</button><button class="btn" data-close type="button">닫기</button></div>
   </div>
 </div>
@@ -592,7 +597,16 @@ function wallList(){const sv=(remote.wall||[]).map(o=>({x:o.x,n:o.who+(o.ch?" ("
   return pendingLines.filter(p=>!sv.some(s=>s.x===p.x)).concat(sv,wall)}
 function escH(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function bookTxt(b){return(!b||b==="내 책"||b==="자기 책")?"자기 책":"『"+escH(b)+"』"}
-function drawToday(){const nowL=remote.now||[],td=remote.today||[];
+function drawTodayWall(){const box=$("tWall");if(!box)return;
+  const sv=(remote.wall||[]).map(o=>({x:o.x,n:o.who+(o.ch?" ("+o.ch+")":""),b:o.book,mine:!!nick&&o.who===nick}));
+  const real=pendingLines.filter(p=>!sv.some(s=>s.x===p.x)).concat(sv).slice(0,3);
+  box.innerHTML="<h3>최근 한 줄</h3>";
+  if(!real.length){box.insertAdjacentHTML("beforeend","<p>아직 회원이 남긴 한 줄이 없어요. 25분을 마치고 첫 줄을 남겨 보세요.</p>");return}
+  real.forEach(o=>{const e=document.createElement("div");e.className="note"+(o.mine?" mine":"");const tx=document.createElement("span");tx.className="t";tx.textContent=o.x;e.appendChild(tx);const by=document.createElement("span");by.className="by";
+    by.textContent=`${o.n} · ${o.b==="내 책"||!o.b?"자기 책":"『"+o.b+"』"}${o.mine?" · 내가 남김":""}`;e.appendChild(by);e.onclick=wallFromToday;box.appendChild(e)});
+  const m=document.createElement("button");m.type="button";m.className="more";m.textContent="한 줄 벽 전체 보기 ›";m.onclick=wallFromToday;box.appendChild(m)}
+function wallFromToday(){$("vToday").hidden=true;ev("오늘 창에서 한 줄 벽");openWall()}
+function drawToday(){drawTodayWall();const nowL=remote.now||[],td=remote.today||[];
   $("tNow").innerHTML="<h3>지금 읽는 중</h3>"+(player.sitting&&nick?`<p><b>${escH(nick)}</b> (나) · ${bookTxt(player.carry)} · ${fmt(Math.ceil(player.left))} 남음</p>`:"")+
     (nowL.length?nowL.map(x=>`<p><b>${escH(x.who)}</b> · ${bookTxt(x.book)} · ${fmt(Math.max(0,(x.until-60000-Date.now())/1000))} 남음</p>`).join(""):(player.sitting&&nick?"":"<p>지금은 읽는 회원이 없어요. 먼저 앉아 볼까요?</p>"));
   $("tDay").innerHTML="<h3>오늘 다녀간 사람</h3>"+(td.length?td.map(x=>`<p><b>${escH(x.who)}</b> · ${x.n?"25분 ×"+x.n:"둘러봄"}${x.books?" · "+String(x.books).split(",").map(bookTxt).join(" "):""}</p>`).join(""):"<p>아직 아무도 없어요.</p>")}
