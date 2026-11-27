@@ -526,7 +526,7 @@ $("byeClose").onclick=()=>{ev("그냥 나감");try{window.close()}catch(e){}
     const c=$("vBye").querySelector(".card");c.innerHTML="<h2>서재 문을 닫았어요</h2><p>이제 이 창을 닫아도 돼요.</p>"},300)};
 
 /* ---------- 함께 보는 서재 (서버) ---------- */
-function updatePill(){const real=npcs.filter(n=>n.real&&n.state!=="leave").length,fake=npcs.filter(n=>!n.real).length,b=$("todayBtn");
+function updatePill(){const real=npcs.filter(n=>n.real&&n.state!=="leave").length+(player.sitting&&nick&&API?1:0),fake=npcs.filter(n=>!n.real).length,b=$("todayBtn");
   const h=API?`회원 <b>${real}</b>명 읽는 중`:`책 속 인물 <b>${fake}</b>명과 함께`;if(b.innerHTML!==h)b.innerHTML=h}
 function poll(){if(!API||document.hidden)return;fetch(API+"/state?dev="+encodeURIComponent(dev)).then(r=>r.json()).then(applyState).catch(()=>{})}
 function applyState(st){if(!st||!Array.isArray(st.now))return;remote=st;const first=firstPoll;firstPoll=false;
