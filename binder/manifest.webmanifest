@@ -5,7 +5,7 @@
  "lang": "ko",
  "id": "/binder/",
  "start_url": "/binder/?app=1",
- "scope": "/",
+ "scope": "/binder/",
  "display": "standalone",
  "orientation": "portrait",
  "background_color": "#03050b",

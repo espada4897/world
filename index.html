@@ -16,8 +16,7 @@
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="alternate icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<!-- 11/21: '내 카드'에서 바로 책미사 바인더를 설치하도록 바인더 앱 정보를 이 페이지에도 건다(범위 '/') -->
-<link rel="manifest" href="/binder/manifest.webmanifest">
+<!-- 11/27: 바인더 앱 정보는 바인더 화면에만(범위 /binder/). 너머 전체를 붙잡으면 밤의 서재(/seojae/)가 따로 설치되지 않음 -->
 <meta name="theme-color" content="#05070d">
 <script>
 // 방문 집계(GoatCounter, 책미사 홈페이지와 같은 계정 espada). 쿠키·개인정보 없음. 홈페이지와 섞이지 않게 모든 기록 앞에 '너머'.
@@ -4369,6 +4368,8 @@ document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closes
 // 이 페이지에 바인더 manifest(범위 '/')가 걸려 있어서 너머 화면에서 곧장 '책미사 바인더'가 설치된다. 만들기.py가 붙인다.
 // 11/21 고침: 카톡 링크로 열면 카톡 안 브라우저라 설치가 막혀 있음 → 누르면 크롬(아이폰은 사파리)으로 넘겨서
 //   ?install=1 로 열고, 거기서 [설치] 한 번 더. (카톡: kakaotalk://web/openExternal, 다른 앱 안드로이드: intent → 크롬)
+// 11/27 고침(에스파다): 바인더 범위를 /binder/로 줄임 → 너머 화면에선 설치 창이 안 뜸.
+//   핸드폰: 누르면 바인더 화면(?inst=1)으로 넘어가 아래 '홈 화면에 두기'. PC: 바인더 열기 링크 + 핸드폰용 QR.
 (function(){
 const sget=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const sset=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
@@ -4410,16 +4411,19 @@ const GO='<button type="button" id="binGo" class="bgo">설치</button>';
 // 카톡 등 앱 안 브라우저 → 바깥 브라우저로
 function openOut(){
   const q='?install=1&who='+encodeURIComponent(who());
-  const target=IOS?BURL+'?who='+encodeURIComponent(who())+'&inst=1':HOME+q;   // 아이폰은 바인더 화면에서 홈 화면에 추가해야 그 주소가 아이콘이 됨
+  const target=BURL+'?who='+encodeURIComponent(who())+'&inst=1';   // 11/27: 설치는 늘 바인더 화면에서
   ev('바인더/앱 안에서 바깥으로 '+(KAKAO?'카톡':'기타'));
   if(KAKAO){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(target);
-    return show(`카톡 안에서는 설치가 막혀 있어서 <b>${IOS?'사파리로':'크롬으로'}</b> 열었어요.<br>열린 화면에서 ${IOS?IOSTXT:'<b>설치</b>를 한 번 더 누르면 끝'}.<br><small>안 열리면 카톡 메뉴(${IOS?'오른쪽 아래 <b>⋯</b>':'오른쪽 위 <b>⋮</b>'}) → <b>${IOS?'Safari로 열기':'다른 브라우저로 열기'}</b></small>`); }
-  if(ANDROID){ location.href='intent://world.chaekmisa.com/'+q+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(HOME+q)+';end';
-    return show(`이 앱 안에서는 설치가 막혀 있어서 <b>크롬</b>으로 열었어요. 열린 화면에서 <b>설치</b>를 한 번 더 누르면 끝.<br><small>안 열리면 메뉴 <b>⋮</b> → <b>다른 브라우저로 열기</b></small>`); }
+    return show(`카톡 안에서는 설치가 막혀 있어서 <b>${IOS?'사파리로':'크롬으로'}</b> 열었어요.<br>열린 바인더 화면에서 ${IOS?IOSTXT:'아래 <b>홈 화면에 두기</b>를 누르면 끝'}.<br><small>안 열리면 카톡 메뉴(${IOS?'오른쪽 아래 <b>⋯</b>':'오른쪽 위 <b>⋮</b>'}) → <b>${IOS?'Safari로 열기':'다른 브라우저로 열기'}</b></small>`); }
+  if(ANDROID){ location.href='intent://world.chaekmisa.com/binder/?who='+encodeURIComponent(who())+'&inst=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(target)+';end';
+    return show(`이 앱 안에서는 설치가 막혀 있어서 <b>크롬</b>으로 열었어요. 열린 바인더 화면 아래 <b>홈 화면에 두기</b>를 누르면 끝.<br><small>안 열리면 메뉴 <b>⋮</b> → <b>다른 브라우저로 열기</b></small>`); }
   show(`이 앱 안에서는 설치가 막혀 있어요. 메뉴(<b>⋯</b>) → <b>사파리로 열기</b> 뒤, ${IOSTXT}.`);
 }
 function install(){ ev('바인더/설치 누름 '+(PHONE?'핸드폰':'PC'));
   if(INAPP&&!APP) return openOut();
+  const go=BURL+'?who='+encodeURIComponent(who())+'&inst=1';
+  if(PHONE){ location.href=go; return; }
+  return show(`<a href="${go}">책미사 바인더 열기</a> → 주소창 오른쪽 <b>설치 아이콘</b>(또는 아래 <b>홈 화면에 두기</b>)으로 이 PC에 둘 수 있어요.`,true);
   if(BIP){ const p=BIP; BIP=null; close(); p.prompt();
     p.userChoice.then(r=>{ if(r&&r.outcome==='accepted'){ sset(GOT,'1'); ev('바인더/설치됨',1);
       show(`<b>설치 끝!</b> ${where}의 <b>책미사 바인더</b> 아이콘을 누르면 내 카드첩이 바로 열려요.`,!PHONE); } }).catch(()=>{});
