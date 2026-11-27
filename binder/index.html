@@ -95,6 +95,9 @@ window.SERIES={"2": [{"d": "2026-08-22", "p": "PART I · 마주하다", "who": [
 window.TOKENS=[{"date": "2026-10-20", "who": "플라잉", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 27일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "단아", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 25일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "미토맘", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 18일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "미지", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 8일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "벙찐", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 7일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "소리", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 5일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-10-20", "who": "책좋아", "kind": "참가", "name": "매일 독서 인증 첫 달", "note": "하루 한 장 매일 독서 인증 · 5일 인증", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "플라잉", "kind": "완수", "name": "매일 독서 인증 첫 달", "note": "20일 이상 인증 · 27일", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "플라잉", "kind": "커피", "name": "메가커피 아이스 아메리카노 한 잔", "note": "매일 독서 인증 첫 달 완수 선물(20일 이상)", "term": "", "pages": "", "used": "2026-11-20", "ex": false}, {"date": "2026-11-20", "who": "단아", "kind": "완수", "name": "매일 독서 인증 첫 달", "note": "20일 이상 인증 · 25일", "term": "2026-10-20~2026-11-19", "pages": "", "used": "", "ex": false}, {"date": "2026-11-20", "who": "단아", "kind": "커피", "name": "메가커피 아이스 아메리카노 한 잔", "note": "매일 독서 인증 첫 달 완수 선물(20일 이상)", "term": "", "pages": "", "used": "2026-11-20", "ex": false}, {"date": "2026-11-20", "who": "에스파다", "kind": "무료권", "name": "다음 모임 1회 무료", "note": "모임 참가비 5", "term": "000원 한 번 면제", "pages": "", "used": "", "ex": false}];
 // 너머에서 넘어옴(11/21): ?who=닉네임이면 카드.js가 읽기 전에 그 카드첩으로 맞춘다
 (function(){ try{ const w=new URLSearchParams(location.search).get('who'); if(w&&window.MEMBERS[w]) localStorage.setItem('chaekmisa-who',w); }catch(e){} })();
+// 11/27 밤의 서재와 닉네임 하나로: 바인더에서 아직 안 골랐으면 서재에서 고른 닉네임으로(seojae-who는 JSON 글자)
+(function(){ try{ if(!localStorage.getItem('chaekmisa-who')){ const s=JSON.parse(localStorage.getItem('seojae-who')||'null'); if(s&&window.MEMBERS[s]) localStorage.setItem('chaekmisa-who',s); } }catch(e){} })();
+window.SEOJAE_API="https://chaekmisa-seojae.espada4897.workers.dev";
 ﻿// 견본 8(11/19): 내 카드 — 읽은 책이 카드가 된다
 // 에스파다: "세 권을 떠올리고 조합을 생각하는 것부터가 높은 벽" → 카드로.
 //          "내가 가진 카드가 얼마나 있나 흥미를 갖고, 그 카드를 갖기 위해 책을 읽어야겠다고 생각하지 않을까"
@@ -1501,7 +1504,18 @@ function check(){ const m=mine(); if(!m) return; const key='chaekmisa-binder-see
   if(window.__ev) __ev('바인더/새 카드 봄',1); }
 check();
 // 닉네임을 처음 고르면 그때부터 셈
-document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#cx .who [data-n]')) setTimeout(check,50); },true);
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#cx .who [data-n]')) setTimeout(()=>{ check(); toSeojae(); },50); },true);
+// 11/27 밤의 서재와 닉네임 하나로: 서재에서 아직 안 골랐으면(이름 없이도 안 골랐으면) 바인더 닉네임을 넘겨 줌
+function toSeojae(){ const w=sget('chaekmisa-who'); if(w&&sget('seojae-who')==null) sset('seojae-who',JSON.stringify(w)); }
+toSeojae();
+// 11/27 밤의 서재 문: 머리줄 '책미사 바인더' 옆에 '🕯 서재 ○명 읽는 중 ›'
+(function(){ const ceb=document.querySelector('.ceb'); if(!ceb) return;
+  const st=document.createElement('style'); st.textContent='.toseo{margin-left:10px;color:#f0b45c;font-size:12px;text-decoration:none;border:1px solid rgba(240,180,92,.45);border-radius:999px;padding:3px 10px;white-space:nowrap;letter-spacing:0;vertical-align:middle}.toseo b{font-weight:600}'; document.head.appendChild(st);
+  const a=document.createElement('a'); a.className='toseo'; a.href='/seojae/'; a.textContent='🕯 밤의 서재 ›'; a.onclick=()=>{ if(window.__ev) __ev('바인더/서재로 감'); }; ceb.after(a);
+  const API=(window.SEOJAE_API||'').replace(/\/$/,''); if(!API) return;
+  const up=()=>{ if(document.hidden) return; fetch(API+'/state').then(r=>r.json()).then(s=>{ const n=new Set((s.now||[]).map(x=>x.who)).size;
+    a.innerHTML=n?`🕯 서재 <b>${n}</b>명 읽는 중 ›`:'🕯 밤의 서재 ›'; }).catch(()=>{}); };
+  up(); setInterval(up,60000); document.addEventListener('visibilitychange',up); })();
 
 // 홈 화면에 두기
 const bar=document.getElementById('binst'), sp=bar.querySelector('.sp'), go=document.getElementById('binstGo');

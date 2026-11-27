@@ -147,6 +147,8 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .tlist .note .t{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .tlist .note .by{display:block}
 .tlist .more{background:none;border:0;color:var(--lamp);font:inherit;font-size:13px;cursor:pointer;padding:2px 0;text-align:left}
+.tobinder{color:var(--lamp);font-size:14px;text-decoration:none;border:1px solid rgba(240,180,92,.4);border-radius:999px;padding:7px 14px;align-self:center}
+.tobinder:hover{background:rgba(240,180,92,.1)}
 </style>
 
 <div class="wrap">
@@ -283,6 +285,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     <h2>서재 문을 닫고 나왔어요</h2>
     <p id="byeSum"></p>
     <p>등불은 문 옆에 걸어 두었어요. 다음에 오면 같은 이름으로 불러 드려요.</p>
+    <a class="tobinder" id="byeBinder" href="/binder/">🃏 책미사 바인더에서 내 카드 보기 ›</a>
     <div class="row"><button class="btn" data-me type="button">📜 내 기록</button><button class="btn" id="again" type="button">다시 들어가기</button><button class="btn solid" id="byeClose" type="button">그냥 나가기</button></div>
   </div>
 </div>
@@ -513,7 +516,7 @@ function leave(){if(leaving||!player.active)return;if(player.sitting){api("/stan
 function bye(){leaving=false;player.active=false;player.path=[];
   const parts=[];if(sess.done)parts.push(`25분을 ${sess.done}번 마쳤어요`);if(sess.lines)parts.push(`한 줄을 ${sess.lines}개 남겼어요`);
   $("byeSum").textContent=parts.length?"오늘 밤 "+parts.join(", ")+".":"오늘은 서재를 둘러보고 가요.";
-  $("byeName").textContent=me.n;$("whoPill").textContent="문 밖";$("vBye").hidden=false;tick("서재 문을 닫고 나왔어요.")}
+  $("byeName").textContent=me.n;$("byeBinder").href="/binder/"+(nick?"?who="+encodeURIComponent(nick):"");$("byeBinder").onclick=()=>ev("바인더로 감");$("whoPill").textContent="문 밖";$("vBye").hidden=false;tick("서재 문을 닫고 나왔어요.")}
 function finish(){$("doneN").hidden=true;if(API&&nick)setTimeout(()=>fetchMe().then(m=>{if(m&&m.total&&!$("vDone").hidden){$("doneN").textContent=`${m.total}번째 25분이에요 · 이번 달 ${m.month}번`;$("doneN").hidden=false}}),900);store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
 $("standUp").onclick=()=>{api("/stand");stand();tick("자리에서 일어났어요. 등이 꺼졌어요.")};
 $("post").onclick=()=>{const v=$("doneLine").value.trim();$("vDone").hidden=true;const b=player.carry||"내 책";stand();
@@ -560,11 +563,13 @@ function enterRoom(){$("vNamed").hidden=true;$("outBtn").hidden=false;setWhoPill
   player.active=true;ev("들어옴",1);api("/enter").then(()=>setTimeout(poll,500));player.x=16;player.y=27.4;cam.x=16*T;cam.y=26*T;
   player.path=bfs(15,27,15,21,"me")||[];player.pending=()=>tick(`<span>${me.n}</span>님이 서재 복도에 들어왔어요. 양쪽 서가에서 책을 한 권 꺼내 들고, 위쪽 열람실로 가 보세요.`);
   tick("등불을 들고 문으로 걸어 들어가는 중…")}
-function askWho(){const sv=$("whoSaved"),saved=nick||store.get("chaekmisa-who")||"";
+function askWho(){const sv=$("whoSaved"),saved=nick||binderWho()||"";
   if(saved&&MEMBERS.includes(saved)){sv.textContent=saved+" 닉네임으로 들어가기";sv.hidden=false;sv.onclick=()=>pickWho(saved)}else sv.hidden=true;
   const c=$("chips");c.innerHTML="";MEMBERS.forEach(m=>{if(m===saved)return;const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=m;b.onclick=()=>pickWho(m);c.appendChild(b)});
   $("vWho").hidden=false}
-function pickWho(m){nick=m;store.set("seojae-who",m);$("vWho").hidden=true;toName()}
+// 11/27 바인더와 닉네임 하나로: 같은 폰의 바인더 닉네임(맨 글자)을 읽고, 바인더가 아직 없으면 서재에서 고른 걸 넘겨 줌
+function binderWho(){try{return localStorage.getItem("chaekmisa-who")}catch(e){return null}}
+function pickWho(m){nick=m;store.set("seojae-who",m);try{if(!binderWho())localStorage.setItem("chaekmisa-who",m)}catch(e){}$("vWho").hidden=true;toName()}
 $("whoNone").onclick=()=>{nick="";store.set("seojae-who","");$("vWho").hidden=true;toName()};
 $("open").onclick=()=>{$("vEnter").hidden=true;if(API&&MEMBERS.length)askWho();else toName()};
 function toName(){if(me){$("namedBig").textContent=me.n;$("namedFrom").textContent=`지난번에 빌린 이름이에요. 『${me.b}』에서.`}else giveName();$("vNamed").hidden=false;$("namedOk").focus()};
