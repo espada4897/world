@@ -216,6 +216,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 #hello a{color:var(--gold);font-size:12px}
 /* 11/21 바인더 설치: 오른쪽 위 글자 버튼(휴대폰은 독서모임 링크와 한 줄) + 작은 안내 */
 @media (max-width:760px){ .tr{flex-direction:row!important;gap:12px!important;align-items:center!important} }
+/* 11/27 밤의 서재 설치 단추가 더해져 휴대폰에선 줄바꿈 허용, 글자는 끊기지 않게 */
+@media (max-width:760px){ .tr{gap:10px!important} .tr .root-link{white-space:nowrap} .tr .lg{display:none} }
 #binPop{position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 56px);right:max(12px,env(safe-area-inset-right,0px));width:min(340px,calc(100vw - 24px));background:rgba(12,19,48,.97);border:1px solid rgba(201,163,90,.55);border-radius:12px;padding:12px 34px 12px 14px;font-size:13px;line-height:1.6;color:var(--ink-dim);box-shadow:0 10px 30px rgba(0,0,0,.55)}
 #binPop b{color:var(--ink)} #binPop a{color:var(--gold)}
 #binPop .bx{position:absolute;top:6px;right:6px;background:none;border:0;color:var(--ink-faint);font-size:14px;padding:4px 8px;cursor:pointer}
@@ -229,7 +231,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 <div id="labels"></div>
 <div class="top">
   <div class="name">책미사 너머</div>
-  <div class="tr" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="clock">지금 보이는 시간<b id="clock">지난 60년</b></div><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a><a class="root-link" id="binTop" href="https://world.chaekmisa.com/binder/" hidden>📲 바인더 설치</a></div>
+  <div class="tr" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="clock">지금 보이는 시간<b id="clock">지난 60년</b></div><a class="root-link" href="https://chaekmisa.com" target="_blank" rel="noopener">책미사 독서모임 ↗</a><a class="root-link" id="binTop" href="https://world.chaekmisa.com/binder/" hidden>📲 바인더<span class="lg"> 설치</span></a><a class="root-link" id="seoTop" href="/seojae/?inst=1">🕯 <span class="lg">밤의 </span>서재<span class="lg"> 설치</span></a></div>
 </div>
 <section id="me" aria-label="내 별 띄우기">
   <h2 id="meH">당신이 읽은 책 한 권은?</h2>
