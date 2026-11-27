@@ -235,7 +235,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     <h2>서재 문을 닫고 나왔어요</h2>
     <p id="byeSum"></p>
     <p>등불은 문 옆에 걸어 두었어요. 다음에 오면 같은 이름으로 불러 드려요.</p>
-    <div class="row"><button class="btn" id="again" type="button">다시 들어가기</button><a class="btn solid" href="https://chaekmisa.com/join" target="_blank" rel="noopener">토요일 줌 모임 보기</a></div>
+    <div class="row"><button class="btn" id="again" type="button">다시 들어가기</button><button class="btn solid" id="byeClose" type="button">그냥 나가기</button></div>
   </div>
 </div>
 
@@ -520,6 +520,10 @@ $("reroll").onclick=giveName;
 $("namedOk").onclick=enterRoom;
 $("outBtn").onclick=()=>{if($("vDone").hidden)leave()};
 $("again").onclick=()=>{$("vBye").hidden=true;enterRoom()};
+// 그냥 나가기 = 창 닫기. 앱(아이콘)으로 열었으면 닫히고, 브라우저 탭이라 안 닫히면 왔던 곳으로, 그것도 없으면 '닫아도 돼요'
+$("byeClose").onclick=()=>{ev("그냥 나감");try{window.close()}catch(e){}
+  setTimeout(()=>{if(document.visibilityState==="hidden")return;if(history.length>1){history.back();return}
+    const c=$("vBye").querySelector(".card");c.innerHTML="<h2>서재 문을 닫았어요</h2><p>이제 이 창을 닫아도 돼요.</p>"},300)};
 
 /* ---------- 함께 보는 서재 (서버) ---------- */
 function updatePill(){const real=npcs.filter(n=>n.real&&n.state!=="leave").length,fake=npcs.filter(n=>!n.real).length,b=$("todayBtn");
