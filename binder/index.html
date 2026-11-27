@@ -1518,17 +1518,26 @@ toSeojae();
   up(); setInterval(up,60000); document.addEventListener('visibilitychange',up); })();
 // 11/27 모임 전 서재 별: 모임 날 전 7일(모임 날 밤 9시 전까지) 그 모임 책을 들고 밤의 서재에서 마친 25분마다 ★ 하나(다섯까지 보임)
 (function(){ const API=(window.SEOJAE_API||'').replace(/\/$/,''), w=sget('chaekmisa-who'); if(!API||!w) return;
-  const st=document.createElement('style'); st.textContent='#cx .mc .seostar{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);z-index:4;font-size:10px;line-height:1.5;color:#f6c86a;background:rgba(5,8,18,.78);border:1px solid rgba(240,180,92,.5);border-radius:999px;padding:0 7px;white-space:nowrap;pointer-events:none}#cx .seoband{display:block;font-size:11px;color:#f0b45c;margin-top:3px;font-weight:400}'; document.head.appendChild(st);
+  const st=document.createElement('style'); st.textContent='#cx .sl.seohas{position:relative;padding-bottom:15px}#cx .sl .seostar{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:10px;line-height:14px;color:#f6c86a;letter-spacing:1px;white-space:nowrap;pointer-events:none}#cx .snote.seonote,.snote.seonote{display:block;color:#f6c86a}#cx .seoband{display:block;font-size:11px;color:#f0b45c;margin-top:3px;font-weight:400}'; document.head.appendChild(st);
   let R=null; const cnt=(t,d)=>{ const end=Date.parse(d+'T21:00:00+09:00'), s=Date.parse(d+'T00:00:00+09:00')-7*864e5; return R.filter(r=>r.book===t&&r.t>=s&&r.t<end).length; };
   const badge=c=>{ const s=document.createElement('span'); s.className='seostar'; s.textContent='🕯 '+'★'.repeat(Math.min(5,c)); return s; };
   function paint(){ if(!R) return;
     document.querySelectorAll('#cx .mc[data-m]:not([data-seo])').forEach(el=>{ el.dataset.seo='1'; const k=el.dataset.m, mm=(window.MEETS&&MEETS.m||{})[k]; if(!mm) return; let t; try{ t=OUR[(+k)%1000].t; }catch(e){ return; }   // 카드.js의 BK(e)=e%1000 (카드.js 안쪽이라 밖에서 못 부름)
-      const c=cnt(t,mm[0]); if(c){ el.appendChild(badge(c)); el.title=(el.title||'')+` · 모임 전 밤의 서재 25분 ${c}번`; } });
+      const c=cnt(t,mm[0]); if(c){ const sl=el.parentElement&&el.parentElement.classList.contains('sl')?el.parentElement:null;   // 11/27 에스파다: 도스 그림은 가리지 않게 칸 테두리 바깥 아래
+        if(sl){ sl.classList.add('seohas'); sl.appendChild(badge(c)); } el.title=(el.title||'')+` · 모임 전 밤의 서재 25분 ${c}번`; } });
     document.querySelectorAll('#cx [data-u]:not([data-seo])').forEach(el=>{ el.dataset.seo='1'; const tx=el.textContent||'', x=((window.MEETS&&MEETS.u)||[]).find(u=>tx.includes('『'+u.t+'』')); if(!x) return; const c=cnt(x.t,x.d);   // 다가오는 카드: 안에 적힌 책 이름으로 찾음
       if(el.classList.contains('tnx')){ const box=el.querySelector('span:last-child')||el, sp=document.createElement('span'); sp.className='seoband';
         sp.textContent=c?`🕯 밤의 서재에서 미리 ${'★'.repeat(Math.min(5,c))} (${c}번)`:'🕯 밤의 서재에서 이 책을 들고 25분 → 모임 카드에 ★'; box.appendChild(sp); }
-      else if(c) el.appendChild(badge(c)); }); }
+      else if(c){ const sl=el.parentElement&&el.parentElement.classList.contains('sl')?el.parentElement:null; if(sl){ sl.classList.add('seohas'); sl.appendChild(badge(c)); } } }); }
+  // 크게 보기: 마지막으로 누른 모임 카드를 기억했다가, 아래 설명 줄(.sacts)이 바뀌면 그 카드가 맞는지 보고 한 줄
+  let lastK=null, lastU=null;
+  document.addEventListener('click',e=>{ const t=e.target; if(!t||!t.closest) return; const m=t.closest('#cx .mc[data-m]'), u=t.closest('#cx [data-u]'); if(m||u){ lastK=m?m.dataset.m:null; lastU=u?((window.MEETS&&MEETS.u)||[]).find(x=>(u.textContent||'').includes('『'+x.t+'』'))||null:null; } },true);
+  function note(){ const sa=document.querySelector('.sacts'); if(!R||!sa||sa.querySelector('.seonote')) return; let t=null,d=null;
+    if(lastK&&MEETS.m[lastK]){ try{ t=OUR[(+lastK)%1000].t; }catch(e){} d=MEETS.m[lastK][0]; } else if(lastU){ t=lastU.t; d=lastU.d; }
+    if(!t) return; const root=sa.parentElement||document.body; if(!(root.innerHTML||'').includes(t.slice(0,6))) return;
+    const c=cnt(t,d); if(!c) return; const sp=document.createElement('span'); sp.className='snote seonote'; sp.textContent=`🕯 모임 전 밤의 서재에서 이 책으로 25분 ${c}번 ${'★'.repeat(Math.min(5,c))}`; sa.prepend(sp); }
   fetch(API+'/me?who='+encodeURIComponent(w)).then(r=>r.ok?r.json():null).then(m=>{ if(!m||!Array.isArray(m.reads)) return; R=m.reads; paint();
+    const sa=document.querySelector('.sacts'); if(sa) new MutationObserver(note).observe(sa,{childList:true});
     const cx=document.getElementById('cx'); if(cx) new MutationObserver(paint).observe(cx,{childList:true,subtree:true}); }).catch(()=>{}); })();
 
 // 홈 화면에 두기
