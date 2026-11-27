@@ -1,0 +1,107 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>밤의 서재 장부</title>
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 방장만 보는 장부: 누가 언제 25분을 마쳤는지, 톡방 글 초안 */
+:root{--night:#0b1518;--room:#13232a;--paper:#ece4d1;--dim:#8fa3a3;--lamp:#f0b45c;--line:rgba(236,228,209,.14);color-scheme:dark}
+html,body{margin:0;background:var(--night);color:var(--paper)}
+body{font:15px/1.6 "IBM Plex Sans KR","Malgun Gothic",sans-serif;padding:24px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:"Gowun Batang",serif;margin:0}
+h1{font-size:28px} h2{font-size:19px;color:var(--lamp)}
+p{margin:0;color:var(--dim)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{background:var(--room);color:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit}
+input{flex:1;min-width:0}
+button{font:inherit;cursor:pointer;background:var(--lamp);color:#1d1408;border:0;border-radius:6px;padding:8px 14px;font-weight:600}
+button.ghost{background:transparent;color:var(--paper);border:1px solid var(--line);font-weight:400}
+.box{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:500;font-size:12px;letter-spacing:.04em}
+th.n{text-align:right}
+td.n{font-variant-numeric:tabular-nums;text-align:right;color:var(--lamp)}
+textarea{width:100%;box-sizing:border-box;min-height:200px;font-size:14px;line-height:1.6}
+.msg{color:var(--lamp);min-height:1.4em}
+[hidden]{display:none!important}
+</style></head><body>
+<div class="wrap">
+  <div>
+    <h1>밤의 서재 장부</h1>
+    <p>닉네임으로 들어온 회원의 기록이에요. 이름 없이 들어온 사람은 여기 없어요.</p>
+  </div>
+  <form class="row" id="kf">
+    <input id="key" type="password" placeholder="장부 열쇠 (Cloudflare에 넣은 ADMIN_KEY)" autocomplete="current-password" aria-label="장부 열쇠">
+    <select id="days" aria-label="기간"><option value="7">최근 7일</option><option value="14" selected>최근 14일</option><option value="30">최근 30일</option><option value="90">최근 90일</option></select>
+    <button type="submit">열기</button>
+  </form>
+  <p class="msg" id="msg"></p>
+  <section id="out" hidden style="display:flex;flex-direction:column;gap:22px">
+    <div><h2>회원별 합계</h2></div>
+    <div class="box"><table><thead><tr><th>닉네임</th><th class="n">다녀간 날</th><th class="n">25분</th><th class="n">한 줄</th><th>읽은 책</th></tr></thead><tbody id="sum"></tbody></table></div>
+    <div><h2>날마다</h2></div>
+    <div class="box"><table><thead><tr><th>날짜</th><th>닉네임</th><th class="n">25분</th><th>책</th><th>남긴 한 줄</th></tr></thead><tbody id="daily"></tbody></table></div>
+    <div class="row" style="justify-content:space-between"><h2>톡방 글 초안</h2>
+      <div class="row"><select id="tday" aria-label="초안 날짜"></select><button type="button" class="ghost" id="copy">복사</button></div></div>
+    <textarea id="draft" aria-label="톡방 글 초안"></textarea>
+  </section>
+</div>
+<script>window.SEOJAE_API="https://chaekmisa-seojae.espada4897.workers.dev";</script>
+<script>
+(function(){
+const API=(window.SEOJAE_API||"").replace(/\/$/,"");
+const $=id=>document.getElementById(id);
+const sget=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, sset=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bk=b=>(!b||b==="내 책")?"자기 책":"『"+b+"』";
+let EV=[];
+if(!API){ $("msg").textContent="서버 주소가 아직 없어요. 세로가 서버를 이은 뒤에 열려요."; }
+$("key").value=sget("seojae-admin")||"";
+$("kf").addEventListener("submit",e=>{e.preventDefault();load()});
+function load(){
+  const k=$("key").value.trim(); if(!API||!k) return;
+  $("msg").textContent="불러오는 중…";
+  fetch(API+"/log?key="+encodeURIComponent(k)+"&days="+$("days").value).then(r=>r.json()).then(d=>{
+    if(d.error){ $("msg").textContent=d.error; return; }
+    sset("seojae-admin",k); EV=d.events||[]; $("msg").textContent=`${d.from}부터 기록 ${EV.length}개`; draw();
+  }).catch(()=>{ $("msg").textContent="서버에 닿지 않아요. 인터넷이나 서버 주소를 확인해 주세요."; });
+}
+function draw(){
+  const by={}, days={};
+  EV.forEach(e=>{
+    const m=by[e.who]||(by[e.who]={days:new Set(),n:0,lines:0,books:new Set()}); m.days.add(e.day);
+    const dk=e.day+"|"+e.who, d=days[dk]||(days[dk]={day:e.day,who:e.who,n:0,books:new Set(),lines:[]});
+    if(e.e==="25분"){ m.n++; d.n++; m.books.add(bk(e.book)); d.books.add(bk(e.book)); }
+    if(e.e==="한 줄"){ m.lines++; d.lines.push(e.x); }
+  });
+  $("sum").innerHTML=Object.entries(by).sort((a,b)=>b[1].n-a[1].n||b[1].days.size-a[1].days.size).map(([w,m])=>
+    `<tr><td>${esc(w)}</td><td class="n">${m.days.size}</td><td class="n">${m.n}</td><td class="n">${m.lines}</td><td>${esc([...m.books].join(" "))}</td></tr>`).join("")||'<tr><td colspan="5">아직 기록이 없어요.</td></tr>';
+  const rows=Object.values(days).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:b.n-a.n);
+  $("daily").innerHTML=rows.map(d=>`<tr><td>${d.day.slice(5).replace("-","/")}</td><td>${esc(d.who)}</td><td class="n">${d.n||"-"}</td><td>${esc([...d.books].join(" "))}</td><td>${d.lines.map(esc).join("<br>")}</td></tr>`).join("")||'<tr><td colspan="5">아직 기록이 없어요.</td></tr>';
+  const ds=[...new Set(EV.map(e=>e.day))].sort().reverse();
+  $("tday").innerHTML=ds.map(d=>`<option value="${d}">${d.slice(5).replace("-","/")}</option>`).join("");
+  draft(); $("out").hidden=false;
+}
+function draft(){
+  const d=$("tday").value; if(!d){ $("draft").value=""; return; }
+  const es=EV.filter(e=>e.day===d), who={};
+  es.forEach(e=>{ const w=who[e.who]||(who[e.who]={n:0,books:new Set()}); if(e.e==="25분"){ w.n++; w.books.add(bk(e.book)); } });
+  const read=Object.entries(who).filter(([,w])=>w.n).sort((a,b)=>b[1].n-a[1].n);
+  const lines=es.filter(e=>e.e==="한 줄").slice(-3);
+  const [y,m,dd]=d.split("-");
+  let t=`🕯 ${+m}/${+dd} 밤의 서재\n\n`;
+  t+= read.length ? read.map(([w,x])=>`· ${w} ${[...x.books].join(" ")} 25분${x.n>1?" ×"+x.n:""}`).join("\n") : "· 이날은 25분을 마친 분이 없었어요.";
+  if(lines.length) t+="\n\n남기고 간 한 줄\n"+lines.map(e=>`"${e.x}" — ${e.who}`).join("\n");
+  t+="\n\n오늘 밤 같이 읽어요 👉 https://world.chaekmisa.com/seojae/";
+  $("draft").value=t;
+}
+$("tday").addEventListener("change",draft);
+$("copy").onclick=()=>{ const v=$("draft").value; navigator.clipboard.writeText(v).then(()=>{$("copy").textContent="복사했어요"},()=>{$("draft").select()}); setTimeout(()=>$("copy").textContent="복사",1500); };
+if(API&&$("key").value) load();
+})();
+</script>
+</body></html>
