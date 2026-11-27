@@ -1516,6 +1516,20 @@ toSeojae();
   const up=()=>{ if(document.hidden) return; fetch(API+'/state').then(r=>r.json()).then(s=>{ const n=new Set((s.now||[]).map(x=>x.who)).size;
     a.innerHTML=n?`🕯 서재 <b>${n}</b>명 읽는 중 ›`:'🕯 밤의 서재 ›'; }).catch(()=>{}); };
   up(); setInterval(up,60000); document.addEventListener('visibilitychange',up); })();
+// 11/27 모임 전 서재 별: 모임 날 전 7일(모임 날 밤 9시 전까지) 그 모임 책을 들고 밤의 서재에서 마친 25분마다 ★ 하나(다섯까지 보임)
+(function(){ const API=(window.SEOJAE_API||'').replace(/\/$/,''), w=sget('chaekmisa-who'); if(!API||!w) return;
+  const st=document.createElement('style'); st.textContent='#cx .mc .seostar{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);z-index:4;font-size:10px;line-height:1.5;color:#f6c86a;background:rgba(5,8,18,.78);border:1px solid rgba(240,180,92,.5);border-radius:999px;padding:0 7px;white-space:nowrap;pointer-events:none}#cx .seoband{display:block;font-size:11px;color:#f0b45c;margin-top:3px;font-weight:400}'; document.head.appendChild(st);
+  let R=null; const cnt=(t,d)=>{ const end=Date.parse(d+'T21:00:00+09:00'), s=Date.parse(d+'T00:00:00+09:00')-7*864e5; return R.filter(r=>r.book===t&&r.t>=s&&r.t<end).length; };
+  const badge=c=>{ const s=document.createElement('span'); s.className='seostar'; s.textContent='🕯 '+'★'.repeat(Math.min(5,c)); return s; };
+  function paint(){ if(!R) return;
+    document.querySelectorAll('#cx .mc[data-m]:not([data-seo])').forEach(el=>{ el.dataset.seo='1'; const k=el.dataset.m, mm=(window.MEETS&&MEETS.m||{})[k]; if(!mm) return; let t; try{ t=OUR[(+k)%1000].t; }catch(e){ return; }   // 카드.js의 BK(e)=e%1000 (카드.js 안쪽이라 밖에서 못 부름)
+      const c=cnt(t,mm[0]); if(c){ el.appendChild(badge(c)); el.title=(el.title||'')+` · 모임 전 밤의 서재 25분 ${c}번`; } });
+    document.querySelectorAll('#cx [data-u]:not([data-seo])').forEach(el=>{ el.dataset.seo='1'; const tx=el.textContent||'', x=((window.MEETS&&MEETS.u)||[]).find(u=>tx.includes('『'+u.t+'』')); if(!x) return; const c=cnt(x.t,x.d);   // 다가오는 카드: 안에 적힌 책 이름으로 찾음
+      if(el.classList.contains('tnx')){ const box=el.querySelector('span:last-child')||el, sp=document.createElement('span'); sp.className='seoband';
+        sp.textContent=c?`🕯 밤의 서재에서 미리 ${'★'.repeat(Math.min(5,c))} (${c}번)`:'🕯 밤의 서재에서 이 책을 들고 25분 → 모임 카드에 ★'; box.appendChild(sp); }
+      else if(c) el.appendChild(badge(c)); }); }
+  fetch(API+'/me?who='+encodeURIComponent(w)).then(r=>r.ok?r.json():null).then(m=>{ if(!m||!Array.isArray(m.reads)) return; R=m.reads; paint();
+    const cx=document.getElementById('cx'); if(cx) new MutationObserver(paint).observe(cx,{childList:true,subtree:true}); }).catch(()=>{}); })();
 
 // 홈 화면에 두기
 const bar=document.getElementById('binst'), sp=bar.querySelector('.sp'), go=document.getElementById('binstGo');

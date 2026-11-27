@@ -38,7 +38,7 @@ body{padding-top:env(safe-area-inset-top,0px)}
 #sinst #sinstGo{color:#1d1408;background:#f0b45c;border-color:#f0b45c;font-weight:600;white-space:nowrap}
 </style>
 </head><body>
-<script>window.SEOJAE_API="https://chaekmisa-seojae.espada4897.workers.dev";window.SEOJAE_MEMBERS=["에스파다", "책좋아", "벙찐", "소리", "단아", "플라잉", "미지", "슈슈", "아토미", "에델바이스", "에스텔", "우승", "짠", "한량", "호얌", "미토맘", "미미", "꼬북"];</script>
+<script>window.SEOJAE_API="https://chaekmisa-seojae.espada4897.workers.dev";window.SEOJAE_MEMBERS=["에스파다", "책좋아", "벙찐", "소리", "단아", "플라잉", "미지", "슈슈", "아토미", "에델바이스", "에스텔", "우승", "짠", "한량", "호얌", "미토맘", "미미", "꼬북"];window.SEOJAE_UP=[{"t": "남에게 보여주려고 인생을 낭비하지 마라", "m": "지정독서", "d": "2026-11-28"}, {"t": "달과 6펜스", "m": "문학산책", "d": "2026-12-05"}, {"t": "러브 머신", "m": "지정독서", "d": "2026-12-12"}, {"t": "브레이크넥", "m": "경제독서", "d": "2026-12-19"}, {"t": "드디어 만나는 천문학 수업", "m": "지정독서", "d": "2026-12-26"}];</script>
 <style>
 /* 배치: 위에서 내려다본 도트 서재가 화면 대부분, 그 위에 이름·인원·행동 단추를 얹음. 밤이라 어두운 한 가지 모습으로만. */
 :root{
@@ -337,6 +337,14 @@ G[25][15]="E";G[25][16]="E";
 for(let y=26;y<=27;y++)for(let x=10;x<=21;x++)G[y][x]="o";
 const shelfBook={}; // 복도 서가 한 칸 = 책 한 권
 for(let i=0;i<7;i++){shelfBook["12,"+(16+i)]=i;shelfBook["19,"+(16+i)]=7+i}
+// 11/27 모임 전 서재 별: 모임 날까지 7일 안이면 그 모임 책이 입구 쪽 왼쪽 서가(12,22)에 금빛으로. 들고 25분 = 그 모임 카드에 별(바인더)
+const KD=t=>new Date(t+9*3600e3).toISOString().slice(0,10);
+const MEET=(()=>{const today=KD(Date.now()),u=(window.SEOJAE_UP||[]).filter(x=>x.d>=today).sort((a,b)=>a.d<b.d?-1:1)[0];if(!u)return null;
+  const days=Math.round((Date.parse(u.d)-Date.parse(today))/864e5);if(days>7)return null;
+  let i=BOOKS.findIndex(b=>b.t===u.t);if(i<0){BOOKS.push({t:u.t,c:"#e8b04e",who:[]});i=BOOKS.length-1}
+  shelfBook["12,22"]=i;return{t:u.t,d:u.d,m:u.m,i,days}})();
+const meetDay=()=>MEET?(MEET.days===0?"오늘":MEET.d.slice(5).replace("-","/")):"";
+function prepCount(reads){if(!MEET||!reads)return 0;const end=Date.parse(MEET.d+"T21:00:00+09:00"),st=Date.parse(MEET.d+"T00:00:00+09:00")-7*864e5;return reads.filter(r=>r.book===MEET.t&&r.t>=st&&r.t<end).length}
 const tileAt=(x,y)=>(y<0||y>=MH||x<0||x>=MW)?"#":G[y][x];
 const deskAtTile=(x,y)=>desks.find(d=>d.y===y&&(d.x===x||d.x+1===x));
 const deskByChair=(x,y)=>desks.find(d=>d.x===x&&d.y+1===y);
@@ -427,6 +435,7 @@ function lightSources(now){
   [[15.9,17],[15.9,21],[15.9,24.6]].forEach(([x,y])=>L.push({x:x*T,y:y*T,r:40,a:.55}));
   [[4,3],[27,3],[3,13],[28,13],[16,9],[9,7],[23,11]].forEach(([x,y])=>L.push({x:x*T,y:y*T,r:70,a:.32}));
   L.push({x:2.4*T,y:7.5*T,r:40,a:.5});
+  if(MEET)L.push({x:12.6*T,y:22.5*T,r:(30+Math.sin(now/600)*6)*fl,a:.85});
   return L;
 }
 function render(now){
@@ -456,6 +465,7 @@ function render(now){
   label("한 줄 벽",2.2*T,3.9*T,"#ece4d1");
   label("소원 책상",27*T,5.8*T,"#ece4d1");
   label("입구",16*T,25.2*T,"#8fa3a3");
+  if(MEET)label(`★ ${meetDay()} ${MEET.m} 모임 책`,12.5*T,21.75*T,"#f0b45c",11);
   // 복도 서가 책 이름은 가까이 가면
   for(const key in shelfBook){const[sx,sy]=key.split(",").map(Number);if(Math.abs(player.y-(sy+.5))<2.2&&player.y>15){ctx.textAlign=sx===12?"left":"right";const[px,py]=scr((sx===12?sx+1:sx)*T,(sy+.8)*T);ctx.font=`11px ${FONT}`;ctx.fillStyle=BOOKS[shelfBook[key]].c;ctx.fillText("『"+BOOKS[shelfBook[key]].t+"』",px+(sx===12?3:-3),py)}}
   ctx.textAlign="center";
@@ -517,7 +527,8 @@ function bye(){leaving=false;player.active=false;player.path=[];
   const parts=[];if(sess.done)parts.push(`25분을 ${sess.done}번 마쳤어요`);if(sess.lines)parts.push(`한 줄을 ${sess.lines}개 남겼어요`);
   $("byeSum").textContent=parts.length?"오늘 밤 "+parts.join(", ")+".":"오늘은 서재를 둘러보고 가요.";
   $("byeName").textContent=me.n;$("byeBinder").href="/binder/"+(nick?"?who="+encodeURIComponent(nick):"");$("byeBinder").onclick=()=>ev("바인더로 감");$("whoPill").textContent="문 밖";$("vBye").hidden=false;tick("서재 문을 닫고 나왔어요.")}
-function finish(){$("doneN").hidden=true;if(API&&nick)setTimeout(()=>fetchMe().then(m=>{if(m&&m.total&&!$("vDone").hidden){$("doneN").textContent=`${m.total}번째 25분이에요 · 이번 달 ${m.month}번`;$("doneN").hidden=false}}),900);store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
+function finish(){$("doneN").hidden=true;const cb=player.carry;if(API&&nick)setTimeout(()=>fetchMe().then(m=>{if(m&&m.total&&!$("vDone").hidden){const pc=MEET&&cb===MEET.t?prepCount(m.reads):0;
+  $("doneN").innerHTML=`${m.total}번째 25분이에요 · 이번 달 ${m.month}번`+(pc?`<br>★ ${meetDay()} ${escH(MEET.m)} 모임 카드에 별 ${"★".repeat(Math.min(5,pc))} (${pc}번째)`:"");$("doneN").hidden=false}}),900);store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
 $("standUp").onclick=()=>{api("/stand");stand();tick("자리에서 일어났어요. 등이 꺼졌어요.")};
 $("post").onclick=()=>{const v=$("doneLine").value.trim();$("vDone").hidden=true;const b=player.carry||"내 책";stand();
   if(v){sess.lines++;if(API&&nick){pendingLines.unshift({x:v,n:nick+" ("+me.n+")",b,mine:true});api("/line",{x:v,book:b}).then(()=>setTimeout(poll,500))}else{wall.unshift({x:v,n:me.n,b,mine:true});save()}ev("한 줄 남김");tick("한 줄을 들고 왼쪽 한 줄 벽으로 가서 붙였어요.");goTo(2,7,()=>{openWall()})}else tick("자리에서 일어났어요.")};
@@ -535,7 +546,8 @@ function nearAction(){
   if(py>=24&&(px===15||px===16))return{l:"서재에서 나가기",f:leave};
   return null;
 }
-function book(i){const t=BOOKS[i].t;if(player.carry===t)return{l:`『${t}』 서가에 꽂기`,f:()=>{player.carry=null;tick("책을 서가에 다시 꽂았어요.")}};return{l:`『${t}』 꺼내 들기`,f:()=>{player.carry=t;ev("책 꺼냄");tick(`『${t}』을(를) 들었어요. 이제 열람실 빈 책상으로 가 보세요.`)}}}
+function book(i){const t=BOOKS[i].t,mb=MEET&&i===MEET.i;if(mb&&player.carry!==t){const r=bookPlain(i);return{l:r.l+" ★",f:()=>{r.f();ev("모임 책 꺼냄");tick(`『${t}』을(를) 들었어요. ${meetDay()} ${MEET.m} 모임 책이에요. 이 책으로 25분을 채우면 바인더의 모임 카드에 <span>별</span>이 하나 붙어요.`)}}}return bookPlain(i)}
+function bookPlain(i){const t=BOOKS[i].t;if(player.carry===t)return{l:`『${t}』 서가에 꽂기`,f:()=>{player.carry=null;tick("책을 서가에 다시 꽂았어요.")}};return{l:`『${t}』 꺼내 들기`,f:()=>{player.carry=t;ev("책 꺼냄");tick(`『${t}』을(를) 들었어요. 이제 열람실 빈 책상으로 가 보세요.`)}}}
 let lastAct="";
 function refreshAct(){const a=nearAction(),b=$("act");if(!a){if(!b.hidden){b.hidden=true;lastAct=""}$("hint").hidden=false;return}if(a.l!==lastAct){b.textContent=a.l;lastAct=a.l}b.hidden=false;b.onclick=()=>{a.f();lastAct=""};$("hint").hidden=true}
 
@@ -561,7 +573,7 @@ function giveName(){const n=freeName();me={n:n.n,b:n.b};store.set("seojae-me",me
 function setWhoPill(){$("whoPill").classList.add("me");$("whoPill").innerHTML="";const em=document.createElement("em");em.textContent=me.n;$("whoPill").append(em,document.createTextNode(nick?" · "+nick+" 📜":" · 등불 하나"))}
 function enterRoom(){$("vNamed").hidden=true;$("outBtn").hidden=false;setWhoPill();
   player.active=true;ev("들어옴",1);api("/enter").then(()=>setTimeout(poll,500));player.x=16;player.y=27.4;cam.x=16*T;cam.y=26*T;
-  player.path=bfs(15,27,15,21,"me")||[];player.pending=()=>tick(`<span>${me.n}</span>님이 서재 복도에 들어왔어요. 양쪽 서가에서 책을 한 권 꺼내 들고, 위쪽 열람실로 가 보세요.`);
+  player.path=bfs(15,27,15,21,"me")||[];player.pending=()=>tick(`<span>${me.n}</span>님이 서재 복도에 들어왔어요. 양쪽 서가에서 책을 한 권 꺼내 들고, 위쪽 열람실로 가 보세요.`+(MEET?` <span>★</span> 입구 쪽 왼쪽 금빛 서가에 ${meetDay()} ${MEET.m} 모임 책 『${MEET.t}』이 있어요.`:""));
   tick("등불을 들고 문으로 걸어 들어가는 중…")}
 function askWho(){const sv=$("whoSaved"),saved=nick||binderWho()||"";
   if(saved&&MEMBERS.includes(saved)){sv.textContent=saved+" 닉네임으로 들어가기";sv.hidden=false;sv.onclick=()=>pickWho(saved)}else sv.hidden=true;
