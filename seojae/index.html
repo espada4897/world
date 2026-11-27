@@ -127,6 +127,22 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .lamp .btn{opacity:.7}
 .lamp .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 @media (prefers-reduced-motion:reduce){.lamp .flame{animation:none}}
+#vMe{z-index:25}
+.pill.me{pointer-events:auto;cursor:pointer;font-family:inherit;color:var(--paper)}
+.pill.me:hover{border-color:var(--lamp)}
+.mstat{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mstat div{background:var(--night);border:1px solid var(--line);border-radius:6px;padding:10px 6px}
+.mstat b{display:block;font-family:var(--display);font-size:26px;color:var(--lamp);font-variant-numeric:tabular-nums;line-height:1.2}
+.mstat span{font-size:12px;color:var(--dim)}
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:260px;margin:0 auto}
+.mcal i{aspect-ratio:1;border-radius:3px;background:rgba(236,228,209,.06)}
+.mcal i.on{background:rgba(240,180,92,.45)}.mcal i.on2{background:#f0b45c;box-shadow:0 0 6px rgba(240,180,92,.6)}
+.mcal i.td{outline:1px solid rgba(236,228,209,.5)}
+.mh{font-size:13px;color:var(--lamp);margin:4px 0 -6px;text-align:left}
+.mlist{display:flex;flex-direction:column;gap:6px;text-align:left}
+.mlist p{margin:0;color:var(--paper);font-size:14px}
+.mlist small{color:var(--dim)}
+.donen{color:var(--lamp)!important;font-size:14px}
 </style>
 
 <div class="wrap">
@@ -142,7 +158,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
   <div class="stage" id="stage">
     <canvas id="cv" aria-label="위에서 내려다본 밤의 서재. 누른 곳으로 걸어가요."></canvas>
     <div class="hud-top">
-      <div class="hud-l"><div class="pill" id="whoPill">문 앞</div><button class="pill out" id="outBtn" type="button" hidden>나가기</button></div>
+      <div class="hud-l"><button class="pill" id="whoPill" type="button" title="내 기록">문 앞</button><button class="pill out" id="outBtn" type="button" hidden>나가기</button></div>
       <button class="pill pbtn" id="todayBtn" type="button">책 속 인물 <b>0</b>명과 함께</button>
     </div>
     <div class="hud-bot" id="hudBot">
@@ -203,7 +219,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     <h2>오늘 밤의 서재</h2>
     <div class="tlist" id="tNow"></div>
     <div class="tlist" id="tDay"></div>
-    <button class="btn" data-close type="button">닫기</button>
+    <div class="row"><button class="btn" data-me type="button">📜 내 기록</button><button class="btn" data-close type="button">닫기</button></div>
   </div>
 </div>
 <div class="veil" id="vNamed" hidden>
@@ -218,6 +234,7 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
   <div class="card">
     <h2>25분 다 읽었어요</h2>
     <p id="doneBook"></p>
+    <p class="donen" id="doneN" hidden></p>
     <textarea id="doneLine" maxlength="120" placeholder="남기고 싶은 한 줄 (내 말도, 책 속 문장도 좋아요)"></textarea>
     <div class="row"><button class="btn" id="skip" type="button">그냥 일어나기</button><button class="btn solid" id="post" type="button">한 줄 벽에 붙이기</button></div>
   </div>
@@ -247,13 +264,21 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
   </div>
 </div>
 
+<div class="veil" id="vMe" hidden>
+  <div class="card">
+    <h2>내 등불 기록</h2>
+    <p id="meWho"></p>
+    <div id="meBody"></div>
+    <button class="btn" data-close type="button">닫기</button>
+  </div>
+</div>
 <div class="veil" id="vBye" hidden>
   <div class="card">
     <p>잘 가요, <b id="byeName"></b>님</p>
     <h2>서재 문을 닫고 나왔어요</h2>
     <p id="byeSum"></p>
     <p>등불은 문 옆에 걸어 두었어요. 다음에 오면 같은 이름으로 불러 드려요.</p>
-    <div class="row"><button class="btn" id="again" type="button">다시 들어가기</button><button class="btn solid" id="byeClose" type="button">그냥 나가기</button></div>
+    <div class="row"><button class="btn" data-me type="button">📜 내 기록</button><button class="btn" id="again" type="button">다시 들어가기</button><button class="btn solid" id="byeClose" type="button">그냥 나가기</button></div>
   </div>
 </div>
 
@@ -484,7 +509,7 @@ function bye(){leaving=false;player.active=false;player.path=[];
   const parts=[];if(sess.done)parts.push(`25분을 ${sess.done}번 마쳤어요`);if(sess.lines)parts.push(`한 줄을 ${sess.lines}개 남겼어요`);
   $("byeSum").textContent=parts.length?"오늘 밤 "+parts.join(", ")+".":"오늘은 서재를 둘러보고 가요.";
   $("byeName").textContent=me.n;$("whoPill").textContent="문 밖";$("vBye").hidden=false;tick("서재 문을 닫고 나왔어요.")}
-function finish(){store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
+function finish(){$("doneN").hidden=true;if(API&&nick)setTimeout(()=>fetchMe().then(m=>{if(m&&m.total&&!$("vDone").hidden){$("doneN").textContent=`${m.total}번째 25분이에요 · 이번 달 ${m.month}번`;$("doneN").hidden=false}}),900);store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
 $("standUp").onclick=()=>{api("/stand");stand();tick("자리에서 일어났어요. 등이 꺼졌어요.")};
 $("post").onclick=()=>{const v=$("doneLine").value.trim();$("vDone").hidden=true;const b=player.carry||"내 책";stand();
   if(v){sess.lines++;if(API&&nick){pendingLines.unshift({x:v,n:nick+" ("+me.n+")",b,mine:true});api("/line",{x:v,book:b}).then(()=>setTimeout(poll,500))}else{wall.unshift({x:v,n:me.n,b,mine:true});save()}ev("한 줄 남김");tick("한 줄을 들고 왼쪽 한 줄 벽으로 가서 붙였어요.");goTo(2,7,()=>{openWall()})}else tick("자리에서 일어났어요.")};
@@ -525,7 +550,7 @@ function tick(m){$("ticker").innerHTML=m}
 
 /* ---------- 들어오기 ---------- */
 function giveName(){const n=freeName();me={n:n.n,b:n.b};store.set("seojae-me",me);$("namedBig").textContent=n.n;$("namedFrom").textContent=`『${n.b}』에서 빌린 이름이에요. 오늘 밤만 이 이름으로 불려요.`}
-function setWhoPill(){$("whoPill").innerHTML="";const em=document.createElement("em");em.textContent=me.n;$("whoPill").append(em,document.createTextNode(nick?" · "+nick:" · 등불 하나"))}
+function setWhoPill(){$("whoPill").classList.add("me");$("whoPill").innerHTML="";const em=document.createElement("em");em.textContent=me.n;$("whoPill").append(em,document.createTextNode(nick?" · "+nick+" 📜":" · 등불 하나"))}
 function enterRoom(){$("vNamed").hidden=true;$("outBtn").hidden=false;setWhoPill();
   player.active=true;ev("들어옴",1);api("/enter").then(()=>setTimeout(poll,500));player.x=16;player.y=27.4;cam.x=16*T;cam.y=26*T;
   player.path=bfs(15,27,15,21,"me")||[];player.pending=()=>tick(`<span>${me.n}</span>님이 서재 복도에 들어왔어요. 양쪽 서가에서 책을 한 권 꺼내 들고, 위쪽 열람실로 가 보세요.`);
@@ -611,6 +636,33 @@ $("lampWake").onclick=async()=>{if(wakeWant){wakeOff();$("lampMsg").innerHTML=MS
   window.SEOJAE_RESUMED=true;$("vEnter").hidden=true;$("outBtn").hidden=false;setWhoPill();player.active=true;player.carry=s.carry||null;
   sitAt(d,s.until);cam.x=player.x*T;cam.y=player.y*T-8;ev("읽던 자리로 돌아옴");
   tick(player.left>0?`다시 왔어요. <span>${me.n}</span>님이 읽던 자리 그대로예요.`:"다시 왔어요. 그사이 25분이 다 지났어요!")})();
+/* ---------- 내 기록 (11/27) ---------- */
+function fetchMe(){if(!API||!nick)return Promise.resolve(null);return fetch(API+"/me?who="+encodeURIComponent(nick)).then(r=>r.ok?r.json():null).catch(()=>null)}
+const dkey=t=>new Date(t+9*3600e3).toISOString().slice(0,10);   // 한국 날짜
+function streak(days,today){const set=new Set(days.map(d=>d.day));let t=Date.parse(today+"T00:00:00Z"),n=0;
+  if(!set.has(today))t-=864e5;          // 오늘 아직이면 어제부터 셈(오늘 앉으면 이어짐)
+  while(set.has(new Date(t).toISOString().slice(0,10))){n++;t-=864e5}return n}
+function hm(min){const h=Math.floor(min/60),m=min%60;return h?(m?`${h}시간 ${m}분`:`${h}시간`):`${m}분`}
+function openMe(){ev("내 기록 봄");$("vMe").hidden=false;const body=$("meBody");
+  if(!API||!nick){$("meWho").textContent=me?me.n+" · 이름 없이":"";
+    body.innerHTML=`<p>이름 없이 들어오면 기록이 남지 않아요.</p><p>이번에 이 기기에서 <b style="color:var(--lamp)">25분 ${sess.done}번</b>을 마쳤어요.</p><p><small>다음에 문 앞에서 닉네임을 고르면 25분마다 기록이 쌓여요.</small></p>`;return}
+  $("meWho").innerHTML=`<b style="color:var(--paper)">${escH(nick)}</b>님의 25분`;body.innerHTML="<p>불러오는 중…</p>";
+  fetchMe().then(m=>{if(!m){body.innerHTML="<p>기록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</p>";return}
+    if(!m.total&&!m.lines.length){body.innerHTML="<p>아직 마친 25분이 없어요.</p><p>빈 책상에 앉아 25분을 채우면 여기에 첫 기록이 남아요.</p>";return}
+    const st=streak(m.days,m.today),first=m.first?new Date(m.first+9*3600e3):null;
+    // 최근 4주 달력(오늘이 맨 끝)
+    const on=new Map(m.days.map(d=>[d.day,d.n]));let cal="";const t0=Date.parse(m.today+"T00:00:00Z");
+    for(let i=27;i>=0;i--){const k=new Date(t0-i*864e5).toISOString().slice(0,10),n=on.get(k)||0;cal+=`<i class="${n>=2?"on2":n?"on":""}${i===0?" td":""}" title="${k} · 25분 ${n}번"></i>`}
+    const books=m.books.map(b=>`<p>${bookTxt(b.book)} <small>· 25분 ×${b.n}</small></p>`).join("");
+    const lines=m.lines.map(l=>`<p>“${escH(l.x)}” <small>· ${bookTxt(l.book)} · ${dkey(l.t).slice(5).replace("-","/")}</small></p>`).join("");
+    body.innerHTML=`<div class="mstat"><div><b>${m.total}</b><span>모두 25분 (${hm(m.total*25)})</span></div><div><b>${m.month}</b><span>이번 달</span></div>
+      <div><b>${st}</b><span>이어 온 날</span></div><div><b>${m.days.length}</b><span>읽은 날</span></div></div>
+      <p class="mh">최근 4주</p><div class="mcal">${cal}</div>
+      ${first?`<p><small>처음 25분을 마친 날 ${first.getUTCFullYear()}. ${first.getUTCMonth()+1}. ${first.getUTCDate()}.</small></p>`:""}
+      ${books?`<p class="mh">들고 간 책</p><div class="mlist">${books}</div>`:""}
+      ${lines?`<p class="mh">내가 남긴 한 줄</p><div class="mlist">${lines}</div>`:""}`})}
+$("whoPill").onclick=()=>{if(player.active||!$("vBye").hidden)openMe()};
+document.querySelectorAll("[data-me]").forEach(b=>b.onclick=openMe);   // 내 기록은 위에 겹쳐 열고, 닫으면 원래 창으로
 poll();
 if(location.hash==="#test")window.__t={player,npcs,desks,sitFree(){const d=desks.find(d=>!d.by);goTo(d.x,d.y+1,()=>sitAt(d))}};
 
