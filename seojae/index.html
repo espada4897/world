@@ -116,6 +116,17 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
 .foot{color:var(--dim);font-size:12px;margin:0}
 .foot a{color:var(--dim)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.lamp{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+.lamp .flame{width:14px;height:22px;border-radius:50% 50% 45% 45%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff3c4 0,#f0b45c 45%,rgba(240,120,40,0) 75%);box-shadow:0 0 40px 18px rgba(240,170,80,.18);animation:fl 2.6s ease-in-out infinite}
+.lamp .wick{width:22px;height:30px;margin-top:-6px;border-radius:3px;background:linear-gradient(#3a2c1c,#1d150c)}
+@keyframes fl{0%,100%{transform:scale(1) rotate(-1deg);opacity:.95}40%{transform:scale(.94,1.06) rotate(1.5deg);opacity:.8}70%{transform:scale(1.03,.97) rotate(-.5deg);opacity:1}}
+.lamp .ltm{font-family:var(--display);font-size:44px;color:rgba(240,180,92,.6);font-variant-numeric:tabular-nums;margin-top:10px}
+.lamp .lbk{color:rgba(143,163,163,.6);font-size:14px;margin:0}
+.lamp .lmsg{color:rgba(143,163,163,.75);font-size:13px;max-width:320px;margin:4px 0 6px}
+.lamp .lmsg b{color:rgba(236,228,209,.85)}
+.lamp .btn{opacity:.7}
+.lamp .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+@media (prefers-reduced-motion:reduce){.lamp .flame{animation:none}}
 </style>
 
 <div class="wrap">
@@ -140,9 +151,16 @@ header p{margin:2px 0 0;color:var(--dim);font-size:14px}
     </div>
     <div class="seat" id="seat" hidden>
       <div><div class="tm" id="seatTm">25:00</div><div class="bk" id="seatBk"></div></div>
-            <button class="btn" id="standUp" type="button">그냥 일어나기</button>
+            <button class="btn" id="lampBtn" type="button">🕯 독서등</button><button class="btn" id="standUp" type="button">그냥 일어나기</button>
     </div>
   </div>
+<div class="lamp" id="lamp" hidden>
+  <div class="flame"></div><div class="wick"></div>
+  <div class="ltm" id="lampTm">25:00</div>
+  <p class="lbk" id="lampBk"></p>
+  <p class="lmsg" id="lampMsg"></p>
+  <div class="row"><button class="btn" id="lampWake" type="button">화면 꺼도 돼요</button><button class="btn" id="lampBack" type="button">서재 보기</button></div>
+</div>
   <p class="ticker" id="ticker"></p>
   <ul class="legend">
     <li><b>복도 서가</b> 함께 읽은 책을 한 권 꺼내 들어요</li>
@@ -449,11 +467,14 @@ function nextLeg(n){const[tx,ty]=n.plan[0];n.path=bfs(Math.floor(n.x),Math.floor
 
 /* ---------- 행동 ---------- */
 function goTo(tx,ty,then){if(player.sitting)return;const p=bfs(Math.floor(player.x),Math.floor(player.y),tx,ty,"me");if(!p){tick("거기로는 갈 수 없어요.");return}player.path=p;player.pending=then||null;if(!p.length&&then){player.pending=null;then()}}
-function sitAt(d){if(d.by){tick(`${d.by.n}님이 읽고 있는 책상이에요.`);return}
-  d.by="me";const p=seatPos(d);player.x=p.x;player.y=p.y;player.path=[];player.sitting=d;player.until=Date.now()+READ*1000;player.left=READ;ev("앉음");api("/sit",{book:player.carry||"내 책"});
+function sitAt(d,until){if(d.by){tick(`${d.by.n}님이 읽고 있는 책상이에요.`);return}
+  d.by="me";const p=seatPos(d);player.x=p.x;player.y=p.y;player.path=[];player.sitting=d;
+  if(until){player.until=until}else{player.until=Date.now()+READ*1000;ev("앉음");api("/sit",{book:player.carry||"내 책"})}
+  player.left=Math.max(0,(player.until-Date.now())/1000);
+  store.set("seojae-seat",{i:desks.indexOf(d),until:player.until,carry:player.carry,me:me.n,nick});lampStart();
   $("seatBk").textContent=player.carry?`『${player.carry}』 읽는 중`:"자기 책 읽는 중";$("seat").hidden=false;$("hudBot").hidden=true;
   tick(`<span>${me.n}</span>님이 앉자 책상 등이 켜졌어요.`)}
-function stand(){const d=player.sitting;if(!d)return;d.by=null;player.sitting=null;player.x=d.x+.5;player.y=d.y+1.5;$("seat").hidden=true;$("hudBot").hidden=false}
+function stand(){store.set("seojae-seat",null);lampEnd();const d=player.sitting;if(!d)return;d.by=null;player.sitting=null;player.x=d.x+.5;player.y=d.y+1.5;$("seat").hidden=true;$("hudBot").hidden=false}
 const sess={done:0,lines:0};
 let leaving=false;
 function leave(){if(leaving||!player.active)return;if(player.sitting){api("/stand");stand()}leaving=true;ev("나감");player.carry=null;keys.clear();
@@ -463,7 +484,7 @@ function bye(){leaving=false;player.active=false;player.path=[];
   const parts=[];if(sess.done)parts.push(`25분을 ${sess.done}번 마쳤어요`);if(sess.lines)parts.push(`한 줄을 ${sess.lines}개 남겼어요`);
   $("byeSum").textContent=parts.length?"오늘 밤 "+parts.join(", ")+".":"오늘은 서재를 둘러보고 가요.";
   $("byeName").textContent=me.n;$("whoPill").textContent="문 밖";$("vBye").hidden=false;tick("서재 문을 닫고 나왔어요.")}
-function finish(){sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
+function finish(){store.set("seojae-seat",null);lampEnd();chime();document.title="✔ 25분 다 읽었어요 · 밤의 서재";sess.done++;api("/done",{book:player.carry||"내 책"}).then(()=>setTimeout(poll,500));ev("25분 마침");$("doneBook").textContent=player.carry?`『${player.carry}』을(를) 읽었어요.`:"자기 책을 읽었어요.";$("doneLine").value="";$("vDone").hidden=false;$("doneLine").focus()}
 $("standUp").onclick=()=>{api("/stand");stand();tick("자리에서 일어났어요. 등이 꺼졌어요.")};
 $("post").onclick=()=>{const v=$("doneLine").value.trim();$("vDone").hidden=true;const b=player.carry||"내 책";stand();
   if(v){sess.lines++;if(API&&nick){pendingLines.unshift({x:v,n:nick+" ("+me.n+")",b,mine:true});api("/line",{x:v,book:b}).then(()=>setTimeout(poll,500))}else{wall.unshift({x:v,n:me.n,b,mine:true});save()}ev("한 줄 남김");tick("한 줄을 들고 왼쪽 한 줄 벽으로 가서 붙였어요.");goTo(2,7,()=>{openWall()})}else tick("자리에서 일어났어요.")};
@@ -504,7 +525,8 @@ function tick(m){$("ticker").innerHTML=m}
 
 /* ---------- 들어오기 ---------- */
 function giveName(){const n=freeName();me={n:n.n,b:n.b};store.set("seojae-me",me);$("namedBig").textContent=n.n;$("namedFrom").textContent=`『${n.b}』에서 빌린 이름이에요. 오늘 밤만 이 이름으로 불려요.`}
-function enterRoom(){$("vNamed").hidden=true;$("outBtn").hidden=false;$("whoPill").innerHTML="";const em=document.createElement("em");em.textContent=me.n;$("whoPill").append(em,document.createTextNode(nick?" · "+nick:" · 등불 하나"));
+function setWhoPill(){$("whoPill").innerHTML="";const em=document.createElement("em");em.textContent=me.n;$("whoPill").append(em,document.createTextNode(nick?" · "+nick:" · 등불 하나"))}
+function enterRoom(){$("vNamed").hidden=true;$("outBtn").hidden=false;setWhoPill();
   player.active=true;ev("들어옴",1);api("/enter").then(()=>setTimeout(poll,500));player.x=16;player.y=27.4;cam.x=16*T;cam.y=26*T;
   player.path=bfs(15,27,15,21,"me")||[];player.pending=()=>tick(`<span>${me.n}</span>님이 서재 복도에 들어왔어요. 양쪽 서가에서 책을 한 권 꺼내 들고, 위쪽 열람실로 가 보세요.`);
   tick("등불을 들고 문으로 걸어 들어가는 중…")}
@@ -551,7 +573,44 @@ function drawToday(){const nowL=remote.now||[],td=remote.today||[];
   $("tDay").innerHTML="<h3>오늘 다녀간 사람</h3>"+(td.length?td.map(x=>`<p><b>${escH(x.who)}</b> · ${x.n?"25분 ×"+x.n:"둘러봄"}${x.books?" · "+String(x.books).split(",").map(bookTxt).join(" "):""}</p>`).join(""):"<p>아직 아무도 없어요.</p>")}
 $("todayBtn").onclick=()=>{if(!API){tick("회원끼리 서로 보이는 서재는 준비 중이에요.");return}drawToday();$("vToday").hidden=false;poll()};
 setInterval(poll,15000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
-addEventListener("pagehide",()=>{if(API&&nick&&player.sitting&&navigator.sendBeacon)navigator.sendBeacon(API+"/stand",new Blob([JSON.stringify({who:nick,dev,ch:me.n})],{type:"text/plain"}))});
+// 11/27 에스파다 "독서하다 보면 화면이 꺼질 텐데": 예전엔 창이 닫히면(pagehide) 바로 '일어남'을 보내 25분이 날아갔음.
+// 이제는 보내지 않음 → 서버 자리는 앉은 뒤 26분에 저절로 비고, 그 사이(또는 뒤에) 다시 열면 읽던 자리로 돌아와 이어 감.
+
+/* ---------- 독서등: 앉으면 화면 켜 두기(어둡게) + 25분에 딩·진동 (11/27) ---------- */
+let wake=null, wakeWant=false, actx=null, lampTimer=null;
+const TITLE0=document.title;
+async function wakeOn(){wakeWant=true;if(!("wakeLock" in navigator))return false;if(wake)return true;
+  try{wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>{wake=null});return true}catch(e){return false}}
+function wakeOff(){wakeWant=false;if(wake){wake.release().catch(()=>{});wake=null}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&wakeWant&&player.sitting&&!wake)wakeOn()});
+// 아이폰은 사람이 누른 순간에만 소리를 열 수 있어서, 누를 때마다 소리 길을 열어 둠
+function unlockSound(){try{if(!actx){const A=window.AudioContext||window.webkitAudioContext;if(!A)return;actx=new A()}
+  if(actx.state==="suspended")actx.resume().catch(()=>{});const o=actx.createOscillator(),g=actx.createGain();g.gain.value=0;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.03)}catch(e){}}
+document.addEventListener("pointerdown",unlockSound,{passive:true});document.addEventListener("keydown",unlockSound);
+function chime(){try{if(navigator.vibrate)navigator.vibrate([180,120,180,120,300])}catch(e){}
+  try{if(!actx)return;const go=()=>{const t=actx.currentTime;[[880,0],[1318.5,.35],[1760,.7]].forEach(([f,d])=>{const o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(.28,t+d+.02);g.gain.exponentialRampToValueAtTime(.001,t+d+1.8);o.connect(g);g.connect(actx.destination);o.start(t+d);o.stop(t+d+1.9)})};
+    if(actx.state==="suspended")actx.resume().then(go).catch(()=>{});else go()}catch(e){}}
+function wakeBtn(){$("lampWake").textContent=wakeWant?"화면 꺼도 돼요":"화면 켜 두기"}
+const MSG_ON="화면은 켜 둘게요. 25분이 되면 <b>딩</b> 하고 알려 드려요.<br><small>폰을 책 옆에 두고 읽으세요. 아이폰은 진동 없이 소리만 나요(무음 모드면 안 들려요).</small>";
+const MSG_OFF="화면을 꺼도 괜찮아요. 25분은 그대로 흘러가요.<br><small>다 읽고 화면을 켜면 '25분 다 읽었어요'가 기다리고 있어요. 화면이 꺼져 있으면 소리는 안 나요.</small>";
+const MSG_NO="이 브라우저는 화면을 켜 둘 수 없어요.<br><small>화면이 꺼져도 25분은 흘러가요. 다시 켜면 읽던 자리 그대로예요.</small>";
+async function lampStart(){const ok=await wakeOn();$("lampMsg").innerHTML=ok?MSG_ON:MSG_NO;$("lampWake").hidden=!("wakeLock" in navigator);wakeBtn();
+  clearTimeout(lampTimer);lampTimer=setTimeout(()=>{if(player.sitting&&$("vDone").hidden)lampOpen()},3000)}
+function lampEnd(){clearTimeout(lampTimer);wakeOff();$("lamp").hidden=true;document.title=TITLE0}
+function lampOpen(){$("lampBk").textContent=$("seatBk").textContent;$("lampTm").textContent=fmt(Math.ceil(player.left));$("lamp").hidden=false;ev("독서등 켬",1)}
+$("lampBtn").onclick=lampOpen;
+$("lampBack").onclick=()=>{$("lamp").hidden=true};
+$("lampWake").onclick=async()=>{if(wakeWant){wakeOff();$("lampMsg").innerHTML=MSG_OFF;ev("화면 꺼도 돼요")}else{const ok=await wakeOn();$("lampMsg").innerHTML=ok?MSG_ON:MSG_NO}wakeBtn()};
+
+/* ---------- 읽던 자리로 돌아오기 (11/27) ---------- */
+(function(){const s=store.get("seojae-seat");if(!s)return;
+  if(!me||s.me!==me.n||s.nick!==nick||Date.now()>s.until+50*60e3){store.set("seojae-seat",null);return}
+  const d=desks[s.i];if(!d){store.set("seojae-seat",null);return}
+  if(d.by&&d.by!=="me"){const k=npcs.indexOf(d.by);if(k>=0)npcs.splice(k,1);d.by=null}   // 처음 깔린 책 속 인물이 그 자리에 있으면 비켜 줌
+  window.SEOJAE_RESUMED=true;$("vEnter").hidden=true;$("outBtn").hidden=false;setWhoPill();player.active=true;player.carry=s.carry||null;
+  sitAt(d,s.until);cam.x=player.x*T;cam.y=player.y*T-8;ev("읽던 자리로 돌아옴");
+  tick(player.left>0?`다시 왔어요. <span>${me.n}</span>님이 읽던 자리 그대로예요.`:"다시 왔어요. 그사이 25분이 다 지났어요!")})();
 poll();
 if(location.hash==="#test")window.__t={player,npcs,desks,sitFree(){const d=desks.find(d=>!d.by);goTo(d.x,d.y+1,()=>sitAt(d))}};
 
@@ -560,7 +619,7 @@ resize();
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);render(now);refreshAct();
   updatePill();
-  if(player.sitting)$("seatTm").textContent=fmt(Math.ceil(player.left));
+  if(player.sitting){const tm=fmt(Math.ceil(player.left));$("seatTm").textContent=tm;if(!$("lamp").hidden)$("lampTm").textContent=tm}
   requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 })();
@@ -641,7 +700,8 @@ addEventListener('appinstalled',()=>{ ev('홈 화면에 둠',1); if(veilOn){ how
 
 // 앱으로 열지 않았으면 설치 안내부터. '설치 없이'를 고른 뒤 사흘은 안 띄움(너머의 설치 단추로 오면 늘 띄움)
 const recentSkip=()=>Date.now()-(+sget('seojae-skip')||0)<3*864e5;
-if(!APP&&(INST||!recentSkip())) openVeil();
+// 읽던 자리로 돌아온 참이면(화면 껐다 켬·창이 닫혔다 열림) 설치 안내로 가리지 않음
+if(!APP&&!window.SEOJAE_RESUMED&&(INST||!recentSkip())) openVeil();
 const top=document.getElementById('instTop');
 if(top&&!APP){ top.hidden=false; top.onclick=()=>{ ev('머리 단추 누름'); openVeil(); }; }
 
